@@ -19,65 +19,56 @@
   },
   "theme": [
     {
-        "property": "background-color",
-        "color": "primary",
-        "selectors": [
-            ".md-toolbar",
-            ".md-button.md-raised",
-            ".md-fab"
-        ]
+      "style": {
+        "background-color": "primary",
+        "color": "primaryText"
+      },
+      "selectors": [
+        ".rt-primary"
+      ]
     },
     {
-        "property": "color",
-        "color": "primary",
-        "selectors": [
-            ".md-list-item-icon-active",
-            ".md-list-item-text-active",
-            "a",
-            ".md-button.md-flat",
-            ".favorites-fab-content-button .md-icon"
-        ]
+      "style": {
+        "color": "primaryText"
+      },
+      "selectors": [
+        ".rt-primary-text",
+        ".rt-primary-text i"
+      ]
     },
     {
-        "property": "color",
-        "color": "primaryText",
-        "selectors": [
-            "#app-title",
-            ".md-app-toolbar .md-button",
-            ".md-button.md-raised",
-            ".md-fab"
-        ]
+      "style": {
+        "color": "primary"
+      },
+      "selectors": [
+        ".rt-primary-fg",
+        "a"
+      ]
     },
     {
-        "property": "background-color",
-        "color": "#fff",
-        "selectors": [
-            ".favorites-fab-content-button"
-        ]
+      "style": {
+        "background-color": "secondary",
+        "color": "secondaryText"
+      },
+      "selectors": [
+        ".rt-secondary"
+      ]
     },
     {
-        "property": "background-color",
-        "color": "secondary",
-        "selectors": [
-            ".md-bottom-bar-item",
-            ".md-card-header-secondary"
-        ]
+      "style": {
+        "color": "secondaryText"
+      },
+      "selectors": [
+        ".rt-secondary-text"
+      ]
     },
     {
-        "property": "color",
-        "color": "secondaryText",
-        "selectors": [
-            ".md-bottom-bar-item",
-            ".md-card-header-secondary .md-title"
-        ]
-    },
-    {
-        "property": "color",
-        "color": "#777",
-        "selectors": [
-            ".md-list-item-icon-inactive",
-            ".md-list-item-text-inactive"
-        ]
+      "style": {
+        "color": "#777"
+      },
+      "selectors": [
+        ".md-list-item-inactive"
+      ]
     }
-]
+  ]
 }

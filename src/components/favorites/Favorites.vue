@@ -20,10 +20,10 @@
 
                     <div class="md-layout" style="width: 100%">
                         <div class="md-layout-item md-size-40 md-small-size-100" style="padding: 0 5px;">
-                            <md-button class="md-primary md-flat" @click="login"><md-icon>person_outline</md-icon> Log In</md-button>
+                            <md-button class="md-primary md-flat rt-primary-fg" @click="login"><md-icon>person_outline</md-icon> Log In</md-button>
                         </div>
                         <div class="md-layout-item md-size-60 md-small-size-100" style="padding: 0 5px;">
-                            <md-button class="md-primary md-flat" @click="register"><md-icon>person_add</md-icon> Create Account</md-button>
+                            <md-button class="md-primary md-flat rt-primary-fg" @click="register"><md-icon>person_add</md-icon> Create Account</md-button>
                         </div>
                     </div>
                 </div>
@@ -34,7 +34,7 @@
         <!-- Favorites List -->
         <div v-show="showFavorites">
             <md-card class="favorites-card">
-                <md-card-header class="md-card-header-secondary">
+                <md-card-header class="md-card-header-bg rt-secondary">
                     <div class="md-title">
                         <md-icon>star</md-icon>
                         Favorites
@@ -49,22 +49,22 @@
 
         <!-- Favorites FAB -->
         <md-speed-dial md-event="click" md-effect="scale" md-direction="top">
-            <md-speed-dial-target class="favorites-fab">
+            <md-speed-dial-target class="favorites-fab rt-primary">
                 <md-icon class="md-morph-initial">edit</md-icon>
                 <md-icon class="md-morph-final">close</md-icon>
             </md-speed-dial-target>
             <md-speed-dial-content class="favorites-fab-content">
-                <md-button class="md-icon-button favorites-fab-content-button">
+                <md-button class="md-icon-button rt-primary-fg">
                     <md-icon>remove_circle</md-icon>
-                    <md-tooltip class="favorites-fab-content-tooltip" md-direction="left" md-delay="1000">Remove Favorites</md-tooltip>
+                    <md-tooltip md-direction="left" md-delay="1000">Remove Favorites</md-tooltip>
                 </md-button>
-                <md-button class="md-icon-button favorites-fab-content-button">
+                <md-button class="md-icon-button rt-primary-fg">
                     <md-icon>access_time</md-icon>
-                    <md-tooltip class="favorites-fab-content-tooltip" md-direction="left" md-delay="1000">Add Station</md-tooltip>
+                    <md-tooltip md-direction="left" md-delay="1000">Add Station</md-tooltip>
                 </md-button>
-                <md-button class="md-icon-button favorites-fab-content-button">
+                <md-button class="md-icon-button rt-primary-fg">
                     <md-icon>train</md-icon>
-                    <md-tooltip class="favorites-fab-content-tooltip" md-direction="left" md-delay="1000">Add Trip</md-tooltip>
+                    <md-tooltip md-direction="left" md-delay="1000">Add Trip</md-tooltip>
                 </md-button>
             </md-speed-dial-content>
         </md-speed-dial>

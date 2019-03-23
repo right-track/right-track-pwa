@@ -14,19 +14,16 @@ p.light, p.light a {
     border-radius: 5px !important;
     padding: 5px 25px;
 }
-.md-card-header-secondary {
+.md-card-header-bg {
     padding: 5px 10px 15px 10px;
     margin: -5px -25px 0 -25px;
     border-top-left-radius: 5px !important;
     border-top-right-radius: 5px !important;
 }
-.md-card-header-secondary .md-title {
+.md-card-header-bg .md-title {
     margin-top: 0 !important;
 }
 
-.md-button {
-    color: #fff;
-}
 .md-button:disabled {
     opacity: 0.5 !important;;
 }
@@ -69,6 +66,7 @@ p.light, p.light a {
 }
 .md-dialog .md-button.md-raised {
     background-color: #1565c0 !important;
+    color: #fff !important;
 }
 .md-dialog .md-button.md-flat {
     color: #1565c0 !important;
@@ -78,6 +76,9 @@ p.light, p.light a {
     background-color: #323232;
     color: #fff;
     text-align: center;
+}
+.md-snackbar .md-button.md-flat {
+    color: #fff !important;
 }
 
 /* SHOW ON XS & HIDE ON SM/MD/L/XL */

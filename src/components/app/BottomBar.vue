@@ -1,25 +1,29 @@
 <template>
-    <md-bottom-bar class="md-xsmall-show" md-type="fixed" :md-active-item="'bottom-bar-item-' + page">
+    <md-bottom-bar class="md-xsmall-show rt-secondary" md-type="fixed" :md-active-item="'bottom-bar-item-' + page">
         <md-bottom-bar-item 
             id="bottom-bar-item-favorites"
+            class="rt-secondary-text"
             md-label="Favorites" 
             md-icon="star"
             @click="onBottomBarItemSelected('favorites')">
         </md-bottom-bar-item>
         <md-bottom-bar-item 
             id="bottom-bar-item-trips" 
+            class="rt-secondary-text"
             md-label="Trips" 
             md-icon="train"
             @click="onBottomBarItemSelected('trips')">
         </md-bottom-bar-item>
         <md-bottom-bar-item 
             id="bottom-bar-item-stations" 
+            class="rt-secondary-text"
             md-label="Stations" 
             md-icon="access_time"
             @click="onBottomBarItemSelected('stations')">
         </md-bottom-bar-item>
         <md-bottom-bar-item 
             id="bottom-bar-item-alerts" 
+            class="rt-secondary-text"
             md-label="Alerts" 
             md-icon="check_circle"
             @click="onBottomBarItemSelected('alerts')">

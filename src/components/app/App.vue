@@ -4,19 +4,19 @@
             
 
             <!-- MAIN APP TOOLBAR -->
-            <md-app-toolbar class="md-primary">
+            <md-app-toolbar class="md-primary rt-primary">
                 
                 <!-- DRAWER TOGGLE -->
                 <md-button class="md-icon-button md-xsmall-show" @click="menuVisible = !menuVisible">
-                    <md-icon>menu</md-icon>
+                    <md-icon class="rt-primary-text">menu</md-icon>
                 </md-button>
 
                 <!-- APP TITLE -->
-                <span id="app-title" class="md-title" style="flex: 1">{{ toolbarTitle }}</span>
+                <span id="app-title" class="md-title rt-primary-text" style="flex: 1">{{ toolbarTitle }}</span>
                 
                 <!-- AUTH BUTTON -->
-                <md-button v-if="authButton.visible" class="md-xsmall-hide" @click="auth"><md-icon>{{ authButton.icon }}</md-icon> {{ authButton.text }}</md-button>
-                <md-button v-if="authButton.visible" class="md-xsmall-show md-icon-button" @click="auth"><md-icon>{{ authButton.icon }}</md-icon></md-button>
+                <md-button v-if="authButton.visible" class="md-xsmall-hide rt-primary-text" @click="auth"><md-icon>{{ authButton.icon }}</md-icon> {{ authButton.text }}</md-button>
+                <md-button v-if="authButton.visible" class="md-xsmall-show md-icon-button rt-primary-text" @click="auth"><md-icon>{{ authButton.icon }}</md-icon></md-button>
                 
                 <!-- MORE MENU -->
                 <md-menu md-size="small" v-if="moreMenu">
@@ -65,7 +65,7 @@
                 <!-- APP SNACKBAR -->
                 <md-snackbar md-position="center" :md-duration="snackbar.duration ? snackbar.duration : 4000" :md-active.sync="snackbar.visible" md-persistent>
                     <span style="100%">{{ snackbar.message }}</span>
-                    <md-button @click="snackbar.visible=false">Dismiss</md-button>
+                    <md-button class="md-flat" @click="snackbar.visible=false">Dismiss</md-button>
                 </md-snackbar>
 
             </md-app-content>
@@ -116,27 +116,24 @@
      */
     function _applyTheme(colors) {
         let theme = config.theme;
-
-        // Apply each theme property
         for ( let i = 0; i < theme.length; i++ ) {
-            let property = theme[i].property;
-            let sels = theme[i].selectors;
-            let color = theme[i].color;
-            if ( !color.startsWith("#") ) {
-                color = colors[theme[i].color];
-            }
-
-            for ( let j = 0; j < sels.length; j++ ) {
-                let elems = document.querySelectorAll(sels[j]);
-                
-                if ( elems !== undefined ) {
-                    for ( let k = 0; k < elems.length; k++ ) {
-                        elems[k].style[property] = color;
+            let t = theme[i];
+            for ( const property in t.style ) {
+                if ( t.style.hasOwnProperty(property) ) {
+                    let color = t.style[property];
+                    if ( !color.startsWith("#") ) {
+                        color = colors[color]
+                    }
+                    for ( let j = 0; j < t.selectors.length; j++ ) {
+                        let elems = document.querySelectorAll(t.selectors[j]);
+                        if ( elems !== undefined ) {
+                            for ( let k = 0; k < elems.length; k++ ) {
+                                elems[k].style[property] = color;
+                            }
+                        }
                     }
                 }
-
-            } 
-            
+            }
         }
     }
 
@@ -400,6 +397,11 @@
 <style lang="scss" scoped>
     // Set theme properties
     @import "~vue-material/dist/theme/engine";
+    @include md-register-theme("default", (
+        primary: #424242,
+        accent: #607d8b,
+        theme: light
+    ));
     @import "~vue-material/dist/theme/all";
 
     // Main App Components

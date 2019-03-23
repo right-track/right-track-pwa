@@ -8,17 +8,17 @@
             <!-- Menu Item -->
             <md-list v-if="item.type=='item'">
                 <md-list-item @click="drawerLink(item)">
-                    <md-icon class="md-list-item-icon" :class="{'md-list-item-icon-active': item.isActive, 'md-list-item-icon-inactive': !item.isActive}">{{ item.icon }}</md-icon>
-                    <span class="md-list-item-text" :class="{'md-list-item-icon-active': item.isActive, 'md-list-item-icon-inactive': !item.isActive}">{{ item.title }}</span>
+                    <md-icon class="md-list-item-icon" :class="{'rt-primary-fg': item.isActive, 'md-list-item-inactive': !item.isActive}">{{ item.icon }}</md-icon>
+                    <span class="md-list-item-text" :class="{'rt-primary-fg': item.isActive, 'md-list-item-inactive': !item.isActive}">{{ item.title }}</span>
                 </md-list-item>
             </md-list>
 
             <!-- Menu Badge -->
             <md-list v-if="item.type=='badge'">
                 <span class="md-list-item-badge">4</span>
-                <md-list-item @click="drawerLink(item)" :class="{'md-list-item-active': item.isActive}">
-                    <md-icon class="md-list-item-icon" :class="{'md-list-item-icon-active': item.isActive, 'md-list-item-icon-inactive': !item.isActive}">{{ item.icon }}</md-icon>
-                    <span class="md-list-item-text" :class="{'md-list-item-icon-active': item.isActive, 'md-list-item-icon-inactive': !item.isActive}">{{ item.title }}</span>
+                <md-list-item @click="drawerLink(item)">
+                    <md-icon class="md-list-item-icon" :class="{'rt-primary-fg': item.isActive, 'md-list-item-inactive': !item.isActive}">{{ item.icon }}</md-icon>
+                    <span class="md-list-item-text" :class="{'rt-primary-fg': item.isActive, 'md-list-item-inactive': !item.isActive}">{{ item.title }}</span>
                 </md-list-item>
             </md-list>
 
@@ -134,9 +134,10 @@
         background-color: #eee;
     }
 
-    .md-list-item-text, .md-list-item-icon {
+    .md-list-item-inactive {
         color: #777;
     }
+
     .md-list-item-text {
         font-weight: bold;
     }

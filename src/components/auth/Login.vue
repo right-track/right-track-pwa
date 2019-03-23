@@ -2,7 +2,7 @@
     <div class="content-container">
         
         <md-card>
-            <md-card-header class="md-card-header-secondary">
+            <md-card-header class="md-card-header-bg rt-secondary">
                 <div class="md-title">
                     <md-icon>person_outline</md-icon>
                     Log In
@@ -31,13 +31,13 @@
                 <!-- Buttons -->
                 <div class="md-layout">
                     <div class="md-layout-item md-small-size-100 md-small-show"  style="text-align: center">
-                        <md-button class="md-raised" @click="login" :disabled.sync="loggingIn"><md-icon>person_outline</md-icon> Log In</md-button>
+                        <md-button class="md-raised rt-primary" @click="login" :disabled.sync="loggingIn"><md-icon>person_outline</md-icon> Log In</md-button>
                     </div>
                     <div class="md-layout-item md-small-size-100" style="text-align: center">
-                        <md-button class="md-flat" @click="register" :disabled.sync="loggingIn"><md-icon>person_add</md-icon> Create Account</md-button>
+                        <md-button class="md-flat rt-primary-fg" @click="register" :disabled.sync="loggingIn"><md-icon>person_add</md-icon> Create Account</md-button>
                     </div>
                     <div class="md-layout-item md-small-size-100 md-small-hide"  style="text-align: center">
-                        <md-button class="md-raised" @click="login" :disabled.sync="loggingIn"><md-icon>person_outline</md-icon> Log In</md-button>
+                        <md-button class="md-raised rt-primary" @click="login" :disabled.sync="loggingIn"><md-icon>person_outline</md-icon> Log In</md-button>
                     </div>
                 </div>
             </md-card-content>

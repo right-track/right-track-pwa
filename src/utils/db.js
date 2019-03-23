@@ -1,4 +1,4 @@
-const RightTrackDB = require("right-track-db-sqljs");
+const RightTrackDB = require("right-track-db-sqljs")("/js/worker.sql.js");
 const cache = require("./cache.js");
 
 
@@ -38,43 +38,17 @@ getAgencyDB = function(agencyCode, callback) {
                 array[i] = raw.charCodeAt(i);
             }
 
-            // Get SQL instance
-            _getSQL(function(SQL) {
+            // Build the Right Track Database
+            let db = new RightTrackDB(agencyConfig, array);
 
-                // Build the Right Track Database
-                let db = new SQL.Database(array);
-                let rtdb = new RightTrackDB(agencyConfig, db);
+            // Save the DB in cache
+            _putCache(agencyCode, db);
 
-                // Save the DB in cache
-                _putCache(agencyCode, rtdb);
-
-                // Return the Right Track Database
-                return callback(null, rtdb);
-
-            });
-
+            // Return the Right Track Database
+            return callback(null, db);
         });
-
     });
 
-}
-
-
-/**
- * Get SQL from the window object (when available)
- * @param  {Function} callback Callback function(SQL)
- * @param  {Number} [count] Count of attempts
- */
-function _getSQL(callback, count=0) {
-    count++;
-    if ( window.SQL || count >= 6 ) {
-        return callback(window.SQL);
-    }
-    else {
-        setTimeout(function() {
-            _getSQL(callback, count);
-        }, 500)
-    }
 }
 
 

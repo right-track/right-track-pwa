@@ -191,6 +191,10 @@
         padding-bottom: 0 !important;
     }
 
+    .favorites-fab-content .md-button {
+        background-color: #fff;
+    }
+
     @media screen and (min-width: 0px) and (max-width: 600px) {
         .favorites-fab {
             position: fixed;

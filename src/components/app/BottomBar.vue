@@ -1,0 +1,58 @@
+<template>
+    <md-bottom-bar class="md-xsmall-show" md-type="fixed" :md-active-item="'bottom-bar-item-' + page">
+        <md-bottom-bar-item 
+            id="bottom-bar-item-favorites"
+            md-label="Favorites" 
+            md-icon="star"
+            @click="onBottomBarItemSelected('favorites')">
+        </md-bottom-bar-item>
+        <md-bottom-bar-item 
+            id="bottom-bar-item-trips" 
+            md-label="Trips" 
+            md-icon="train"
+            @click="onBottomBarItemSelected('trips')">
+        </md-bottom-bar-item>
+        <md-bottom-bar-item 
+            id="bottom-bar-item-stations" 
+            md-label="Stations" 
+            md-icon="access_time"
+            @click="onBottomBarItemSelected('stations')">
+        </md-bottom-bar-item>
+        <md-bottom-bar-item 
+            id="bottom-bar-item-alerts" 
+            md-label="Alerts" 
+            md-icon="check_circle"
+            @click="onBottomBarItemSelected('alerts')">
+        </md-bottom-bar-item>
+    </md-bottom-bar>
+</template>
+
+<script>
+
+    module.exports = {
+
+        data: function() {
+            return {
+                page: this.$router.currentRoute.name
+            }
+        },
+
+        methods: {
+            onBottomBarItemSelected(page) {
+                this.$router.push({name: page});
+            }
+        }
+
+    }
+
+</script>
+
+<style scoped>
+    .md-bottom-bar {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        margin-left: -16px;
+        z-index: 500;
+    }
+</style>

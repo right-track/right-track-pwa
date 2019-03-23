@@ -1,0 +1,77 @@
+{
+  "title": "Right Track Online",
+  "maintainer": {
+    "name": "David Waring",
+    "email": "dev@davidwaring.net",
+    "website": "https://www.davidwaring.net",
+    "repository": "https://github.com/right-track/right-track-pwa"
+  },
+  "api": {
+    "host": "https://api.righttrack.io",
+    "clientId": "",
+    "clientKey": ""
+  },
+  "colors": {
+    "primary": "#00897B",
+    "primaryText": "#fff",
+    "secondary": "#FFC107",
+    "secondaryText": "#000"
+  },
+  "theme": [
+    {
+        "property": "background-color",
+        "color": "primary",
+        "selectors": [
+            ".md-toolbar",
+            ".md-button.md-raised",
+            ".md-fab"
+        ]
+    },
+    {
+        "property": "color",
+        "color": "primary",
+        "selectors": [
+            ".md-list-item-icon-active",
+            ".md-list-item-text-active",
+            "a",
+            ".md-button.md-flat"
+        ]
+    },
+    {
+        "property": "color",
+        "color": "primaryText",
+        "selectors": [
+            "#app-title",
+            ".md-app-toolbar .md-button",
+            ".md-button.md-raised",
+            ".md-fab"
+        ]
+    },
+    {
+        "property": "background-color",
+        "color": "secondary",
+        "selectors": [
+            ".md-bottom-bar-item",
+            ".md-card-header-secondary",
+            ".favorites-fab-content-button"
+        ]
+    },
+    {
+        "property": "color",
+        "color": "secondaryText",
+        "selectors": [
+            ".md-bottom-bar-item",
+            ".md-card-header-secondary .md-title",
+            ".favorites-fab-content-button .md-icon"
+        ]
+    },
+    {
+        "property": "color",
+        "color": "#777",
+        "selectors": [
+            ".md-list-item-icon-inactive",
+            ".md-list-item-text-inactive"
+        ]
+    }
+]
+}

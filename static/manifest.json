@@ -1,0 +1,23 @@
+{
+  "short_name": "Right Track",
+  "name": "Right Track Online",
+  "description": "Commuter train schedules with real-time status information",
+  "icons": [
+    {
+      "src": "/img/192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/img/512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "scope": "/",
+  "background_color": "#00897B",
+  "theme_color": "#00897B",
+  "orientation": "portrait-primary"
+}

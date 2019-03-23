@@ -1,0 +1,105 @@
+.content-container {
+    max-width: 700px;
+    margin: 15px auto 80px auto;
+}
+
+p.light, p.light a {
+    color: #868e96 !important;
+    font-size: 90%;
+    margin: 0;
+}
+
+.md-card {
+    background-color: #fff;
+    border-radius: 5px !important;
+    padding: 5px 25px;
+}
+.md-card-header-secondary {
+    padding: 5px 10px 15px 10px;
+    margin: -5px -25px 0 -25px;
+    border-top-left-radius: 5px !important;
+    border-top-right-radius: 5px !important;
+}
+.md-card-header-secondary .md-title {
+    margin-top: 0 !important;
+}
+
+.md-button {
+    color: #fff;
+}
+.md-button:disabled {
+    opacity: 0.5 !important;;
+}
+
+.md-field {
+    margin-bottom: 30px !important;
+}
+.md-field label, .md-field .md-icon {
+    color: #666;
+}
+.md-input {
+    border-bottom-style: solid !important;
+    border-width: 1px !important;
+    border-color: #ccc !important;
+}
+.md-input:focus {
+    border-color: #666 !important;
+}
+.md-helper-text {
+    color: #666;
+    line-height: 12px;
+}
+
+.md-menu-content {
+    background-color: #fff;
+}
+.md-menu-item:hover {
+    cursor: pointer;
+    background-color: #eee;
+}
+
+.md-tooltip {
+    background-color: rgba(0, 0, 0, 0.75);
+    color: #eee;
+    font-size: 16px !important;
+}
+
+.md-dialog {
+    background-color: #fff;
+}
+.md-dialog .md-button.md-raised {
+    background-color: #1565c0 !important;
+}
+.md-dialog .md-button.md-flat {
+    color: #1565c0 !important;
+}
+
+.md-snackbar {
+    background-color: #323232;
+    color: #fff;
+    text-align: center;
+}
+
+/* SHOW ON XS & HIDE ON SM/MD/L/XL */
+@media screen and (min-width: 0px) and (max-width: 600px) {
+    .md-xsmall-show {
+        display: block !important;
+    }
+}
+@media screen and (min-width: 601px) {
+    .md-xsmall-show {
+        display: none !important;
+    }
+}
+
+/* SHOW ON XS/SM & HIDE ON MD/L/XL */
+@media screen and (min-width: 0px) and (max-width: 960px) {
+    .md-small-show {
+        display: block !important;
+    }
+}
+@media screen and (min-width: 961px) {
+    .md-small-show {
+        display: none !important;
+    }
+}

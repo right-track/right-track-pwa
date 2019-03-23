@@ -3,15 +3,14 @@
         
         <!-- Favorites Empty State -->
         <div v-show="showEmptyState">
-            <md-empty-state md-icon="stars" md-label="Favorite Stations & Trips">
+            <md-empty-state md-icon="stars" md-label="Favorite Trips & Stations">
                 <p class="md-empty-state-description">
                     Use the <md-icon>edit</md-icon> button below to add a favorite.
                 </p>
                 <p class="md-empty-state-description">
-                    A <strong>Station</strong> <md-icon>access_time</md-icon> displays real-time status information 
-                    for upcoming departures from a single stop.
                     A <strong>Trip</strong> <md-icon>train</md-icon> displays departure and arrival times between 
-                    two stops.
+                    two stops. A <strong>Station</strong> <md-icon>access_time</md-icon> displays real-time status 
+                    information for upcoming departures from a single stop.
                 </p>
 
                 <div class="favorites-login" v-show="showLogin">
@@ -60,12 +59,12 @@
                     <md-tooltip class="favorites-fab-content-tooltip" md-direction="left" md-delay="1000">Remove Favorites</md-tooltip>
                 </md-button>
                 <md-button class="md-icon-button favorites-fab-content-button">
-                    <md-icon>train</md-icon>
-                    <md-tooltip class="favorites-fab-content-tooltip" md-direction="left" md-delay="1000">Add Trip</md-tooltip>
-                </md-button>
-                <md-button class="md-icon-button favorites-fab-content-button">
                     <md-icon>access_time</md-icon>
                     <md-tooltip class="favorites-fab-content-tooltip" md-direction="left" md-delay="1000">Add Station</md-tooltip>
+                </md-button>
+                <md-button class="md-icon-button favorites-fab-content-button">
+                    <md-icon>train</md-icon>
+                    <md-tooltip class="favorites-fab-content-tooltip" md-direction="left" md-delay="1000">Add Trip</md-tooltip>
                 </md-button>
             </md-speed-dial-content>
         </md-speed-dial>
@@ -182,7 +181,7 @@
 <style scoped>
     .md-empty-state {
         color: #444;
-        max-width: 600px;
+        max-width: 500px;
     }
     .favorites-login .md-button {
         width: 90%;

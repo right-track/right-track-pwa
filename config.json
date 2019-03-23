@@ -34,7 +34,8 @@
             ".md-list-item-icon-active",
             ".md-list-item-text-active",
             "a",
-            ".md-button.md-flat"
+            ".md-button.md-flat",
+            ".favorites-fab-content-button .md-icon"
         ]
     },
     {
@@ -49,11 +50,17 @@
     },
     {
         "property": "background-color",
+        "color": "#fff",
+        "selectors": [
+            ".favorites-fab-content-button"
+        ]
+    },
+    {
+        "property": "background-color",
         "color": "secondary",
         "selectors": [
             ".md-bottom-bar-item",
-            ".md-card-header-secondary",
-            ".favorites-fab-content-button"
+            ".md-card-header-secondary"
         ]
     },
     {
@@ -61,8 +68,7 @@
         "color": "secondaryText",
         "selectors": [
             ".md-bottom-bar-item",
-            ".md-card-header-secondary .md-title",
-            ".favorites-fab-content-button .md-icon"
+            ".md-card-header-secondary .md-title"
         ]
     },
     {

@@ -123,37 +123,44 @@ const MENU = [
         key: 14,
         type: "badge",
         title: "Alerts",
-        icon: "error",
+        icon: "warning",
         page: "alerts"
     },
     {
         key: 15,
-        type: "item",
-        type: "divider"
+        type: "favorites"
     },
     {
         key: 16,
-        type: "item",
-        title: "Settings",
-        icon: "settings",
-        page: "settings"
+        type: "divider"
     },
     {
         key: 17,
-        type: "item",
-        title: "Help & Feedback",
-        icon: "help",
-        page: "help"
-    },
-    {
-        key: 18,
         type: "item",
         title: "About",
         icon: "info",
         page: "agencyAbout"
     },
     {
+        key: 18,
+        type: "item",
+        title: "Help & Feedback",
+        icon: "help",
+        page: "help"
+    },
+    {
         key: 19,
+        type: "item",
+        title: "Settings",
+        icon: "settings",
+        page: "settings"
+    },
+    {
+        key: 20,
+        type: "divider"
+    },
+    {
+        key: 21,
         type: "item",
         title: "Switch Agency",
         icon: "swap_horiz",

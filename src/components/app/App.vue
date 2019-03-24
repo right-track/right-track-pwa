@@ -34,7 +34,7 @@
 
             <!-- MAIN APP DRAWER -->
             <md-app-drawer :md-active.sync="menuVisible" md-permanent="clipped">
-                <rt-drawer-menu @menuItemSelected="onMenuItemSelected"></rt-drawer-menu>
+                <rt-drawer-menu :favorites="favorites.favorites" @menuItemSelected="onMenuItemSelected"></rt-drawer-menu>
             </md-app-drawer>
 
 
@@ -90,9 +90,10 @@
     const menu = require("../../utils/menu.js");
     const user = require("../../utils/user.js");
     const database = require("../../utils/db.js");
+    const favorites = require("../../utils/favorites.js");
     const DrawerMenu = require("./Menu.vue").default;
     const BottomBar = require("./BottomBar.vue").default;
-    const bottomBarPages = ['favorites', 'trips', 'stations', 'agencyAlerts', 'agencyAbout'];
+    const bottomBarPages = ['favorites', 'trips', 'stations', 'agencyAlerts'];
 
 
     // Set Initial Page title
@@ -167,6 +168,18 @@
     }
 
 
+    function _updateFavorites(vm, agencyId) {
+        if ( agencyId && agencyId !== vm.favorites.agencyId ) {
+            console.log("UPDATING FAVORITES...");
+            favorites.getFavorites(agencyId, function(err, favorites) {
+                console.log(favorites);
+                vm.favorites.favorites = favorites;
+                vm.favorites.agencyId = agencyId;
+            });
+        }
+    }
+
+
     /**
      * Check the User Logged In state and update the Auth Button
      * @param  vm Vue Instance
@@ -223,6 +236,12 @@
 
                 // Menu visibility flag
                 menuVisible: false,
+
+                // Favorites for the Menu
+                favorites: {
+                    agencyId: undefined,
+                    favorites: []
+                },
 
                 // Bottom Bar visibility flag
                 bottomBarEnabled: bottomBarPages.includes(this.$router.currentRoute.name),
@@ -352,6 +371,7 @@
                     vm.agencyId = agencyId;
                     _applyTheme(colors);
                     _prepDatabase(vm, agencyId);
+                    _updateFavorites(vm, agencyId);
                 }
 
             },

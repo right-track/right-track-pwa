@@ -2,21 +2,11 @@
     <div>
         <md-list>
             <md-list-item class="favorites-list-item" v-for="fav in favorites" :key="fav.sequence" @click="selectFavorite(fav)">
-
-                <!-- Station -->
-                <div v-if="fav.type==1" class="favorites-list-item-container">
-                    <md-icon class="favorites-list-item-icon">access_time</md-icon>
-                    <p class="favorites-list-item-text">{{ fav.stop.name }}</p>
+                <div class="favorites-list-item-container">
+                    <md-icon class="favorites-list-item-icon">{{ fav.icon }}</md-icon>
+                    <p class="favorites-list-item-text">{{ fav.label }}</p>
                     <md-icon class="favorites-list-item-more">chevron_right</md-icon>
                 </div>
-
-                <!-- Trip -->
-                <div v-if="fav.type==2" class="favorites-list-item-container">
-                    <md-icon class="favorites-list-item-icon">train</md-icon>
-                    <p class="favorites-list-item-text">{{ fav.origin.name }} to {{ fav.destination.name }}</p>   
-                    <md-icon class="favorites-list-item-more">chevron_right</md-icon>
-                </div>
-
             </md-list-item>
         </md-list>
     </div>

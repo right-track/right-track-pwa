@@ -3,10 +3,10 @@
         <div v-for="item in menu" :key="item.key">
 
             <!-- Divider -->
-            <hr v-if="item.type=='divider'" class="menu-divider" />
+            <hr v-if="item.type==='divider'" class="menu-divider" />
 
             <!-- Menu Item -->
-            <md-list v-if="item.type=='item'">
+            <md-list v-if="item.type==='item'">
                 <md-list-item @click="drawerLink(item)">
                     <md-icon class="md-list-item-icon" :class="{'rt-primary-fg': item.isActive, 'md-list-item-inactive': !item.isActive}">{{ item.icon }}</md-icon>
                     <span class="md-list-item-text" :class="{'rt-primary-fg': item.isActive, 'md-list-item-inactive': !item.isActive}">{{ item.title }}</span>
@@ -14,13 +14,24 @@
             </md-list>
 
             <!-- Menu Badge -->
-            <md-list v-if="item.type=='badge'">
+            <md-list v-if="item.type==='badge'">
                 <span class="md-list-item-badge rt-primary">4</span>
                 <md-list-item @click="drawerLink(item)">
                     <md-icon class="md-list-item-icon" :class="{'rt-primary-fg': item.isActive, 'md-list-item-inactive': !item.isActive}">{{ item.icon }}</md-icon>
                     <span class="md-list-item-text" :class="{'rt-primary-fg': item.isActive, 'md-list-item-inactive': !item.isActive}">{{ item.title }}</span>
                 </md-list-item>
             </md-list>
+
+            <!-- Menu Favorites -->
+            <div v-if="item.type==='favorites'">
+                <hr v-if="favorites.length > 0" class="menu-divider" />
+                <md-list>
+                    <md-list-item v-for="favorite in favorites" @click="drawerFavoriteLink(favorite)">
+                        <md-icon class="md-list-item-icon md-list-item-inactive">{{ favorite.icon }}</md-icon>
+                        <span class="md-list-item-text md-list-favorites-text md-list-item-inactive">{{ favorite.label }}</span>
+                    </md-list-item>
+                </md-list>
+            </div>
 
         </div>
     </div>
@@ -31,6 +42,14 @@
     const menu = require("../../utils/menu.js");
 
     module.exports = {
+
+        // ==== COMPONENT PROPS ==== //
+        props: {
+            favorites: {
+                type: Array,
+                required: true
+            }
+        },
         
         // ==== COMPONENT DATA ==== //
         data: function() {
@@ -101,9 +120,24 @@
                     return routerProps;
                 }
 
+            },
+
+
+            /**
+             * Handle a drawer favorite menu item
+             * - Close the menu
+             * - Open the favorite's page
+             * @param  {Favorite} favorite Selected favorite
+             */
+            drawerFavoriteLink(favorite) {
+
+                // Send message to App
+                this.$emit('menuItemSelected');
+
             }
 
         },
+
 
         // ==== COMPONENT WATCHERS ==== //
         watch: {
@@ -140,6 +174,10 @@
 
     .md-list-item-text {
         font-weight: bold;
+    }
+    .md-list-favorites-text {
+        word-wrap: break-word;
+        white-space: normal;
     }
 
     .md-list-item-badge {

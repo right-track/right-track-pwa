@@ -26,7 +26,7 @@ function getFavorites(agencyId, callback) {
                 }
 
                 // Return the server favorites
-                return callback(null, response.favorites);
+                return _return(response.favorites);
 
             });
 
@@ -35,11 +35,32 @@ function getFavorites(agencyId, callback) {
         // IS NOT LOGGED IN - get local favorites
         else {
             _getLocalFavorites(agencyId, function(cache) {
-                return callback(null, cache.favorites)
+                return _return(cache.favorites)
             });
         }
 
     });
+
+
+    /**
+     * Add Icon and Label to each favorites, then return to callback
+     * @param  {Array} favorites List of favorites to return
+     */
+    function _return(favorites) {
+        if ( favorites ) {
+            for ( let i = 0; i < favorites.length; i++ ) {
+                if ( favorites[i].type === 1 ) {
+                    favorites[i].icon = "access_time";
+                    favorites[i].label = favorites[i].stop.name;
+                }
+                else if ( favorites[i].type === 2 ) {
+                    favorites[i].icon = "train";
+                    favorites[i].label = favorites[i].origin.name + " to " + favorites[i].destination.name;
+                }
+            }
+        }
+        return callback(null, favorites);
+    }
 
 }
 

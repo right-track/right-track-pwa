@@ -9,6 +9,7 @@ import Logout from '@/components/auth/Logout'
 import Agencies from '@/components/agencies/Agencies'
 import Favorites from '@/components/favorites/Favorites'
 import Trips from '@/components/trips/Trips'
+import Trip from '@/components/trip/Trip'
 import Stations from '@/components/stations/Stations'
 import PageNotFound from '@/components/PageNotFound'
 
@@ -58,6 +59,11 @@ var routes = [
         path: '/:agency/trips',
         name: 'trips',
         component: Trips
+    },
+    {
+        path: '/:agency/trips/:origin/:destination',
+        name: 'trip',
+        component: Trip
     },
     {
         path: '/:agency/stations',

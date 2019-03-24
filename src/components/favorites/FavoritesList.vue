@@ -4,14 +4,14 @@
             <md-list-item class="favorites-list-item" v-for="fav in favorites" :key="fav.sequence" @click="selectFavorite(fav)">
 
                 <!-- Station -->
-                <div class="favorites-list-item-container" v-if="fav.type==1">
+                <div v-if="fav.type==1" class="favorites-list-item-container">
                     <md-icon class="favorites-list-item-icon">access_time</md-icon>
                     <p class="favorites-list-item-text">{{ fav.stop.name }}</p>
                     <md-icon class="favorites-list-item-more">chevron_right</md-icon>
                 </div>
 
                 <!-- Trip -->
-                <div class="favorites-list-item-container" v-if="fav.type==2">
+                <div v-if="fav.type==2" class="favorites-list-item-container">
                     <md-icon class="favorites-list-item-icon">train</md-icon>
                     <p class="favorites-list-item-text">{{ fav.origin.name }} to {{ fav.destination.name }}</p>   
                     <md-icon class="favorites-list-item-more">chevron_right</md-icon>
@@ -42,8 +42,19 @@
              * @param  {Object} favorite Selected favorite
              */
             selectFavorite(favorite) {
-                console.log("SELECTED FAVORITE");
-                console.log(favorite);
+                let vm = this;
+
+                // Trip
+                if ( favorite.type === 2 ) {
+                    vm.$router.push({
+                        name: "trip",
+                        params: {
+                            agency: vm.$route.params.agency,
+                            origin: favorite.origin.id,
+                            destination: favorite.destination.id
+                        }
+                    });
+                }
             }
 
         }

@@ -7,7 +7,7 @@ const cache = require("./cache.js");
  * @param  {string} agencyCode Agency ID Code
  * @param  {Function} callback Callback function(err, database)
  */
-getAgencyDB = function(agencyCode, callback) {
+getDB = function(agencyCode, callback) {
 
     // Check cache for database
     let cacheDB = _getCache(agencyCode);
@@ -53,6 +53,17 @@ getAgencyDB = function(agencyCode, callback) {
 
 
 /**
+ * Check if the Right Track Database for the specified agency 
+ * is open and loaded in the brower cache
+ * @param  {string}  agency Agency ID Code
+ * @return {Boolean}        True if agency db is ready to be used
+ */
+function isReady(agency) {
+    return _getCache(agency) !== undefined;
+}
+
+
+/**
  * Get the cached database
  * @param  {string} agency Agency ID Code
  */
@@ -79,5 +90,6 @@ function _putCache(agency, database) {
 
 
 module.exports = {
-    getAgencyDB: getAgencyDB
+    getDB: getDB,
+    isReady: isReady
 }

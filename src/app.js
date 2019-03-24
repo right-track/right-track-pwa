@@ -3,7 +3,7 @@ import App from './components/app/App.vue'
 import router from './router'
 import { MdApp, MdToolbar, MdDrawer, MdContent, MdIcon, MdList, 
     MdButton, MdCard, MdMenu, MdEmptyState, MdBottomBar, MdField, 
-    MdSnackbar, MdDialog, MdSpeedDial, MdTooltip } 
+    MdSnackbar, MdDialog, MdSpeedDial, MdTooltip, MdProgress } 
     from 'vue-material/dist/components'
 import 'vue-material/dist/vue-material.min.css'
 
@@ -25,6 +25,7 @@ Vue.use(MdSnackbar);
 Vue.use(MdDialog);
 Vue.use(MdSpeedDial);
 Vue.use(MdTooltip);
+Vue.use(MdProgress);
 
 // Start the Vue App
 Vue.config.productionTip = false

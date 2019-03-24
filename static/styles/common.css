@@ -72,6 +72,10 @@ p.light, p.light a {
     color: #1565c0 !important;
 }
 
+.md-dialog .md-progress-spinner {
+    stroke: #1565c0 !important;
+}
+
 .md-snackbar {
     background-color: #323232;
     color: #fff;

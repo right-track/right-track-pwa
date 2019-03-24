@@ -62,6 +62,14 @@
                     </md-dialog-actions>
                 </md-dialog>
 
+                <!-- APP PROGRESS DIALOG -->
+                <md-dialog :md-active.sync="progress.active" :md-close-on-esc="false" :md-click-outside-to-close="false" :md-fullscreen="false">
+                    <md-dialog-title>{{ progress.title }}</md-dialog-title>
+                    <md-dialog-content style="text-align: center">
+                        <md-progress-spinner :v-if="progress.type==='spinner'" md-mode="indeterminate"></md-progress-spinner>
+                    </md-dialog-content>
+                </md-dialog>
+
                 <!-- APP SNACKBAR -->
                 <md-snackbar md-position="center" :md-duration="snackbar.duration ? snackbar.duration : 4000" :md-active.sync="snackbar.visible" md-persistent>
                     <span style="100%">{{ snackbar.message }}</span>
@@ -81,6 +89,7 @@
     const cache = require("../../utils/cache.js");
     const menu = require("../../utils/menu.js");
     const user = require("../../utils/user.js");
+    const database = require("../../utils/db.js");
     const DrawerMenu = require("./Menu.vue").default;
     const BottomBar = require("./BottomBar.vue").default;
     const bottomBarPages = ['favorites', 'trips', 'stations', 'agencyAlerts', 'agencyAbout'];
@@ -134,6 +143,26 @@
                     }
                 }
             }
+        }
+    }
+
+
+    /**
+     * Check for Agency DB in cache.  If not present, show loading 
+     * dialog and get database ready.
+     * @param  {Vue}    vm       Vue Instance
+     * @param  {string} agencyId Agency ID Code
+     */
+    function _prepDatabase(vm, agencyId) {
+        if ( agencyId && !database.isReady(agencyId) ) {
+            vm.progress = {
+                active: true,
+                title: "Preparing Database...",
+                type: "spinner"
+            }
+            database.getDB(agencyId, function() {
+                vm.progress.active = false;
+            });
         }
     }
 
@@ -212,6 +241,13 @@
                     onCancel: undefined
                 },
 
+                // Progress Dialog Info
+                progress: {
+                    active: false,
+                    title: undefined,
+                    type: undefined
+                },
+
                 // Snackbar Info
                 snackbar: {
                     visible: false,
@@ -245,7 +281,6 @@
                         "Log Out",
                         "Cancel",
                         function() {
-                            console.log("Continue Log Out");
                             _startAuth(vm);
                         }
                     );
@@ -316,6 +351,7 @@
                     vm.toolbarTitle = title;
                     vm.agencyId = agencyId;
                     _applyTheme(colors);
+                    _prepDatabase(vm, agencyId);
                 }
 
             },

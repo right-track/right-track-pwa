@@ -32,7 +32,7 @@
      * @param  {Function} callback Callback function(stops)
      */
     _getStops = function(agency, callback) {
-        db.getAgencyDB(agency, function(err, database) {
+        db.getDB(agency, function(err, database) {
             if ( err ) {
                 console.log(err);
             }

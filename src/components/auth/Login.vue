@@ -1,6 +1,7 @@
 <template>
     <div class="content-container">
         
+        <!-- LOGIN CARD -->
         <md-card>
             <md-card-header class="md-card-header-bg rt-secondary">
                 <div class="md-title">
@@ -48,7 +49,7 @@
 
 
 <script>
-    const user = require("../../utils/user.js");
+    const user = require("@/utils/user.js");
 
     module.exports = {
 
@@ -86,6 +87,7 @@
                 let vm = this;
                 vm.loggingIn = true;
 
+                // Attempt to Login
                 user.login(this.user, this.pass, function(err, userInfo) {
                     vm.loggingIn = false;
 
@@ -99,23 +101,19 @@
                         vm.$emit('showSnackbar', "Welcome, " + userInfo.username + "!");
                         vm.$router.push({path: vm.src});
                     }
-                })
+                });
             }
 
         },
 
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
-            let agencyId = this.$route.query.agency;
-            let src = this.$route.query.src;
-
-            // Set agency and redirect
-            this.agencyId = agencyId;
-            this.src = src;
+            this.agencyId = this.$route.query.agency;
+            this.src = this.$route.query.src;
 
             // Set More Menu Items and Agency Information
             this.$emit('setMoreMenuItems', []);
-            this.$emit('setAgencyId', agencyId);    
+            this.$emit('setAgencyId', this.agencyId);    
         }
 
     }

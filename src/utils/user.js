@@ -1,14 +1,13 @@
-const api = require("./api.js");
-const config = require("./config.js");
-
-const USER_CACHE = "rtuser-cache-" + config.api.host;
+const api = require("@/utils/api.js");
+const config = require("@/utils/config.js");
+const store = require("@/utils/store.js");
 
 
 /**
  * User Login
  * @param  {string}   user     Username or email address
  * @param  {string}   pass     Password
- * @param  {Function} callback Callback function(err)
+ * @param  {Function} callback Callback function(err, user)
  */
 function login(user, pass, callback) {
 
@@ -27,12 +26,12 @@ function login(user, pass, callback) {
         }
         
         // Save login response
-        _putCache("user", response.user, function() {
-            _putCache("session", response.session, function() {
-                return callback(null, response.user);
-            });
-        });
+        store.put("user", response.user);
+        store.put("session", response.session);
 
+        // Return with user information
+        return callback(null, response.user);
+        
     });
 
 }
@@ -56,7 +55,7 @@ function logout(finished) {
     function _server(callback) {
 
         // Get Cached User Info
-        _getCache("user", function(user) {
+        store.get("user", function(err, user) {
 
             // API Logout Request
             if ( user ) {
@@ -76,10 +75,10 @@ function logout(finished) {
     function _local(callback) {
 
         // Remove cache entries
-        _removeCache("user", function() {
-            _removeCache("session", function() {
+        store.del("user", function() {
+            store.del("session", function() {
                 return callback();
-            });
+            });    
         });
 
     }
@@ -95,10 +94,11 @@ function logout(finished) {
 function isLoggedIn(callback) {
 
     // Get User and Session Info
-    _getCache("user", function(user) {
-        _getCache("session", function(session) {
+    store.get("user", function(err, user) {
+        store.get("session", function(err, session) {
+
             // User or session info not found
-            if ( user === null || session === null ) {
+            if ( user === undefined || session === undefined ) {
                 return callback(false);
             }
 
@@ -118,86 +118,6 @@ function isLoggedIn(callback) {
     });
 
 }
-
-
-
-/**
- * Get cached data for the specified cache key
- * @param  {string} key Cache key
- * @param  {Function} callback Callback function(cache)
- */
-function _getCache(key, callback) {
-    key = config.api.host + "/auth/login/" + key;
-
-    // Get the RT User Cache
-    caches.open(USER_CACHE).then(function(cache) {
-
-        // Check for matching request
-        cache.match(key).then(function(response) {
-
-            // Cache match found...
-            if ( response ) {
-                response.text().then(function(cacheText) {
-                    let cached = JSON.parse(cacheText);
-                    return callback(cached);
-                });
-            }
-
-            // No cache match found...
-            else {
-                return callback(null);
-            }
-            
-        });
-
-    });
-}
-
-
-/**
- * Save the specified data to the cache
- * @param  {string} key Cache key
- * @param  {Object} value Value (to be parsed to JSON)
- * @param  {Function} callback Callback function()
- */
-function _putCache(key, value, callback) {
-    key = config.api.host + "/auth/login/" + key;
-
-    // Get the RT User Cache
-    caches.open(USER_CACHE).then(function(cache) {
-
-        // Create Blob for Response
-        let blob = new Blob([JSON.stringify(value)], {type: 'application/json'});
-
-        // Build a Response to put in the cache
-        let cacheResponse = new Response(blob, {status: 200});
-
-        // Add Response to cache
-        cache.put(key, cacheResponse);
-
-        // Return
-        return callback();
-
-    });
-}
-
-
-/**
- * Remove the specified data from the cache
- * @param  {string}   key      Cache key
- * @param  {Function} callback Callback function()
- */
-function _removeCache(key, callback) {
-    key = config.api.host + "/auth/login/" + key;
-
-    // Get the RT User Cache
-    caches.open(USER_CACHE).then(function(cache) {
-        cache.delete(key).then(function() {
-            return callback();
-        });
-    });
-}
-
 
 
 

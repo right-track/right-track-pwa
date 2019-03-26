@@ -55,8 +55,12 @@
             </md-speed-dial-target>
             <md-speed-dial-content class="favorites-fab-content">
                 <md-button class="md-icon-button rt-primary-fg">
-                    <md-icon>remove_circle</md-icon>
+                    <md-icon>delete</md-icon>
                     <md-tooltip md-direction="left" md-delay="1000">Remove Favorites</md-tooltip>
+                </md-button>
+                <md-button class="md-icon-button rt-primary-fg">
+                    <md-icon>shuffle</md-icon>
+                    <md-tooltip md-direction="left" md-delay="1000">Reorder Favorites</md-tooltip>
                 </md-button>
                 <md-button class="md-icon-button rt-primary-fg">
                     <md-icon>access_time</md-icon>
@@ -74,13 +78,10 @@
 
 
 <script>
-    const user = require("../../utils/user.js");
-    const favorites = require("../../utils/favorites.js");
-    const cache = require("../../utils/cache.js");
-    const FavoritesList = require("./FavoritesList.vue").default;
-
-    // More Menu Items
-    const moreMenuItems = [];
+    const user = require("@/utils/user.js");
+    const favorites = require("@/utils/favorites.js");
+    const cache = require("@/utils/cache.js");
+    const FavoritesList = require("@/components/favorites/FavoritesList.vue").default;
 
 
     /**
@@ -95,10 +96,12 @@
                 vm.showFavorites = false;
             }
             else {
+                if ( favs === undefined ) {
+                    favs = [];
+                }
                 vm.favorites = favs;
-                let hasFavorites = favs.length > 0;
-                vm.showEmptyState = !hasFavorites;
-                vm.showFavorites = hasFavorites;
+                vm.showEmptyState = favs.length === 0;
+                vm.showFavorites = !vm.showEmptyState;
             }
         });
     }
@@ -160,9 +163,8 @@
             // Set Agency ID
             vm.agencyId = vm.$route.params.agency;
 
-            // Set More Menu Items and Agency Information
-            vm.$emit('setMoreMenuItems', moreMenuItems);
-            vm.$emit('setAgencyId', vm.agencyId);
+            // Set More Menu Items
+            vm.$emit('setMoreMenuItems', []);
 
             // Set Logged In Status
             user.isLoggedIn(function(isLoggedIn) {

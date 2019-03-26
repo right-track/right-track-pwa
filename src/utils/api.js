@@ -1,4 +1,4 @@
-const config = require('./config.js').api;
+const config = require('@/utils/config.js').api;
 
 
 /**
@@ -28,7 +28,6 @@ function post(path, body, callback) {
  * @param  {Function} callback Callback function(err, response)
  */
 function del(path, callback) {
-    console.log("[DELETE] " + path);
     _request("DELETE", path, null, false, callback);
 }
 
@@ -42,7 +41,7 @@ function del(path, callback) {
  * @param  {Function} callback Callback function(err, response)
  */
 function _request(method, path, body, binary, callback) {
-    const user = require('./user.js');
+    const user = require('@/utils/user.js');                                // TODO: Fix Circular Dependency
     console.log("--> API REQUEST [" + method + "] " + path);
 
     // Parse arguments
@@ -121,11 +120,13 @@ function _request(method, path, body, binary, callback) {
             xhr.setRequestHeader("X-Session-Token", sessionInfo.id);
         }
 
-        // Send the Request
+        // Send POST Request (w/ Content-Type and Body)
         if ( method === "POST" ) {
             xhr.setRequestHeader("Content-Type", "application/json");
             xhr.send(JSON.stringify(body));
         }
+
+        // Send all other Requests
         else {
             xhr.send();
         }

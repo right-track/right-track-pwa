@@ -3,6 +3,7 @@ import Router from 'vue-router'
 
 // Page content
 import About from '@/components/About'
+import Alerts from '@/components/alerts/Alerts'
 import Register from '@/components/auth/Register'
 import Login from '@/components/auth/Login'
 import Logout from '@/components/auth/Logout'
@@ -11,6 +12,7 @@ import Favorites from '@/components/favorites/Favorites'
 import Trips from '@/components/trips/Trips'
 import Trip from '@/components/trip/Trip'
 import Stations from '@/components/stations/Stations'
+import Station from '@/components/station/Station'
 import PageNotFound from '@/components/PageNotFound'
 
 
@@ -29,6 +31,16 @@ var routes = [
         path: '/about',
         name: 'about',
         component: About
+    },
+    {
+        path: '/alerts',
+        name: 'alerts',
+        component: Alerts
+    },
+    {
+        path: ':agency/alerts',
+        name: 'agencyAlerts',
+        component: Alerts
     },
     {
         path: '/auth/register',
@@ -66,9 +78,19 @@ var routes = [
         component: Trip
     },
     {
+        path: '/:agency/trips/:origin/:destination/:date/:time',
+        name: 'tripDT',
+        component: Trip
+    },
+    {
         path: '/:agency/stations',
         name: 'stations',
         component: Stations
+    },
+    {
+        path: '/:agency/stations/:stop',
+        name: 'station',
+        component: Station
     },
     {
         path: '**',

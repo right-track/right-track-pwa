@@ -34,8 +34,19 @@
             selectFavorite(favorite) {
                 let vm = this;
 
+                // Station
+                if ( favorite.type === 1 ) {
+                    vm.$router.push({
+                        name: "station",
+                        params: {
+                            agency: vm.$route.params.agency,
+                            stop: favorite.stop.id
+                        }
+                    });
+                }
+
                 // Trip
-                if ( favorite.type === 2 ) {
+                else if ( favorite.type === 2 ) {
                     vm.$router.push({
                         name: "trip",
                         params: {

@@ -14,6 +14,8 @@
                 <!-- APP TITLE -->
                 <span id="app-title" class="md-title rt-primary-text" style="flex: 1">{{ toolbarTitle }}</span>
                 
+                <!-- TODO: Add More Menu Icons here for (hide small, xsmall) -->
+
                 <!-- AUTH BUTTON -->
                 <md-button v-if="authButton.visible" class="md-xsmall-hide rt-primary-text" @click="auth"><md-icon>{{ authButton.icon }}</md-icon> {{ authButton.text }}</md-button>
                 <md-button v-if="authButton.visible" class="md-xsmall-show md-icon-button rt-primary-text" @click="auth"><md-icon>{{ authButton.icon }}</md-icon></md-button>
@@ -41,10 +43,10 @@
             <!-- MAIN APP CONTENT -->
             <md-app-content>
 
-                <!-- Router View Content -->
+                <!-- ROUTER VIEW CONTENT -->
                 <router-view 
                     @setMoreMenuItems="onSetMoreMenuItems" 
-                    @setAgencyId="onSetAgencyId" 
+                    @setTitle="onSetTitle" 
                     @showDialog="onShowDialog" 
                     @showSnackbar="onShowSnackbar">
                 </router-view>
@@ -85,19 +87,16 @@
 
 
 <script>
-    const config = require("../../utils/config.js");
-    const cache = require("../../utils/cache.js");
-    const menu = require("../../utils/menu.js");
-    const user = require("../../utils/user.js");
-    const database = require("../../utils/db.js");
-    const favorites = require("../../utils/favorites.js");
-    const DrawerMenu = require("./Menu.vue").default;
-    const BottomBar = require("./BottomBar.vue").default;
+    const Vue = require("vue").default;
+    const config = require("@/utils/config.js");
+    const cache = require("@/utils/cache.js");
+    const user = require("@/utils/user.js");
+    const database = require("@/utils/db.js");
+    const favorites = require("@/utils/favorites.js");
+    const DrawerMenu = require("@/components/app/Menu.vue").default;
+    const BottomBar = require("@/components/app/BottomBar.vue").default;
     const bottomBarPages = ['favorites', 'trips', 'stations', 'agencyAlerts'];
 
-
-    // Set Initial Page title
-    document.title = config.title;
 
 
     /**
@@ -116,15 +115,130 @@
                 }
             }
             return callback(new Error("Unknown Agency!"));
-        })
+        });
+    }
+
+
+    /**
+     * Page Update Procedure
+     * - Check Logged In State
+     * - Update Agency Information, if changed
+     * - Prep Agency Database, if necessary
+     * - Enable / Disable Bottom Bar
+     * - Apply Theme
+     * - Update Favorites, if necessary
+     * - Reapply Theme, if favorites updated
+     * - Reset Title
+     * @param  {Vue}      vm          Vue Instance
+     * @param  {Function} [callback]  Callback function()
+     */
+    function _pageUpdate(vm, callback) {
+
+        // Reset Toolbar Title
+        vm.toolbarTitle = undefined;
+
+        // Check Logged In State
+        _checkLoggedIn(vm);
+
+        // Update the Agency
+        _updateAgency(vm, function() {
+
+            // Set Title
+            _setTitle(vm);
+
+            // Prep the Database
+            _prepDatabase(vm);
+
+            // Enable / Disbale Bottom Bar
+            vm.bottomBarEnabled = bottomBarPages.includes(vm.$route.name);
+            
+            // Apply theme colors
+            _applyTheme(vm);
+
+            // Update the Favorites
+            _updateFavorites(vm);
+
+        });
+
+    }
+
+
+    /**
+     * Set the Document and Toolbar Titles
+     * @param {Vue}    vm    Vue Instance
+     * @param {string} title Page Title
+     */
+    function _setTitle(vm, title) {
+        if ( title === undefined ) {
+            title = vm.agencyName ? vm.agencyName : config.title;
+        }
+
+        if ( title !== config.title && title !== vm.agencyName && vm.agencyName !== undefined ) {
+            document.title = title + " | " + vm.agencyName + " | " + config.title;
+        }
+        else if ( title !== config.title ) {
+            document.title = title + " | " + config.title;
+        }
+        else {
+            document.title = title;
+        }
+
+        vm.toolbarTitle = title;
+    }
+
+
+    /**
+     * Update the Agency Information
+     * - Agency ID
+     * - Agency Name
+     * - Theme Colors
+     * @param  {Vue}      vm         Vue Instance
+     * @param  {Function} [callback] Callback function()
+     */
+    function _updateAgency(vm, callback) {
+        let agencyId = vm.$route.query.agency ? vm.$route.query.agency : vm.$route.params.agency;
+
+        // Agency has changed...
+        if ( agencyId !== vm.agencyId ) {
+            vm.agencyId = agencyId;
+
+            // Set Agency Properties
+            if ( agencyId !== undefined ) {
+                _getAgencyInformation(agencyId, function(err, agency) {
+                    if ( err ) {
+                        vm.$router.replace({name: "agencies"});
+                    }
+                    else {
+                        vm.agencyName = agency.name;
+                        vm.colors = agency.config.colors;
+                        if ( callback ) return callback();
+                    }
+                });
+            }
+
+            // Clear Agency Properties
+            else {
+                vm.agencyName = undefined;
+                vm.colors = config.colors;
+                if ( callback ) return callback();
+            }
+
+        }
+
+        // Agency has not changed...
+        else {
+            if ( callback ) return callback();
+        }
+        
     }
 
 
     /**
      * Apply Theme Colors
-     * @param {Object} colors Default / Agency Color Scheme
+     * @param {Vue} vm    Vue Instance
      */
-    function _applyTheme(colors) {
+    function _applyTheme(vm) {
+        let colors = vm.colors;
         let theme = config.theme;
         for ( let i = 0; i < theme.length; i++ ) {
             let t = theme[i];
@@ -154,27 +268,35 @@
      * @param  {Vue}    vm       Vue Instance
      * @param  {string} agencyId Agency ID Code
      */
-    function _prepDatabase(vm, agencyId) {
-        if ( agencyId && !database.isReady(agencyId) ) {
+    function _prepDatabase(vm) {
+        if ( vm.agencyId && !database.isReady(vm.agencyId) ) {
             vm.progress = {
                 active: true,
                 title: "Preparing Database...",
                 type: "spinner"
             }
-            database.getDB(agencyId, function() {
+            database.getDB(vm.agencyId, function() {
                 vm.progress.active = false;
             });
         }
     }
 
 
-    function _updateFavorites(vm, agencyId) {
-        if ( agencyId && agencyId !== vm.favorites.agencyId ) {
-            console.log("UPDATING FAVORITES...");
-            favorites.getFavorites(agencyId, function(err, favorites) {
-                console.log(favorites);
+    /**
+     * Update the User's favorites, if agency has changed, for the side menu
+     * @param  {Vue}      vm         Vue Instance
+     * @param  {boolean}  [force]    Force update of favorites
+     */
+    function _updateFavorites(vm, force) {
+        if ( force || (vm.agencyId && vm.agencyId !== vm.favorites.agencyId) ) {
+            favorites.getFavorites(vm.agencyId, function(err, favorites) {
                 vm.favorites.favorites = favorites;
-                vm.favorites.agencyId = agencyId;
+                vm.favorites.agencyId = vm.agencyId;
+                
+                // Reapply the Theme
+                Vue.nextTick(function() {
+                    _applyTheme(vm);
+                });
             });
         }
     }
@@ -182,9 +304,10 @@
 
     /**
      * Check the User Logged In state and update the Auth Button
-     * @param  vm Vue Instance
+     * @param  {Vue}      vm         Vue Instance
+     * @param  {Function} [callback] Callback function()
      */
-    function _checkLoggedIn(vm) {
+    function _checkLoggedIn(vm, callback) {
         user.isLoggedIn(function(isLoggedIn, user) {
             vm.authButton = {
                 visible: !vm.$route.path.startsWith("/auth"),
@@ -220,8 +343,14 @@
                 // Configuration settings
                 config: config,
 
+                // Theme Colors
+                colors: config.colors,
+
                 // Current Agency ID
                 agencyId: undefined,
+
+                // Current Agency Name
+                agencyName: undefined,
 
                 // Toolbar Title
                 toolbarTitle: config.title,
@@ -333,48 +462,18 @@
                 }
             },
 
+
             /**
-             * Set the Agency ID for the current page
-             * - Set Agency Properties
-             * - Apply the Agency Theme colors
-             * @param {string} agencyId Agency ID
+             * Set the Document and Toolbar Title
+             * @param  {string} title Toolbar Title
              */
-            onSetAgencyId(agencyId) {
+            onSetTitle(title) {
                 let vm = this;
-
-                // Set Default properties
-                let title = vm.config.title;
-                let colors = config.colors;
-
-                // Set Agency Properties
-                if ( agencyId !== undefined ) {
-                    _getAgencyInformation(agencyId, function(err, agency) {
-                        if ( err ) {
-                            vm.$router.replace({name: "agencies"});
-                        }
-                        else {
-                            title = agency.name;
-                            colors = agency.config.colors;
-                            _set();
-                        }
-                    });
-                }
-                else {
-                    _set();
-                }
-
-
-                // Set Properties
-                function _set() {
-                    document.title = title;
-                    vm.toolbarTitle = title;
-                    vm.agencyId = agencyId;
-                    _applyTheme(colors);
-                    _prepDatabase(vm, agencyId);
-                    _updateFavorites(vm, agencyId);
-                }
-
+                Vue.nextTick(function() {
+                    _setTitle(vm, title);
+                });
             },
+            
 
             /**
              * Show a confirmation dialog
@@ -420,13 +519,7 @@
 
         // ==== COMPONTENT MOUNTED ==== //
         mounted: function() {
-            
-            // Apply theme colors
-            _applyTheme(config.colors);
-
-            // Check Logged In State
-            _checkLoggedIn(this);
-
+            _pageUpdate(this);
         },
 
         // ==== COMPONENT WATCHERS ==== //
@@ -434,14 +527,22 @@
 
             /**
              * Watch for route changes
-             * - Update bottom bar enabled flag
-             * - Check logged in state
+             * - run page update
              * @param  {Route} to To Route
              * @param  {Route} from From Route
              */
-            $route (to, from) {
-                this.bottomBarEnabled = bottomBarPages.includes(to.name);
-                _checkLoggedIn(this);
+            $route: function(to, from) {
+                let vm = this;
+
+                // Update the Page
+                Vue.nextTick(function() {
+                    _pageUpdate(vm);
+                });
+
+                // Update favorites after login/logout
+                if ( from.name === "login" || from.name === "logout" ) {
+                    _updateFavorites(vm, true);
+                }
             }
 
         }

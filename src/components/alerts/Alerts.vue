@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1>Trips</h1>
+        <h1>Transit Alerts</h1>
     </div>
 </template>
 
@@ -18,17 +18,18 @@
         }
     ]
 
-
     module.exports = {
 
         mounted() {
             let agency = this.$route.params.agency;
+            let vm = this;
 
-            // Set More Menu Items
+            // Set More Menu Items and Agency Information
             this.$emit('setMoreMenuItems', moreMenuItems);
+            this.$emit('setAgencyId', agency);
             
         }
 
     }
-    
+
 </script>

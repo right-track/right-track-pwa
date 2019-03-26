@@ -1,5 +1,5 @@
 const RightTrackDB = require("right-track-db-sqljs")("/js/worker.sql.js");
-const cache = require("./cache.js");
+const cache = require("@/utils/cache.js");
 
 
 /**

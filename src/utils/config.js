@@ -1,9 +1,9 @@
 
 // Import server and local config files
-const server = require("../../config.json");
+const server = require("@/../config.json");
 let local = {}
 try {
-    local = require("../../config.local.json");
+    local = require("@/../config.local.json");
 }
 catch (e){}
 

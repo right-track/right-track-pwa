@@ -1,6 +1,7 @@
 <template>
     <div class="content-container">
         
+        <!-- REGISTRATION CARD -->
         <md-card>
             <md-card-header class="md-card-header-bg rt-secondary">
                 <div class="md-title">
@@ -63,6 +64,7 @@
         // ==== COMPONENT DATA ==== //
         data: function() {
             return {
+                agencyId: undefined,
                 src: undefined,
                 email: undefined,
                 username: undefined,
@@ -87,21 +89,23 @@
                         src: this.src
                     }
                 });
+            },
+
+
+            register() {
+                console.log("TODO: Account Registration");
             }
 
         },
 
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
-            let agencyId = this.$route.query.agency;
-            let src = this.$route.query.src;
-
-            // Set redirect source
-            this.src = src;
+            this.agencyId = this.$route.query.agency;
+            this.src = this.$route.query.src;
 
             // Set More Menu Items and Agency Information
             this.$emit('setMoreMenuItems', []);
-            this.$emit('setAgencyId', agencyId);    
+            this.$emit('setAgencyId', this.agencyId);    
         }
 
     }

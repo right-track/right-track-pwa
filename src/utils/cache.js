@@ -1,6 +1,6 @@
 const RightTrackAgency = require("right-track-agency");
-const config = require("./config.js");
-const api = require("./api.js");
+const config = require("@/utils/config.js");
+const api = require("@/utils/api.js");
 
 const API_CACHE = "rtapi-cache-" + config.api.host;
 
@@ -89,7 +89,7 @@ getAgencyDB = function(agency, callback) {
             return callback(err);
         }
         return callback(null, response);
-    })
+    });
 }
 
 
@@ -109,13 +109,44 @@ getAgencyIcon = function(agency, callback) {
 }
 
 
+/**
+ * Get User Favorites
+ * - Cache Length: 60 seconds
+ * @param  {string}   agencyId Agency IC code
+ * @param  {string}   userId   Public User ID
+ * @param  {Function} callback Callback function(err, favorites)
+ */
 getFavorites = function(agencyId, userId, callback) {
     let ts = new Date().getTime();
     _getCacheElseFresh("/favorites/" + agencyId + "/" + userId + "?t=" + ts, 60, callback);
 }
 
+/**
+ * Get User Favorites (force refresh)
+ * - Cache Length: no cache
+ * @param  {string}   agencyId Agency IC code
+ * @param  {string}   userId   Public User ID
+ * @param  {Function} callback Callback function(err, favorites)
+ */
 getFreshFavorites = function(agencyId, userId, callback) {
-    _getCacheElseFresh("/favorites/" + agencyId + "/" + userId, 0, callback);
+    let ts = new Date().getTime();
+    _getCacheElseFresh("/favorites/" + agencyId + "/" + userId + "?t=" + ts, 0, callback);
+}
+
+
+/**
+ * Get the Station Feed for the specified stop
+ * @param  {string}   agencyId Agency ID code
+ * @param  {string}   stopId   Stop ID
+ * @param  {Function} callback Callback function(err, feed)
+ */
+getStationFeed = function(agencyId, stopId, callback) {
+    _getCacheElseFresh("/stops/" + agencyId + "/" + stopId + "/feed", 45, function(err, response) {
+        if ( err ) {
+            return callback(err);
+        }
+        return callback(null, response.feed);
+    });
 }
 
 
@@ -271,5 +302,6 @@ module.exports = {
     getAgency: getAgency,
     getAgencyDB: getAgencyDB,
     getAgencyIcon: getAgencyIcon,
-    getFavorites: getFavorites
+    getFavorites: getFavorites,
+    getStationFeed: getStationFeed
 }

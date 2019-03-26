@@ -5,33 +5,14 @@
             <!-- Divider -->
             <hr v-if="item.type==='divider'" class="menu-divider" />
 
-            <!-- Menu Item -->
-            <md-list v-if="item.type==='item'">
+            <!-- Menu Item / Badge -->
+            <md-list v-if="item.type==='item' || item.type==='badge' || item.type==='favorite'">
+                <span v-if="item.type==='badge'" class="md-list-item-badge rt-primary">4</span>
                 <md-list-item @click="drawerLink(item)">
                     <md-icon class="md-list-item-icon" :class="{'rt-primary-fg': item.isActive, 'md-list-item-inactive': !item.isActive}">{{ item.icon }}</md-icon>
                     <span class="md-list-item-text" :class="{'rt-primary-fg': item.isActive, 'md-list-item-inactive': !item.isActive}">{{ item.title }}</span>
                 </md-list-item>
             </md-list>
-
-            <!-- Menu Badge -->
-            <md-list v-if="item.type==='badge'">
-                <span class="md-list-item-badge rt-primary">4</span>
-                <md-list-item @click="drawerLink(item)">
-                    <md-icon class="md-list-item-icon" :class="{'rt-primary-fg': item.isActive, 'md-list-item-inactive': !item.isActive}">{{ item.icon }}</md-icon>
-                    <span class="md-list-item-text" :class="{'rt-primary-fg': item.isActive, 'md-list-item-inactive': !item.isActive}">{{ item.title }}</span>
-                </md-list-item>
-            </md-list>
-
-            <!-- Menu Favorites -->
-            <div v-if="item.type==='favorites'">
-                <hr v-if="favorites.length > 0" class="menu-divider" />
-                <md-list>
-                    <md-list-item v-for="favorite in favorites" @click="drawerFavoriteLink(favorite)">
-                        <md-icon class="md-list-item-icon md-list-item-inactive">{{ favorite.icon }}</md-icon>
-                        <span class="md-list-item-text md-list-favorites-text md-list-item-inactive">{{ favorite.label }}</span>
-                    </md-list-item>
-                </md-list>
-            </div>
 
         </div>
     </div>
@@ -39,7 +20,16 @@
 
 
 <script>
-    const menu = require("../../utils/menu.js");
+    const menu = require("@/utils/menu.js");
+
+    /**
+     * Get Menu Items
+     * @param  {Vue} vm    Vue Instance
+     * @return {Array}     List of menu items
+     */
+    function _getMenuItems(vm) {
+        return menu(vm, vm.favorites);
+    }
 
     module.exports = {
 
@@ -54,10 +44,7 @@
         // ==== COMPONENT DATA ==== //
         data: function() {
             return {
-
-                // Menu Items
-                menu: menu(this.$route)
-
+                menu: _getMenuItems(this)
             }
         },
 
@@ -83,56 +70,45 @@
                     window.location = route;
                 }
 
+                // Go to favorites page
+                else if ( item.type === "favorite" ) {
+                    let favorite = item.favorite;
+
+                    // Station
+                    if ( favorite.type === 1 ) {
+                        this.$router.push({
+                            name: "station",
+                            params: {
+                                agency: this.$route.params.agency,
+                                stop: favorite.stop.id
+                            }
+                        });
+                    }
+
+                    // Trip
+                    else if ( favorite.type === 2 ) {
+                        this.$router.push({
+                            name: "trip",
+                            params: {
+                                agency: this.$route.params.agency,
+                                origin: favorite.origin.id,
+                                destination: favorite.destination.id
+                            }
+                        });
+                    }
+                }
+
                 // Set Router Link
                 else {
-                    
-                    // Compute query and params
-                    let routerQuery = _computeProps(query, this);
-                    let routerParams = _computeProps(params, this);
 
                     // Set Router with properties
                     this.$router.push({
                         name: route,
-                        params: routerParams,
-                        query: routerQuery
+                        params: params,
+                        query: query
                     });
 
                 }
-
-
-                /**
-                 * Compute the router query / params properties
-                 * @param  {[type]} props Router Properties
-                 * @param  {[type]} vm    Vue instance
-                 */
-                function _computeProps(props, vm) {
-                    let routerProps = {}
-                    if ( props !== undefined ) {
-                        for ( let key in props ) {
-                            if ( props.hasOwnProperty(key) && typeof props[key] == "function") {
-                                routerProps[key] = props[key](vm);
-                            }
-                            else if ( query.hasOwnProperty(key) ) {
-                                routerProps[key] = props[key]
-                            }
-                        }
-                    }
-                    return routerProps;
-                }
-
-            },
-
-
-            /**
-             * Handle a drawer favorite menu item
-             * - Close the menu
-             * - Open the favorite's page
-             * @param  {Favorite} favorite Selected favorite
-             */
-            drawerFavoriteLink(favorite) {
-
-                // Send message to App
-                this.$emit('menuItemSelected');
 
             }
 
@@ -148,12 +124,19 @@
              * @param  {Route} to To Route
              * @param  {Route} from From Route
              */
-            $route (to, from) {
-                this.menu = menu(to);
+            $route: function(to, from) {
+                this.menu = _getMenuItems(this)
+            },
+
+            /**
+             * Watch for an update to the favorites
+             */
+            favorites: function(favorites) {
+                this.favorites = favorites;
+                this.menu = _getMenuItems(this);
             }
 
         }
-
 
     }
 </script>
@@ -174,8 +157,6 @@
 
     .md-list-item-text {
         font-weight: bold;
-    }
-    .md-list-favorites-text {
         word-wrap: break-word;
         white-space: normal;
     }

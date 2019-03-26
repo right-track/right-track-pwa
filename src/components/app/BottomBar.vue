@@ -22,34 +22,31 @@
             @click="onBottomBarItemSelected('stations')">
         </md-bottom-bar-item>
         <md-bottom-bar-item 
-            id="bottom-bar-item-alerts" 
+            id="bottom-bar-item-agencyAlerts" 
             class="rt-secondary-text"
             md-label="Alerts" 
             md-icon="check_circle"
-            @click="onBottomBarItemSelected('alerts')">
+            @click="onBottomBarItemSelected('agencyAlerts')">
         </md-bottom-bar-item>
     </md-bottom-bar>
 </template>
 
+
 <script>
-
     module.exports = {
-
         data: function() {
             return {
                 page: this.$router.currentRoute.name
             }
         },
-
         methods: {
             onBottomBarItemSelected(page) {
                 this.$router.push({name: page});
             }
         }
-
     }
-
 </script>
+
 
 <style scoped>
     .md-bottom-bar {

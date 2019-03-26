@@ -6,13 +6,14 @@
 
 
 <script>
-    const user = require("../../utils/user.js");
+    const user = require("@/utils/user.js");
 
     module.exports = {
 
         // ==== COMPONENT DATA ==== //
         data: function() {
             return {
+                agencyId: undefined,
                 src: undefined
             }
         },
@@ -20,16 +21,12 @@
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
             let vm = this;
-            let agencyId = vm.$route.query.agency;
-            let src = vm.$route.query.src;
-
-            // Set agency and redirect
-            vm.agencyId = agencyId;
-            vm.src = src;
+            vm.agencyId = vm.$route.query.agency;
+            vm.src = vm.$route.query.src;
 
             // Set More Menu Items and Agency Information
             vm.$emit('setMoreMenuItems', []);
-            vm.$emit('setAgencyId', agencyId);
+            vm.$emit('setAgencyId', vm.agencyId);
 
             // Perform Logout
             user.logout(function() {

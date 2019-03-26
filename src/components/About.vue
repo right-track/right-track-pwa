@@ -1,5 +1,7 @@
 <template>
     <div class="content-container">
+
+        <!-- ABOUT CARD -->
         <md-card>
             <md-card-header>
                 <h1>About</h1>
@@ -52,8 +54,8 @@
 
 
 <script>
-    const config = require("../utils/config.js");
-    const cache = require("../utils/cache.js");
+    const config = require("@/utils/config.js");
+    const cache = require("@/utils/cache.js");
 
 
     /**
@@ -84,19 +86,6 @@
             }
             else {
                 vm.agencies = agencies;
-
-                // Update the Agency Icons
-                for ( i in vm.agencies ) {
-                    let index = i;
-                    cache.getAgencyIcon(vm.agencies[index].id, function(err, response) {
-                        if ( err ) {
-                            vm.agencies[index].icon = config.api.host + "/about/agencies/" + vm.agencies[index].id + "/icon";
-                        }
-                        else {
-                            vm.agencies[index].icon = "data:image/png;base64, " + response;
-                        }
-                    });
-                }
             }
         });
     }
@@ -119,15 +108,13 @@
             }
         },
 
-
         // ==== COMPONTENT MOUNTED ==== //
         mounted() {
-            let agency = this.$route.params.agency;
-            this.agencyId = agency;
+            this.agencyId = this.$route.params.agency;
 
             // Set More Menu Items and Agency Information
             this.$emit('setMoreMenuItems', []);
-            this.$emit('setAgencyId', agency);
+            this.$emit('setAgencyId', this.agencyId);
 
             // Update Server and Agency Information
             _updateServerInfo(this);

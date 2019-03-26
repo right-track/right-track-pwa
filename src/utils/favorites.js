@@ -1,7 +1,6 @@
-const user = require("./user.js");
-const cache = require("./cache.js");
-
-const LOCAL_FAVORITES_CACHE = "rtfavorites-cache-local";
+const user = require("@/utils/user.js");
+const cache = require("@/utils/cache.js");
+const store = require("@/utils/store.js");
 
 
 /**
@@ -22,10 +21,13 @@ function getFavorites(agencyId, callback) {
             // Get favorites from the server / server cache
             cache.getFavorites(agencyId, userInfo.id, function(err, response) {
                 if ( err ) {
-                    return callback(err);
+                    _getLocalFavorites(agencyId, function(cache) {
+                        return _return(cache.favorites);
+                    });
                 }
 
                 // Return the server favorites
+                _saveLocalFavorites(agencyId, response);
                 return _return(response.favorites);
 
             });
@@ -58,8 +60,11 @@ function getFavorites(agencyId, callback) {
                     favorites[i].label = favorites[i].origin.name + " to " + favorites[i].destination.name;
                 }
             }
+            return callback(null, favorites);
         }
-        return callback(null, favorites);
+        else {
+            return callback(null, []);
+        }
     }
 
 }
@@ -74,15 +79,7 @@ function getFavorites(agencyId, callback) {
  * @param  {Function} callback  Callback function()
  */
 function _saveLocalFavorites(agencyId, favorites, callback) {
-    _putCache(
-        agencyId, 
-        {
-            agency: agencyId,
-            lastModified: Date.now(),
-            favorites: favorites
-        },
-        callback
-    );
+    store.put(agencyId + "-favorites", favorites, callback);
 }
 
 /**
@@ -91,89 +88,11 @@ function _saveLocalFavorites(agencyId, favorites, callback) {
  * @param  {Function} callback Callback function(favorites)
  */
 function _getLocalFavorites(agencyId, callback) {
-    _getCache(agencyId, callback);
-}
-
-
-
-/**
- * Get cached favorites for the specified agency
- * @param  {string} agency Favorites agency id
- * @param  {Function} callback Callback function(cache)
- */
-function _getCache(agency, callback) {
-    let key = "local/favorites/" + agency;
-
-    // Get the RT User Cache
-    caches.open(LOCAL_FAVORITES_CACHE).then(function(cache) {
-
-        // Check for matching request
-        cache.match(key).then(function(response) {
-
-            // Cache match found...
-            if ( response ) {
-                response.text().then(function(cacheText) {
-                    let cached = JSON.parse(cacheText);
-                    return callback(cached);
-                });
-            }
-
-            // No cache match found...
-            else {
-                return callback({
-                    agency: agency,
-                    lastModified: undefined,
-                    favorites: []
-                });
-            }
-            
-        });
-
-    });
-}
-
-
-/**
- * Save the specified favorites to the cache
- * @param  {string} agency Favorites agency id
- * @param  {Object} favorites Favorites Response
- * @param  {Function} callback Callback function()
- */
-function _putCache(agency, favorites, callback) {
-    let key = "local/favorites/" + agency;
-
-    // Get the RT User Cache
-    caches.open(LOCAL_FAVORITES_CACHE).then(function(cache) {
-
-        // Create Blob for Response
-        let blob = new Blob([JSON.stringify(favorites)], {type: 'application/json'});
-
-        // Build a Response to put in the cache
-        let cacheResponse = new Response(blob, {status: 200});
-
-        // Add Response to cache
-        cache.put(key, cacheResponse);
-
-        // Return
-        return callback();
-
-    });
-}
-
-
-/**
- * Remove the favorites of the specified agency from the cache
- * @param  {string}   agency   Favorites agency id
- * @param  {Function} callback Callback function()
- */
-function _removeCache(agency, callback) {
-    let key = "local/favorites/" + agency;
-
-    // Get the RT User Cache
-    caches.open(LOCAL_FAVORITES_CACHE).then(function(cache) {
-        cache.delete(key).then(function() {
-            return callback();
-        });
+    store.get(agencyId + "-favorites", function(err, value) {
+        if ( err ) {
+            return callback([]);
+        }
+        return callback(value.favorites);
     });
 }
 

@@ -1,6 +1,6 @@
 import Vue from 'vue'
-import App from './components/app/App.vue'
-import router from './router'
+import App from '@/components/app/App.vue'
+import router from '@/router'
 import { MdApp, MdToolbar, MdDrawer, MdContent, MdIcon, MdList, 
     MdButton, MdCard, MdMenu, MdEmptyState, MdBottomBar, MdField, 
     MdSnackbar, MdDialog, MdSpeedDial, MdTooltip, MdProgress } 

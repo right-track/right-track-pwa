@@ -26,10 +26,10 @@
 
 
 <script>
-    const config = require("../../utils/config.js");
-    const cache = require("../../utils/cache.js");
-    const AgencyList = require("./AgencyList.vue").default;
-    const Info = require("./Info.vue").default;
+    const config = require("@/utils/config.js");
+    const cache = require("@/utils/cache.js");
+    const AgencyList = require("@/components/agencies/AgencyList.vue").default;
+    const Info = require("@/components/agencies/Info.vue").default;
 
 
 
@@ -107,9 +107,11 @@
             // Update the list of agencies
             _updateAgencies(this);
 
-            // Set More Menu Items and Clear Agency ID
+            // Clear Title
+            this.$emit('setTitle', undefined);
+
+            // Set More Menu Items
             this.$emit('setMoreMenuItems', []);
-            this.$emit('setAgencyId', undefined);
 
         }
 

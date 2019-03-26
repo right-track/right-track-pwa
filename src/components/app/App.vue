@@ -153,7 +153,9 @@
             vm.bottomBarEnabled = bottomBarPages.includes(vm.$route.name);
             
             // Apply theme colors
-            _applyTheme(vm);
+            Vue.nextTick(function() {
+                _applyTheme(vm);
+            });
 
             // Update the Favorites
             _updateFavorites(vm);

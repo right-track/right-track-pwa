@@ -38,7 +38,7 @@ var routes = [
         component: Alerts
     },
     {
-        path: ':agency/alerts',
+        path: '/:agency/alerts',
         name: 'agencyAlerts',
         component: Alerts
     },

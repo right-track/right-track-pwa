@@ -121,7 +121,7 @@ const MENU = function(vm) {
             icon: "warning",
             page: "agencyAlerts",
             params: {
-                agency: vm.$route.query.agency
+                agency: vm.$route.params.agency
             }
         },
         {

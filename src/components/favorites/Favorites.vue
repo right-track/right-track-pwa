@@ -47,6 +47,16 @@
         </div>
 
 
+        <!-- Database Info -->
+        <div v-if="databaseInfo" class="db-info-container">
+            <p class="light">
+                <strong>Database Version {{ databaseInfo.version }}</strong><br />
+                Published: {{ databaseInfo.gtfs_publish_date }}<br />
+                Compiled: {{ databaseInfo.compile_date }}
+            </p>
+        </div>
+
+
         <!-- Favorites FAB -->
         <md-speed-dial md-event="click" md-effect="scale" md-direction="top">
             <md-speed-dial-target class="favorites-fab rt-primary">
@@ -81,6 +91,7 @@
     const user = require("@/utils/user.js");
     const favorites = require("@/utils/favorites.js");
     const cache = require("@/utils/cache.js");
+    const DB = require("@/utils/db.js");
     const FavoritesList = require("@/components/favorites/FavoritesList.vue").default;
 
 
@@ -106,6 +117,18 @@
         });
     }
 
+    function _displayDBInfo(vm) {
+        DB.getDB(vm.agencyId, function(err, db) {
+            if ( !err ) {
+                db.get("SELECT compile_date, gtfs_publish_date, start_date, end_date, version, notes FROM rt_about;", function(err, info) {
+                    if ( !err ) {
+                        vm.databaseInfo = info;
+                    }
+                });
+            }
+        });
+    }
+
 
     module.exports = {
 
@@ -116,7 +139,8 @@
                 favorites: [],
                 showEmptyState: false,
                 showFavorites: false,
-                showLogin: false
+                showLogin: false,
+                databaseInfo: undefined
             }
         },
 
@@ -173,6 +197,10 @@
 
             // Display Favorites
             _displayFavorites(vm);
+
+            // Display Database Info
+            _displayDBInfo(vm);
+
         }
 
     }
@@ -191,6 +219,12 @@
 
     .favorites-card-content {
         padding-bottom: 0 !important;
+    }
+
+    .db-info-container {
+        width: 100%;
+        margin: 20px 0;
+        text-align: center;
     }
 
     .favorites-fab-content .md-button {

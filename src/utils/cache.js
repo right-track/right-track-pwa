@@ -145,6 +145,23 @@ getStationFeed = function(agencyId, stopId, callback) {
         if ( err ) {
             return callback(err);
         }
+        else if ( response.feed === undefined || response.feed.departures === undefined ) {
+            return callback(new Error("Station Feed has no departures."));
+        }
+
+        // Add undefined trips
+        for ( let i = 0; i < response.feed.departures.length; i++ ) {
+            if ( response.feed.departures[i].trip === undefined ) {
+                response.feed.departures[i].trip = {};
+            }
+            if ( response.feed.departures[i].trip.route === undefined ) {
+                response.feed.departures[i].trip.route = {
+                    color: 'eaeaea',
+                    textColor: '000000'
+                }
+            }
+        }
+
         return callback(null, response.feed);
     });
 }

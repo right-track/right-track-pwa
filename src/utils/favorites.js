@@ -10,7 +10,7 @@ const store = require("@/utils/store.js");
  * @param  {string}   agencyId Favorites agency id
  * @param  {Function} callback Callback function(err, favorites)
  */
-function getFavorites(agencyId, callback) {
+function get(agencyId, callback) {
 
     // Check if user is logged in
     user.isLoggedIn(function(isLoggedIn, userInfo) {
@@ -22,7 +22,7 @@ function getFavorites(agencyId, callback) {
             cache.getFavorites(agencyId, userInfo.id, function(err, response) {
                 if ( err ) {
                     _getLocalFavorites(agencyId, function(cache) {
-                        return _return(cache.favorites);
+                        return _return(cache);
                     });
                 }
 
@@ -37,7 +37,7 @@ function getFavorites(agencyId, callback) {
         // IS NOT LOGGED IN - get local favorites
         else {
             _getLocalFavorites(agencyId, function(cache) {
-                return _return(cache.favorites)
+                return _return(cache);
             });
         }
 
@@ -70,6 +70,31 @@ function getFavorites(agencyId, callback) {
 }
 
 
+function addStation(stop, callback) {
+
+}
+
+function removeStation(stop, callback) {
+
+}
+
+function addTrip(origin, destination, callback) {
+
+}
+
+function removeTrip(origin, destination, callback) {
+    
+}
+
+
+/**
+ * Clear all locally cached favorites
+ */
+function clear() {
+    store.delFavorites();
+}
+
+
 
 
 /**
@@ -79,7 +104,7 @@ function getFavorites(agencyId, callback) {
  * @param  {Function} callback  Callback function()
  */
 function _saveLocalFavorites(agencyId, favorites, callback) {
-    store.put(agencyId + "-favorites", favorites, callback);
+    store.put("favorites-" + agencyId, favorites, callback);
 }
 
 /**
@@ -88,8 +113,8 @@ function _saveLocalFavorites(agencyId, favorites, callback) {
  * @param  {Function} callback Callback function(favorites)
  */
 function _getLocalFavorites(agencyId, callback) {
-    store.get(agencyId + "-favorites", function(err, value) {
-        if ( err ) {
+    store.get("favorites-" + agencyId, function(err, value) {
+        if ( err || value === undefined ) {
             return callback([]);
         }
         return callback(value.favorites);
@@ -99,5 +124,6 @@ function _getLocalFavorites(agencyId, callback) {
 
 
 module.exports = {
-    getFavorites: getFavorites
+    get: get,
+    clear: clear
 }

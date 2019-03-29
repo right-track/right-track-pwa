@@ -1,6 +1,14 @@
+body {
+    overflow: hidden;
+}
+
 .content-container {
     max-width: 700px;
     margin: 15px auto 80px auto;
+}
+.fixed-content-container {
+    max-width: 700px;
+    margin: 10px auto;
 }
 
 p.light, p.light a {
@@ -85,6 +93,38 @@ p.light, p.light a {
     color: #fff !important;
 }
 
+/* CARD INDETERMINATE PROGRESS BAR */
+.card-progress {
+    position:absolute;
+    width:100%;
+    margin-left: -25px;
+    height:5px;
+    overflow-x: hidden;
+}
+.card-progress-line {
+    position:absolute;
+    width:150%;
+    height:5px;
+}
+.card-progress-subline {
+    position:absolute;
+    height:5px; 
+}
+.card-progress-subline-inc {
+    animation: increase 2s infinite;
+}
+.card-progress-subline-dec {
+    animation: decrease 2s 0.5s infinite;
+}
+@keyframes increase {
+    from { left: -5%; width: 5%; }
+    to { left: 130%; width: 100%;}
+}
+@keyframes decrease {
+    from { left: -80%; width: 80%; }
+    to { left: 110%; width: 10%;}
+}
+
 /* SHOW ON XS & HIDE ON SM/MD/L/XL */
 @media screen and (min-width: 0px) and (max-width: 600px) {
     .md-xsmall-show {
@@ -102,9 +142,21 @@ p.light, p.light a {
     .md-small-show {
         display: block !important;
     }
+    .md-small-show-grid {
+        display: grid !important;
+    }
+    .md-small-hide, .md-small-hide-grid {
+        display: none !important;
+    }
 }
 @media screen and (min-width: 961px) {
-    .md-small-show {
+    .md-small-show, .md-small-show-grid {
         display: none !important;
+    }
+    .md-small-hide {
+        display: block !important;
+    }
+    .md-small-hide-grid {
+        display: grid !important;
     }
 }

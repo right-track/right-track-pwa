@@ -53,11 +53,7 @@ function logout(finished) {
 
     // SERVER LOGOUT
     function _server(callback) {
-
-        // Get Cached User Info
         store.get("user", function(err, user) {
-
-            // API Logout Request
             if ( user ) {
                 api.del("/auth/logout/" + user.id, function() {
                     return callback();
@@ -66,21 +62,18 @@ function logout(finished) {
             else {
                 return callback();
             }
-
         });
-
     }
 
     // LOCAL LOGOUT
     function _local(callback) {
-
-        // Remove cache entries
         store.del("user", function() {
             store.del("session", function() {
-                return callback();
+                store.delFavorites(function(err) {
+                    return callback()
+                });
             });    
         });
-
     }
 
 }

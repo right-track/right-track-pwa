@@ -69,8 +69,8 @@ function isReady(agency) {
  */
 function _getCache(agency) {
     if ( window.DB !== undefined ) {
-        if ( window.DB[agency] !== undefined ) {
-            return window.DB[agency];
+        if ( window.DB.agency === agency ) {
+            return window.DB.database;
         }
     }
     return undefined;
@@ -82,10 +82,10 @@ function _getCache(agency) {
  * @param  {Object} database Right Track DB
  */
 function _putCache(agency, database) {
-    if ( window.DB === undefined ) {
-        window.DB = {};
+    window.DB = {
+        agency: agency,
+        database: database
     }
-    window.DB[agency] = database;
 }
 
 

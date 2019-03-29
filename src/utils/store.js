@@ -130,10 +130,75 @@ function del(key, callback) {
         
         // Return data via callback
         request.onsuccess = function() {
-            return callback(null);
+            if ( callback ) return callback(null);
         }
 
     });
+}
+
+
+/**
+ * Remove all locally cached favorites
+ * @param {Function} [callback] Callback function(err)
+ */
+function delFavorites(callback) {
+    let _this = this;
+    let count = 0;
+    let max = 0;
+
+    _open(function(err, db) {
+        if ( err ) {
+            if ( callback ) return callback(err);
+        }
+
+        else {
+
+            // Get DB Transaction
+            let transaction = db.transaction(DB_STORE, 'readwrite');
+            
+            // Get DB Store
+            let store = transaction.objectStore(DB_STORE, 'readwrite');
+
+            // Get All Keys
+            let request = store.getAllKeys();
+            request.onsuccess = function() {
+                let keys = request.result;
+                let favKeys = []
+                
+                for ( let i = 0; i < keys.length; i++ ) {
+                    if ( keys[i].startsWith("favorites-") ) {
+                        favKeys.push(keys[i]);
+                    }
+                }
+
+                // Delete Favorite Keys
+                max = favKeys.length;
+                for ( let i = 0; i < favKeys.length; i++ ) {
+                    _this.del(favKeys[i], function(err) {
+                        if ( err ) {
+                            if ( callback ) return callback(err);
+                        }
+                        else {
+                            _finished();
+                        }
+                    });
+                }
+            }
+
+        }
+    });
+
+    /**
+     * Delete callback, return to callback when all 
+     * delete calls have finished
+     * @return {[type]} [description]
+     */
+    function _finished() {
+        count = count + 1;
+        if ( count >= max ) {
+            if ( callback ) return callback();
+        }
+    }
 }
 
 
@@ -141,5 +206,6 @@ function del(key, callback) {
 module.exports = {
     put: put,
     get: get,
-    del: del
+    del: del,
+    delFavorites: delFavorites
 }

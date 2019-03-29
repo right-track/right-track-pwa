@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import App from '@/components/app/App.vue'
 import router from '@/router'
-import { MdApp, MdToolbar, MdDrawer, MdContent, MdIcon, MdList, 
-    MdButton, MdCard, MdMenu, MdEmptyState, MdBottomBar, MdField, 
-    MdSnackbar, MdDialog, MdSpeedDial, MdTooltip, MdProgress } 
+import { MdApp, MdToolbar, MdDrawer, MdContent, MdRipple, MdIcon, MdList, 
+    MdButton, MdCard, MdMenu, MdEmptyState, MdBottomBar, MdField, MdSnackbar, 
+    MdDialog, MdSpeedDial, MdTooltip, MdProgress } 
     from 'vue-material/dist/components'
 import 'vue-material/dist/vue-material.min.css'
 
@@ -13,6 +13,7 @@ Vue.use(MdApp);
 Vue.use(MdToolbar);
 Vue.use(MdDrawer);
 Vue.use(MdContent);
+Vue.use(MdRipple);
 Vue.use(MdIcon);
 Vue.use(MdList);
 Vue.use(MdButton);
@@ -26,6 +27,7 @@ Vue.use(MdDialog);
 Vue.use(MdSpeedDial);
 Vue.use(MdTooltip);
 Vue.use(MdProgress);
+
 
 // Start the Vue App
 Vue.config.productionTip = false

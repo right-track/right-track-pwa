@@ -22,7 +22,7 @@
                 
                 <!-- MORE MENU -->
                 <md-menu md-size="small" v-if="moreMenu">
-                    <md-button md-menu-trigger class="md-icon-button"><md-icon>more_vert</md-icon></md-button>
+                    <md-button md-menu-trigger class="md-icon-button rt-primary-text"><md-icon>more_vert</md-icon></md-button>
                     <md-menu-content>
                         <div v-for="item in moreMenu" :key="item.key">
                             <hr v-if="item.type=='divider'" class="more-menu-divider" />
@@ -174,7 +174,7 @@
         if ( title === undefined ) {
             title = vm.agencyName ? vm.agencyName : config.title;
         }
-
+        
         if ( title !== config.title && title !== vm.agencyName && vm.agencyName !== undefined ) {
             document.title = title + " | " + vm.agencyName + " | " + config.title;
         }
@@ -185,7 +185,7 @@
             document.title = title;
         }
 
-        vm.toolbarTitle = title;
+        vm.toolbarTitle = vm.agencyName ? vm.agencyName : config.title;
     }
 
 
@@ -291,7 +291,7 @@
      */
     function _updateFavorites(vm, force) {
         if ( force || (vm.agencyId && vm.agencyId !== vm.favorites.agencyId) ) {
-            favorites.getFavorites(vm.agencyId, function(err, favorites) {
+            favorites.get(vm.agencyId, function(err, favorites) {
                 vm.favorites.favorites = favorites;
                 vm.favorites.agencyId = vm.agencyId;
                 
@@ -579,7 +579,7 @@
         height: calc(100vh - 64px);
         overflow: auto;
         background-color: #eee !important;
-        padding-bottom: 50px;
+        padding-bottom: 20px;
     }
 
     // More Menu Components

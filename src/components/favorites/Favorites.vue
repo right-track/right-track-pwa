@@ -31,8 +31,10 @@
         </div>
 
 
-        <!-- Favorites List -->
+        <!-- Show Favorites -->
         <div v-show="showFavorites">
+            
+            <!-- Favorites List -->    
             <md-card class="favorites-card">
                 <md-card-header class="md-card-header-bg rt-secondary">
                     <div class="md-title">
@@ -44,19 +46,19 @@
                     <rt-favorites-list :favorites="favorites"></rt-favorites-list>
                 </md-card-content>
             </md-card>
+
+            <!-- Database Info -->
+            <div v-if="databaseInfo" class="db-info-container">
+                <p class="light">
+                    <strong>Database Version {{ databaseInfo.version }}</strong><br />
+                    Published: {{ databaseInfo.gtfs_publish_date }}<br />
+                    Compiled: {{ databaseInfo.compile_date }}
+                </p>
+            </div>
+
         </div>
 
-
-        <!-- Database Info -->
-        <div v-if="databaseInfo" class="db-info-container">
-            <p class="light">
-                <strong>Database Version {{ databaseInfo.version }}</strong><br />
-                Published: {{ databaseInfo.gtfs_publish_date }}<br />
-                Compiled: {{ databaseInfo.compile_date }}
-            </p>
-        </div>
-
-
+        
         <!-- Favorites FAB -->
         <md-speed-dial md-event="click" md-effect="scale" md-direction="top">
             <md-speed-dial-target class="favorites-fab rt-primary">
@@ -100,7 +102,7 @@
      * @param  {Vue} vm Vue Instance
      */
     function _displayFavorites(vm) {
-        favorites.getFavorites(vm.agencyId, function(err, favs) {
+        favorites.get(vm.agencyId, function(err, favs) {
             if ( err ) {
                 vm.$emit('showSnackar', err);
                 vm.showEmptyState = false;

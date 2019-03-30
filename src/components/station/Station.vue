@@ -1,5 +1,5 @@
 <template>
-    <div class="fixed-content-container">
+    <div class="content-container">
 
         <!-- Station Table -->
         <md-card>
@@ -31,23 +31,18 @@
             </div>
 
             <!-- Station Departures Header -->
-            <div class="departures-header-wrapper-small md-small-show-grid">
-                <div class="departures-header-item departures-header-item-center">Departure</div>
-                <div class="departures-header-item">
-                    Destination<span class="md-xsmall-hide"> &amp; Status</span>
-                    <span class="departures-header-item-track-small">Track</span>
-                </div>
-            </div>
-            <div class="departures-header-wrapper md-small-hide-grid">
-                <div class="departures-header-item departures-header-item-center">Departure</div>
-                <div class="departures-header-item">Destination</div>
-                <div class="departures-header-item departures-header-item-center">Status</div>
-                <div class="departures-header-item departures-header-item-center">Track</div>
+            <div class="departures-header">
+                <div class="departures-header-item departures-header-time">Departure</div>
+                <div class="departures-header-item departures-header-destination">Destination</div>
+                <div class="departures-header-item departures-header-status">Status</div>
+                <div class="departures-header-item departures-header-track">Track</div>
             </div>
 
             <!-- Station Departures -->
             <md-card-content>
-                <rt-departure-list :departures="departures"></rt-departure-list>
+                <div v-for="(departure, index) in departures" :key="'departure-' + index">
+                    <rt-departure-item :departure="departure" :station="stop"></rt-departure-item>
+                </div>
             </md-card-content>
 
         </md-card>
@@ -61,7 +56,7 @@
     const cache = require("@/utils/cache.js");
     const DB = require("@/utils/db.js");
     const favorites = require("@/utils/favorites.js");
-    const StationDepartureList = require("@/components/station/StationDepartureList.vue").default;
+    const StationDepartureItem = require("@/components/station/StationDepartureItem.vue").default;
 
 
     /**
@@ -202,7 +197,7 @@
 
         // ==== ADDITIONAL COMPONENTS ==== //
         components: {
-            'rt-departure-list': StationDepartureList
+            'rt-departure-item': StationDepartureItem
         },
 
         // ==== COMPONENT METHODS ==== //
@@ -255,7 +250,6 @@
 
 
 <style scoped>
-
     .md-card-header h2 {
         margin: 0;
     }
@@ -274,33 +268,47 @@
         margin-top: -8px;
     }
 
-    .departures-header-wrapper {
+    .departures-header {
+        margin: 5px -25px -5px -25px;
+        padding: 5px 0;
         display: grid;
-        grid-template-columns: 120px auto 150px 100px;
-        margin: 5px -15px 5px -25px;
+        grid-gap: 0 10px;
+        grid-template-columns: 100px 1fr 75px;
+        grid-template-areas: "time destination destination" "time status track";
     }
-    .departures-header-wrapper-small {
-        display: grid;
-        grid-template-columns: 110px auto;
-        margin: 5px -15px 5px -15px;
+    @media (min-width: 960px) {
+        .departures-header {
+            grid-template-columns: 100px 1fr 100px 90px;
+            grid-template-areas: "time destination status track";
+        }
     }
+
     .departures-header-item {
-        padding: 5px;
         font-weight: bold;
         font-size: 16px;
+        padding-left: 5px;
+        margin-top: auto;
+        margin-bottom: auto;
     }
-    .departures-header-item-center {
+    .departures-header-time {
+        grid-area: time;
         text-align: center;
     }
-    .departures-header-item-track-small {
-        float: right;
-        margin-right: 15px;
+    .departures-header-destination {
+        grid-area: destination;
+    }
+    .departures-header-status {
+        grid-area: status;
+    }
+    .departures-header-track {
+        grid-area: track;
+        text-align: center;
     }
 
     .md-card-content {
-        max-height: calc(100vh - 240px);
         overflow: auto;
         margin: 5px -25px;
-        padding: 0 10px !important;
+        padding: 0 !important;
+        background-color: rgba(0, 0, 0, 0.5);
     }
 </style>

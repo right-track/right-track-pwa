@@ -6,9 +6,8 @@
             
             <!-- Card Header -->
             <md-card-header>
-                <h1 class="agency-card-header-text md-xsmall-hide">{{ title }}</h1>
-                <h1 class="agency-card-header-text-xs md-xsmall-show">{{ title }}</h1>
-                <h2 class="agency-card-subheading-text md-xsmall-hide">Select an Agency for schedules and status information:</h2>
+                <h1 class="agency-card-header-text">{{ title }}</h1>
+                <h2 class="agency-card-subheading-text md-small-hide">Select an Agency for schedules and status information:</h2>
             </md-card-header>
 
             <!-- Card Content / Agency List -->
@@ -41,39 +40,25 @@
 
         // Get Agencies from cache
         cache.getAgencies(function(err, agencies) {
-
-            // ERROR: Could not get agencies
             if ( err ) {
                 console.log(err);
                 vm.$emit('showSnackbar', "Could not load agency list. Please try again later.");
                 vm.agencies = [];
             }
-
-            // Update Agencies
             else {
                 vm.agencies = agencies;
-
-                // Update the Agency Icons
                 for ( i in vm.agencies ) {
                     let index = i;
-
-                    // Get Agency Icon from cache
                     cache.getAgencyIcon(vm.agencies[index].id, function(err, response) {
-
-                        // ERROR: use API URL
                         if ( err ) {
                             vm.agencies[index].icon = config.api.host + "/about/agencies/" + vm.agencies[index].id + "/icon";
                         }
-
-                        // Set agency icon to base64 data
                         else {
                             vm.agencies[index].icon = "data:image/png;base64, " + response;
                         }
-
                     });
                 }
             }
-
         });
 
     }
@@ -120,16 +105,17 @@
 
 
 <style scoped>
-    .agency-card-header-text, .agency-card-header-text-xs {
+    .agency-card-header-text {
         font-weight: normal;
         font-size: 36px;
         line-height: 36px;
         margin-bottom: 0;
-    }
-    .agency-card-header-text-xs {
-        margin-left: -25px;
-        margin-right: -25px;
         text-align: center;
+    }
+    @media (min-width: 600px) {
+        .agency-card-header-text {
+            text-align: left;
+        }
     }
     .agency-card-subheading-text {
         font-weight: normal;

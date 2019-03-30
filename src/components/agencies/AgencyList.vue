@@ -1,31 +1,16 @@
 <template>
     <div>
-
-        <!-- SM/MD/L/XL -->
-        <md-list class="md-xsmall-hide">
-            <md-list-item class="agency-list-item" v-for="agency in agencies" :key="agency.id" @click="selectAgency(agency.id)">
-                <div>
-                    <img class="agency-list-item-icon" :src="agency.icon" />
-                </div>
-                <div style="width: 100%;">
-                    <p class="agency-list-item-text">{{ agency.name }}</p>   
-                </div>
-                <div>
-                    <md-icon class="agency-list-item-more">chevron_right</md-icon>
-                </div>
-            </md-list-item>
-        </md-list>
-
-        <!-- XS -->
-        <md-list class="md-xsmall-show">
-            <md-list-item class="agency-list-item" v-for="agency in agencies" :key="agency.id" @click="selectAgency(agency.id)">
-                <div class="agency-list-item-container-xs">
-                    <img class="agency-list-item-icon" :src="agency.icon" />
-                    <p class="agency-list-item-text">{{ agency.name }}</p>   
-                </div>
-            </md-list-item>
-        </md-list>
-
+        <div class="agency-wrapper" v-for="agency in agencies" :key="agency.id" @click="selectAgency(agency.id)">
+            <div class="agency-icon">
+                <img :src="agency.icon" />
+            </div>
+            <div class="agency-name">
+                {{ agency.name }}
+            </div>
+            <div class="agency-more">
+                <md-icon>chevron_right</md-icon>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -60,34 +45,57 @@
 
 
 <style scoped>
-    .agency-list-item {
+    .agency-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 30px;
+        grid-template-areas: "icon more" "name more";
+        grid-gap: 10px;
+        padding: 10px 0;
         border-bottom: 1px solid #eee;
+        cursor: pointer;
     }
-    .agency-list-item:last-child {
-        border:none;
+    .agency-wrapper:nth-child(even) {
+        background-color: 1px solid #eee;
     }
-    .agency-list-item:hover {
+    .agency-wrapper:last-child {
+        border: none;
+    }
+    .agency-wrapper:hover {
         background-color: #E0E0E0;
     }
 
-    .agency-list-item-icon {
-        width: 80px;
+    .agency-icon {
+        grid-area: icon;
+        text-align: center;
+    }
+    .agency-icon img {
+        width: 60px;
         padding: 10px;
         margin-left: auto;
         margin-right: auto;
     }
-    .agency-list-item-text {
-        margin-left: 15px;
+
+    .agency-name {
+        grid-area: name;
+        margin-top: auto;
+        margin-bottom: auto;
         font-size: 20px;
-        overflow: visible;
-        white-space: normal;
-    }
-    .agency-list-item-more {
-        font-size: 20px;
+        text-align: center;
     }
 
-    .agency-list-item-container-xs {
-        width: 100%;
-        text-align: center;
+    .agency-more {
+        grid-area: more;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+
+    @media (min-width: 600px) {
+        .agency-wrapper {
+            grid-template-columns: 80px 1fr 30px;
+            grid-template-areas: "icon name more";
+        }
+        .agency-name {
+            text-align: left;
+        }
     }
 </style>

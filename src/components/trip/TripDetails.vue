@@ -199,7 +199,7 @@
 
     .trip-details-stops-row {
         display: grid;
-        grid-template-columns: 120px 1fr 60px 30px;
+        grid-template-columns: 90px 1fr 60px 30px;
         grid-template-areas: "time stop traveltime ada";
         background-color: #fff;
         border-top: 1px solid #d4d4d488;

@@ -250,6 +250,9 @@
 
 
 <style scoped>
+    .md-card {
+        margin: 0 !important;
+    }
     .md-card-header h2 {
         margin: 0;
     }

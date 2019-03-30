@@ -61,7 +61,7 @@
         
         <!-- Favorites FAB -->
         <md-speed-dial md-event="click" md-effect="scale" md-direction="top">
-            <md-speed-dial-target class="favorites-fab rt-primary">
+            <md-speed-dial-target id="favorites-fab" class="favorites-fab rt-primary" :disabled="!selectDialogProps.stops">
                 <md-icon class="md-morph-initial">edit</md-icon>
                 <md-icon class="md-morph-final">close</md-icon>
             </md-speed-dial-target>
@@ -74,27 +74,36 @@
                     <md-icon>shuffle</md-icon>
                     <md-tooltip md-direction="left" md-delay="1000">Reorder Favorites</md-tooltip>
                 </md-button>
-                <md-button class="md-icon-button rt-primary-fg">
+                <md-button class="md-icon-button rt-primary-fg" @click="selectStation">
+                    <span class="favorites-fab-button-add rt-secondary">+</span>
                     <md-icon>access_time</md-icon>
                     <md-tooltip md-direction="left" md-delay="1000">Add Station</md-tooltip>
                 </md-button>
-                <md-button class="md-icon-button rt-primary-fg">
+                <md-button class="md-icon-button rt-primary-fg" @click="selectTrip">
+                    <span class="favorites-fab-button-add rt-secondary">+</span>
                     <md-icon>train</md-icon>
                     <md-tooltip md-direction="left" md-delay="1000">Add Trip</md-tooltip>
                 </md-button>
             </md-speed-dial-content>
         </md-speed-dial>
 
+
+        <!-- SELECT STATION DIALOG -->
+        <rt-stop-selection-dialog :properties="selectDialogProps" @stopSelected="onStopSelected"></rt-stop-selection-dialog>
+
+
     </div>
 </template>
 
 
 <script>
+    const core = require("right-track-core");
     const user = require("@/utils/user.js");
     const favorites = require("@/utils/favorites.js");
     const cache = require("@/utils/cache.js");
     const DB = require("@/utils/db.js");
     const FavoritesList = require("@/components/favorites/FavoritesList.vue").default;
+    const StopSelectionDialog = require("@/components/StopSelectionDialog.vue").default;
 
 
     /**
@@ -119,6 +128,10 @@
         });
     }
 
+    /**
+     * Display the DB Version info
+     * @param  {Vue} vm Vue Instance
+     */
     function _displayDBInfo(vm) {
         DB.getDB(vm.agencyId, function(err, db) {
             if ( !err ) {
@@ -128,6 +141,28 @@
                     }
                 });
             }
+        });
+    }
+
+    /**
+     * Get the Stops from the Agency DB
+     * @param  {Vue}      vm       Vue Instance
+     * @param  {Function} callback Callback function(stops)
+     */
+    function _getStops(vm, callback) {
+        let agencyID = vm.$route.params.agency;
+        let db = DB.getDB(agencyID, function(err, db) {
+            if ( err ) {
+                console.error(err);
+                return;
+            }
+            core.query.stops.getStops(db, function(err, stops) {
+                if ( err ) {
+                    console.error(err);
+                    return;
+                }
+                return callback(stops);
+            });
         });
     }
 
@@ -142,13 +177,19 @@
                 showEmptyState: false,
                 showFavorites: false,
                 showLogin: false,
-                databaseInfo: undefined
+                databaseInfo: undefined,
+                selectDialogProps: {
+                    visible: false,
+                    type: undefined,
+                    stops: undefined
+                }
             }
         },
 
         // ==== ADDITIONAL COMPONENTS ==== //
         components: {
-            'rt-favorites-list': FavoritesList
+            'rt-favorites-list': FavoritesList,
+            'rt-stop-selection-dialog': StopSelectionDialog
         },
 
         // ==== COMPONENT FUNCTIONS ==== //
@@ -178,6 +219,42 @@
                         src: this.$route.path
                     }
                 });
+            },
+
+            /**
+             * Select Stop for Favorite Station
+             */
+            selectStation() {
+                this.selectDialogProps.type = "station";
+                this.selectDialogProps.visible = true;
+            },
+
+            /**
+             * Select the Stops for Favorite Trip
+             * @return {[type]} [description]
+             */
+            selectTrip() {
+                this.selectDialogProps.type = "trip";
+                this.selectDialogProps.origin = undefined;
+                this.selectDialogProps.visible = true;
+            },
+            
+            /**
+             * Handle the return of a selected Stop
+             * @param  {String} type Stop Type
+             * @param  {Stop} stop Selected Station / Origin
+             */
+            onStopSelected(type, stop1, stop2) {
+                this.selectDialogProps.visible = false;
+                
+                if ( type === "station" ) {
+                    console.log("ADD FAVORITE STATION: " + stop1.name)
+                }
+
+                else if ( type === "trip" ) {
+                    console.log("ADD FAVORITE TRIP: " + stop1.name + " --> " + stop2.name);
+                }
+
             }
 
         },
@@ -202,6 +279,11 @@
 
             // Display Database Info
             _displayDBInfo(vm);
+
+            // Get the Stops for the selection dialog
+            _getStops(vm, function(stops) {
+                vm.selectDialogProps.stops = stops;
+            });
 
         }
 
@@ -231,6 +313,16 @@
 
     .favorites-fab-content .md-button {
         background-color: #fff;
+    }
+    .favorites-fab-button-add {
+        position: fixed;
+        top: 4px;
+        right: 5px;
+        font-size: 11px;
+        width: 13px;
+        height: 13px;
+        border-radius: 25px;
+        z-index: 999;
     }
 
     @media screen and (min-width: 0px) and (max-width: 600px) {

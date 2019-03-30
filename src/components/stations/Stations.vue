@@ -13,7 +13,7 @@
                 <p>Select a Station below to view upcoming departures and track assignments.</p>
 
                 <div>
-                    <md-button class="btn-raised rt-primary" :disabled="!stations" @click="showDialog=true">
+                    <md-button class="btn-raised rt-primary" :disabled="!dialogProps.stops" @click="dialogProps.visible=true">
                         <md-icon>place</md-icon>&nbsp;&nbsp;
                         <span v-if="station">{{ station.name }}</span>
                         <span v-else>Select Station</span>
@@ -34,25 +34,7 @@
 
 
         <!-- SELECT STATION DIALOG -->
-        <md-dialog :md-active.sync="showDialog">
-            <md-dialog-title>
-                <md-icon>place</md-icon>&nbsp;Select Station
-            </md-dialog-title>
-
-            <md-content class="dialog-content">
-                <ul class="dialog-content-list">
-                    <li v-for="stop in stations" 
-                        :class="{'disabled': stop.statusId === '-1'}"
-                        @click="stopSelected(stop)">
-                        <p>{{ stop.name }}</p>
-                    </li>
-                </ul>
-            </md-content>
-
-            <md-dialog-actions>
-                <md-button class="md-primary" @click="showDialog=false">Close</md-button>
-            </md-dialog-actions>
-        </md-dialog>
+        <rt-stop-selection-dialog :props="dialogProps" @stopSelected="onStopSelected"></rt-stop-selection-dialog>
 
 
     </div>
@@ -62,6 +44,7 @@
 <script>
     const core = require("right-track-core");
     const DB = require("@/utils/db.js");
+    const StopSelectionDialog = require("@/components/StopSelectionDialog.vue").default;
 
     /**
      * Get the Stops from the Agency DB
@@ -84,7 +67,7 @@
                 }
                 return callback(stops);
             });
-        })
+        });
     }
 
     module.exports = {
@@ -96,13 +79,19 @@
                 // Selected Station
                 station: undefined,
 
-                // List of Stops for Stations
-                stations: undefined,
-
-                // Show Select Station Dialog flag
-                showDialog: false
+                // Station Selection Dialog Properties
+                dialogProps: {
+                    visible: false,
+                    type: "Station",
+                    stops: undefined
+                }
 
             }
+        },
+
+        // ==== ADDITIONAL COMPONENTS ==== //
+        components: {
+            'rt-stop-selection-dialog': StopSelectionDialog
         },
 
         // ==== COMPONENT METHODS ==== //
@@ -112,11 +101,8 @@
              * Stop selected in Select Station Dialog
              * @param  {Object} stop Selected Stop
              */
-            stopSelected: function(stop) {
-                if ( stop.statusId !== "-1" ) {
-                    this.showDialog = false;
-                    this.station = stop;
-                }
+            onStopSelected: function(type, stop) {
+                this.station = stop;
             },
 
             showStation: function() {
@@ -142,7 +128,7 @@
 
             // Get the Stops
             _getStops(this, function(stops) {
-                vm.stations = stops;
+                vm.dialogProps.stops = stops;
             });
         }
 
@@ -168,32 +154,5 @@
     }
     .stations-button-container .md-button {
         padding: 10px 50px;
-    }
-
-
-    .dialog-content {
-        overflow: auto;
-    }
-    .dialog-content-list {
-        list-style-type: none;
-        padding: 0;
-    }
-    .dialog-content-list li {
-        cursor: pointer;
-        padding-left: 25px;
-        border-top: 1px solid #dfdfdf;
-        height: 52px;
-        font-size: 16px;
-    }
-    .dialog-content-list li.disabled {
-        cursor: auto;
-        text-decoration: line-through;
-        color: #666;
-    }
-    .dialog-content-list li:hover {
-        background-color: #eee !important;
-    }
-    .dialog-content-list li:nth-child(even) {
-        background-color: #f5f5f5;
     }
 </style>

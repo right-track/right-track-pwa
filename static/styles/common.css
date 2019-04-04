@@ -4,7 +4,7 @@ body {
 
 .content-container {
     max-width: 700px;
-    margin: 15px auto 80px auto;
+    margin: 30px auto 80px auto;
 }
 .fixed-content-container {
     max-width: 700px;
@@ -97,9 +97,9 @@ p.light, p.light a {
 .card-progress {
     position:absolute;
     width:100%;
-    margin-left: -25px;
     height:5px;
     overflow-x: hidden;
+    background-color: #fff;
 }
 .card-progress-line {
     position:absolute;

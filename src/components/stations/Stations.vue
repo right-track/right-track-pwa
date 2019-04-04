@@ -34,7 +34,7 @@
 
 
         <!-- SELECT STATION DIALOG -->
-        <rt-stop-selection-dialog :props="dialogProps" @stopSelected="onStopSelected"></rt-stop-selection-dialog>
+        <rt-stop-selection-dialog :properties="dialogProps" @stopSelected="onStopSelected"></rt-stop-selection-dialog>
 
 
     </div>
@@ -82,7 +82,7 @@
                 // Station Selection Dialog Properties
                 dialogProps: {
                     visible: false,
-                    type: "Station",
+                    type: "station",
                     stops: undefined
                 }
 

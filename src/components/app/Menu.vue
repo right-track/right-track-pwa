@@ -98,6 +98,19 @@
                     }
                 }
 
+                // Go to Router Path
+                else if ( route.startsWith("/") ) {
+
+                    // Set Router with properties
+                    this.$router.push({
+                        path: route,
+                        params: params,
+                        query: query
+                    });
+
+                }
+
+
                 // Set Router Link
                 else {
 

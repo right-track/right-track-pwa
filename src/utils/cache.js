@@ -110,31 +110,6 @@ getAgencyIcon = function(agency, callback) {
 
 
 /**
- * Get User Favorites
- * - Cache Length: 60 seconds
- * @param  {string}   agencyId Agency IC code
- * @param  {string}   userId   Public User ID
- * @param  {Function} callback Callback function(err, favorites)
- */
-getFavorites = function(agencyId, userId, callback) {
-    let ts = new Date().getTime();
-    _getCacheElseFresh("/favorites/" + agencyId + "/" + userId + "?t=" + ts, 60, callback);
-}
-
-/**
- * Get User Favorites (force refresh)
- * - Cache Length: no cache
- * @param  {string}   agencyId Agency IC code
- * @param  {string}   userId   Public User ID
- * @param  {Function} callback Callback function(err, favorites)
- */
-getFreshFavorites = function(agencyId, userId, callback) {
-    let ts = new Date().getTime();
-    _getCacheElseFresh("/favorites/" + agencyId + "/" + userId + "?t=" + ts, 0, callback);
-}
-
-
-/**
  * Get the Station Feed for the specified stop
  * @param  {string}   agencyId Agency ID code
  * @param  {string}   stopId   Stop ID
@@ -319,6 +294,5 @@ module.exports = {
     getAgency: getAgency,
     getAgencyDB: getAgencyDB,
     getAgencyIcon: getAgencyIcon,
-    getFavorites: getFavorites,
     getStationFeed: getStationFeed
 }

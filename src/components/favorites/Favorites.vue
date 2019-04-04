@@ -37,6 +37,11 @@
             <!-- Favorites List -->    
             <md-card class="favorites-card">
                 <md-card-header class="md-card-header-bg rt-secondary">
+                    <div class="md-card-header-button-container">
+                        <md-button class="md-icon-button rt-secondary-text" @click="forceUpdate">
+                            <md-icon>refresh</md-icon>
+                        </md-button>
+                    </div>
                     <div class="md-title">
                         <md-icon>star</md-icon>
                         Favorites
@@ -68,21 +73,17 @@
             <md-speed-dial-content class="favorites-fab-content">
                 <md-button class="md-icon-button rt-primary-fg">
                     <md-icon>delete</md-icon>
-                    <md-tooltip md-direction="left" md-delay="1000">Remove Favorites</md-tooltip>
                 </md-button>
                 <md-button class="md-icon-button rt-primary-fg">
                     <md-icon>shuffle</md-icon>
-                    <md-tooltip md-direction="left" md-delay="1000">Reorder Favorites</md-tooltip>
                 </md-button>
                 <md-button class="md-icon-button rt-primary-fg" @click="selectStation">
                     <span class="favorites-fab-button-add rt-secondary">+</span>
                     <md-icon>access_time</md-icon>
-                    <md-tooltip md-direction="left" md-delay="1000">Add Station</md-tooltip>
                 </md-button>
                 <md-button class="md-icon-button rt-primary-fg" @click="selectTrip">
                     <span class="favorites-fab-button-add rt-secondary">+</span>
                     <md-icon>train</md-icon>
-                    <md-tooltip md-direction="left" md-delay="1000">Add Trip</md-tooltip>
                 </md-button>
             </md-speed-dial-content>
         </md-speed-dial>
@@ -108,16 +109,20 @@
 
     /**
      * Retrieve and Display User Favorites
-     * @param  {Vue} vm Vue Instance
+     * @param {Vue}     vm      Vue Instance
+     * @param {boolean} [force] Force a refresh
      */
-    function _displayFavorites(vm) {
-        favorites.get(vm.agencyId, function(err, favs) {
+    function _displayFavorites(vm, force) {
+        favorites.get(vm.agencyId, force, function(err, favs) {
             if ( err ) {
                 vm.$emit('showSnackar', err);
                 vm.showEmptyState = false;
                 vm.showFavorites = false;
             }
             else {
+                if ( force ) {
+                    vm.$emit('showSnackbar', 'Favorites updated');
+                }
                 if ( favs === undefined ) {
                     favs = [];
                 }
@@ -222,6 +227,13 @@
             },
 
             /**
+             * Force a favorites update
+             */
+            forceUpdate() {
+                _displayFavorites(this, true);
+            },
+
+            /**
              * Select Stop for Favorite Station
              */
             selectStation() {
@@ -245,14 +257,32 @@
              * @param  {Stop} stop Selected Station / Origin
              */
             onStopSelected(type, stop1, stop2) {
-                this.selectDialogProps.visible = false;
+                let vm = this;
+                vm.selectDialogProps.visible = false;
                 
                 if ( type === "station" ) {
-                    console.log("ADD FAVORITE STATION: " + stop1.name)
+                    favorites.addStation(vm.agencyId, stop1, _return);
                 }
 
                 else if ( type === "trip" ) {
-                    console.log("ADD FAVORITE TRIP: " + stop1.name + " --> " + stop2.name);
+                    favorites.addTrip(vm.agencyId, stop1, stop2, _return);
+                }
+
+                /**
+                 * Update the favorites once added
+                 * @param  {Error} err        Error
+                 * @param  {Array} favorites  List of favorites
+                 */
+                function _return(err, favorites) {
+                    if ( err ) {
+                        console.error(err);
+                        vm.$emit('showSnackbar', 'Could not add favorite. Please try again.');
+                        return;
+                    }
+                    vm.favorites = favorites;
+                    vm.showEmptyState = false;
+                    vm.showFavorites = true;
+                    vm.$emit('updateFavorites');
                 }
 
             }
@@ -299,6 +329,11 @@
     }
     .favorites-login .md-button {
         width: 90%;
+    }
+
+    .md-card-header-button-container {
+        float: right;
+        margin-top: -3px;
     }
 
     .favorites-card-content {

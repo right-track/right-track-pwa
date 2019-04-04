@@ -26,11 +26,13 @@ function login(user, pass, callback) {
         }
         
         // Save login response
-        store.put("user", response.user);
-        store.put("session", response.session);
+        store.delFavorites(function() {
+            store.put("user", response.user);
+            store.put("session", response.session);
 
-        // Return with user information
-        return callback(null, response.user);
+            // Return with user information
+            return callback(null, response.user);
+        });
         
     });
 

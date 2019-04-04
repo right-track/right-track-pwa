@@ -183,6 +183,9 @@ function delFavorites(callback) {
                         }
                     });
                 }
+                if ( max === 0 ) {
+                    _finished();
+                }
             }
 
         }

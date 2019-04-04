@@ -64,6 +64,14 @@
     },
     {
       "style": {
+        "stroke": "primary"
+      },
+      "selectors": [
+        ".rt-primary-stroke"
+      ]
+    },
+    {
+      "style": {
         "color": "#777"
       },
       "selectors": [

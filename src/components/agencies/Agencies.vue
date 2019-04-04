@@ -105,11 +105,16 @@
 
 
 <style scoped>
+    .md-card-heading {
+        padding: 0;
+    }
+
     .agency-card-header-text {
         font-weight: normal;
         font-size: 36px;
         line-height: 36px;
         margin-bottom: 0;
+        margin-right: 30px;
         text-align: center;
     }
     @media (min-width: 600px) {

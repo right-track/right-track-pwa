@@ -1,89 +1,268 @@
 const user = require("@/utils/user.js");
 const cache = require("@/utils/cache.js");
 const store = require("@/utils/store.js");
+const api = require("@/utils/api.js");
+
+// Interval to check server favorites (ms)
+const CHECK_INTERVAL = 60 * 1000;
 
 
 /**
- * Get the Favorites for the specified agency.  If a User is 
- * logged in, then get the Favorites from the API Server, otherwise 
- * get the locally saved favorites.
- * @param  {string}   agencyId Favorites agency id
- * @param  {Function} callback Callback function(err, favorites)
+ * Add Icon and Label to each favorite before returning to the app
+ * @param  {Array} favorites List of favorites to return
+ * @return {Array} List of parsed favorites
  */
-function get(agencyId, callback) {
-
-    // Check if user is logged in
-    user.isLoggedIn(function(isLoggedIn, userInfo) {
-
-        // IS LOGGED IN - get server favorites
-        if ( isLoggedIn ) {
-
-            // Get favorites from the server / server cache
-            cache.getFavorites(agencyId, userInfo.id, function(err, response) {
-                if ( err ) {
-                    _getLocalFavorites(agencyId, function(cache) {
-                        return _return(cache);
-                    });
-                }
-
-                // Return the server favorites
-                _saveLocalFavorites(agencyId, response);
-                return _return(response.favorites);
-
-            });
-
+function _parseFavorites(favorites, fresh) {
+    if ( favorites ) {
+        for ( let i = 0; i < favorites.length; i++ ) {
+            if ( favorites[i].type === 1 ) {
+                favorites[i].icon = "access_time";
+                favorites[i].label = favorites[i].stop.name;
+            }
+            else if ( favorites[i].type === 2 ) {
+                favorites[i].icon = "train";
+                favorites[i].label = favorites[i].origin.name + " to " + favorites[i].destination.name;
+            }
         }
+        return favorites;
+    }
+    else {
+        return [];
+    }
+}
 
-        // IS NOT LOGGED IN - get local favorites
-        else {
-            _getLocalFavorites(agencyId, function(cache) {
-                return _return(cache);
-            });
-        }
+
+/**
+ * Get the Favorites for the specified agency.  First, return 
+ * the local favorites (empty array if none).  Then, if a User 
+ * is logged in, return the server favorites (if `force` or 
+ * have not been checked recently).
+ * @param  {String}   agencyId Agency ID code
+ * @param  {boolean}  [force]  Force to get the server favorites
+ * @param  {Function} callback Callback function(err, favorites, fresh)
+ */
+function get(agencyId, force, callback) {
+
+    // Parse arguments
+    if ( callback === undefined && typeof force === 'function' ) {
+        callback = force;
+        force = false;
+    }
+
+    // Get the local favorites, if any
+    _getLocalFavorites(agencyId, function(local) {
+
+        // Return the local favorites
+        callback(null, _parseFavorites(local), false);
+
+        // Check if user is logged in
+        user.isLoggedIn(function(isLoggedIn, userInfo) {
+            if ( isLoggedIn ) {
+
+                // Get the last check time
+                _getLastCheck(agencyId, function(lastCheck) {
+
+                    // Get server favorites, if force or need to be updated
+                    let delta = (new Date().getTime()) - lastCheck;
+                    if ( force || delta > CHECK_INTERVAL ) {
+                        api.get("/favorites/" + agencyId + "/" + userInfo.id + "?t=" + new Date().getTime(), function(err, response) {
+
+                            // API ERROR: return error, if forced
+                            if ( err ) {
+                                console.error(err);
+                                if ( force ) return callback(err);
+                            }
+
+                            // API SUCCESS: update favorites
+                            else {
+
+                                // Save the Last Check
+                                _updateLastCheck(agencyId);
+
+                                // Compare last modified dates
+                                _getLastModified(agencyId, function(localLastMod) {
+                                    let serverLastMod = new Date(response.lastModified);
+
+                                    // SERVER NEWER: Update local
+                                    if ( serverLastMod > localLastMod ) {
+                                        _saveLocalFavorites(agencyId, response);
+                                        return callback(null, _parseFavorites(response.favorites), true);
+                                    }
+
+                                    // LOCAL NEWER: Update Server
+                                    else if ( localLastMod > serverLastMod ) {
+                                        _saveServerFavorites(agencyId, local, function(err, updatedFavorites) {
+                                            if ( err ) {
+                                                console.error(err);
+                                                if ( force ) return callback(err);
+                                            }
+                                            else {
+                                                return callback(null, _parseFavorites(updatedFavorites), true);
+                                            }
+                                        });
+                                    }
+
+                                    else {
+                                        if ( force ) return callback(null, _parseFavorites(response.favorites), true);
+                                    }
+
+                                });
+
+                            }
+
+                        });
+                    }
+
+                });
+
+            }
+        });
 
     });
 
+}
 
-    /**
-     * Add Icon and Label to each favorites, then return to callback
-     * @param  {Array} favorites List of favorites to return
-     */
-    function _return(favorites) {
-        if ( favorites ) {
-            for ( let i = 0; i < favorites.length; i++ ) {
-                if ( favorites[i].type === 1 ) {
-                    favorites[i].icon = "access_time";
-                    favorites[i].label = favorites[i].stop.name;
-                }
-                else if ( favorites[i].type === 2 ) {
-                    favorites[i].icon = "train";
-                    favorites[i].label = favorites[i].origin.name + " to " + favorites[i].destination.name;
-                }
+
+/**
+ * Add the specified Stop as a Favorite Station
+ * @param {string}   agencyId Agency ID code
+ * @param {Object}   stop     Stop
+ * @param {Function} callback Callback function(err, favorites)
+ */
+function addStation(agencyId, stop, callback) {
+
+    // Get Current favorites
+    _getLocalFavorites(agencyId, function(favorites) {
+
+        // Add Stop to favorites list
+        favorites.push({
+            type: 1,
+            sequence: favorites.length > 0 ? favorites[favorites.length-1].sequence + 1 : 1,
+            stop: {
+                id: stop.id,
+                name: stop.name
+            },
+            options: {}
+        });
+
+        // Update the favorites
+        _update(agencyId, favorites, function(err, updatedFavorites) {
+            if ( err ) {
+                return callback(err);
             }
-            return callback(null, favorites);
+            return callback(null, _parseFavorites(updatedFavorites));
+        });
+
+    });
+
+}
+
+/**
+ * Remove the specified Stop as a Favorite Station
+ * @param  {String}   agencyId Agency ID code
+ * @param  {Object}   stop     Station Stop
+ * @param  {Function} callback Callback function(err, favorites)
+ */
+function removeStation(agencyId, stop, callback) {
+
+    // Get Current favorites
+    _getLocalFavorites(agencyId, function(favorites) {
+
+        // List of favorites to keep
+        let keep = [];
+
+        // Parse existing favorites
+        for ( let i = 0; i < favorites.length; i++ ) {
+            if ( favorites[i].type !== 1 || (favorites[i].type === 1 && favorites[i].stop.id !== stop.id) ) {
+                keep.push(favorites[i]);
+            }
         }
-        else {
-            return callback(null, []);
-        }
-    }
+
+        // Update the favorites
+        _update(agencyId, keep, function(err, updatedFavorites) {
+            if ( err ) {
+                return callback(err);
+            }
+            return callback(null, _parseFavorites(updatedFavorites));
+        });
+
+    });
+
+}
+
+/**
+ * Add the specified Stops as a Favorite Trip
+ * @param {string}   agencyId    Agency ID code
+ * @param {Object}   origin      Origin Stop
+ * @param {Object}   destination Destination Stop
+ * @param {Function} callback    Callback function(err, favorites)
+ */
+function addTrip(agencyId, origin, destination, callback) {
+
+    // Get Current favorites
+    _getLocalFavorites(agencyId, function(favorites) {
+
+        // Add Trip to favorites list
+        favorites.push({
+            type: 2,
+            sequence: favorites.length > 0 ? favorites[favorites.length-1].sequence + 1 : 1,
+            origin: {
+                id: origin.id,
+                name: origin.name
+            },
+            destination: {
+                id: destination.id,
+                name: destination.name
+            },
+            options: {}
+        });
+
+        // Update the favorites
+        _update(agencyId, favorites, function(err, updatedFavorites) {
+            if ( err ) {
+                return callback(err);
+            }
+            return callback(null, _parseFavorites(updatedFavorites));
+        });
+
+    });
 
 }
 
 
-function addStation(stop, callback) {
-
-}
-
-function removeStation(stop, callback) {
-
-}
-
-function addTrip(origin, destination, callback) {
-
-}
-
-function removeTrip(origin, destination, callback) {
+/**
+ * Remove the speicied Stops as a Favorite Trip
+ * @param  {string}   agencyId    Agency ID code
+ * @param  {Object}   origin      Origin Stop
+ * @param  {Object}   destination Destination Stop
+ * @param  {Function} callback    Callback function(err, favorites)
+ */
+function removeTrip(agencyId, origin, destination, callback) {
     
+    // Get Current favorites
+    _getLocalFavorites(agencyId, function(favorites) {
+
+        // List of favorites to keep
+        let keep = [];
+
+        // Parse existing favorites
+        for ( let i = 0; i < favorites.length; i++ ) {
+            if ( favorites[i].type !== 2 || 
+                (favorites[i].type === 2 && (favorites[i].origin.id !== origin.id || favorites[i].destination.id !== destination.id)) ) {
+                keep.push(favorites[i]);
+            }
+        }
+
+        // Update the favorites
+        _update(agencyId, keep, function(err, updatedFavorites) {
+            if ( err ) {
+                return callback(err);
+            }
+            return callback(null, _parseFavorites(updatedFavorites));
+        });
+
+    });
+
 }
 
 
@@ -95,13 +274,71 @@ function clear() {
 }
 
 
+/**
+ * Update the User's favorites.
+ * - Replace local favorites
+ * - Replace server favorites
+ * @param  {String}   agencyId  Agency ID code
+ * @param  {Array}    favorites List of favorites to replace
+ * @param  {Function} callback  Callback function(err, favorites)
+ */
+function _update(agencyId, favorites, callback) {
+
+    // UPDATE LOCAL FAVORITES
+    let local = {
+        agency: agencyId,
+        lastModified: _toHTTPTimestamp(),
+        favorites: favorites
+    }
+    _saveLocalFavorites(agencyId, local, function(err) {
+        if ( err ) {
+            return callback(err);
+        }
+
+        // UPDATE SERVER FAVORITES
+        _saveServerFavorites(agencyId, favorites, function(err, serverFavorites) {
+            if ( err ) {
+                return callback(err);
+            }
+            return callback(null, serverFavorites);
+        });
+    });
+    
+}
+
+/**
+ * Save Favorites to API Server
+ * @param  {string}   agencyId  Agency ID Code
+ * @param  {Array}    favorites List of favorites
+ * @param  {Function} callback  Callback function(err, favorites)
+ */
+function _saveServerFavorites(agencyId, favorites, callback) {
+    
+    // Check if User is Logged In
+    user.isLoggedIn(function(isLoggedIn, userInfo) {
+        if ( !isLoggedIn ) {
+            return callback(null, favorites);
+        }
+
+        // Send Favorites to Server
+        api.post("/favorites/" + agencyId + "/" + userInfo.id, {favorites: favorites}, function(err, response) {
+            if ( err ) {
+                return callback(err);
+            }
+            _saveLocalFavorites(agencyId, response);
+            return callback(null, response.favorites);
+        });
+    });
+
+}
+
 
 
 /**
  * Save Favorites to Local Cache
  * @param  {string}   agencyId  Favorites agency id
- * @param  {Array}    favorites List of favorites to save
- * @param  {Function} callback  Callback function()
+ * @param  {Object}   favorites Favorites API Response (agency, lastModified, favorites)
+ * @param  {Function} callback  Callback function(err)
  */
 function _saveLocalFavorites(agencyId, favorites, callback) {
     store.put("favorites-" + agencyId, favorites, callback);
@@ -121,9 +358,76 @@ function _getLocalFavorites(agencyId, callback) {
     });
 }
 
+/**
+ * Get the last check timestamp of the specified 
+ * agency's favorites
+ * @param  {string}   agencyId Agency ID Code
+ * @param  {Function} callback Callback function(timestamp)
+ */
+function _getLastCheck(agencyId, callback) {
+    store.get("favorites-checked-" + agencyId, function(err, value) {
+        if ( err || value === undefined ) {
+            return callback(0);
+        }
+        return callback(value);
+    })
+}
+
+/**
+ * Update the last check timestamp of the specified
+ * agency's favorites
+ * @param  {string}   agencyId Agency ID Code
+ * @param  {Function} callback Callacbk function(err)
+ */
+function _updateLastCheck(agencyId, callback) {
+    store.put("favorites-checked-" + agencyId, new Date().getTime());
+}
+
+/**
+ * Get the last modified Date of the specified 
+ * agency's favorites
+ * @param  {string}   agencyId Agency ID code
+ * @param  {Function} callback Callback function(Date)
+ */
+function _getLastModified(agencyId, callback) {
+    store.get("favorites-" + agencyId, function(err, value) {
+        if ( err || value === undefined ) {
+            return callback(new Date(0));
+        }
+        return callback(new Date(value.lastModified));
+    });
+}
+
+/**
+ * Convert the JS Date to an HTTP Timestamp
+ * @param  {Date} date JS Date
+ * @return {String}    HTTP Timestamp
+ */
+function _toHTTPTimestamp(date) {
+    const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    if ( !date ) {
+        date = new Date();
+    }
+    
+    let dow = weekdays[date.getDay()];
+    let mon = months[date.getMonth()];
+    let tz = "GMT" + date.toString().split("GMT")[1].split(" (")[0]
+
+    let rtn = dow + " " + mon + " " + date.getDate() + " " + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + " " + tz;
+
+    return rtn;
+}
+
+
 
 
 module.exports = {
     get: get,
+    addStation: addStation,
+    addTrip: addTrip,
+    removeStation: removeStation,
+    removeTrip: removeTrip,
     clear: clear
 }

@@ -4,33 +4,48 @@
         <!-- TRIP DETAILS -->
         <div class="trip-details">
 
-            <div class="trip-details-info" v-if="TRIP.isDefined">
-                <p><md-icon>train</md-icon> Train #{{ TRIP.shortName }}</p>
-                <p><md-icon>map</md-icon> {{ TRIP.route.shortName }}</p>
-                <p><md-icon>swap_horiz</md-icon> {{ TRIP.direction.description }}</p>
-                <p><md-icon>pin_drop</md-icon> From {{ TRIP.stops[0].stop.name }}</p>
-                <p><md-icon>pin_drop</md-icon> To {{ TRIP.stops[TRIP.stops.length-1].stop.name }}</p>
-                <p><md-icon>monetization_on</md-icon> <span v-if="!TRIP.peak">Off </span>Peak</p>
+            <div class="trip-details-info" v-if="isDefined()">
+                <p><md-icon>train</md-icon> Train #{{ trip.shortName }}</p>
+                <p><md-icon>map</md-icon> {{ trip.route.shortName }}</p>
+                <p><md-icon>swap_horiz</md-icon> {{ getDirectionDescription() }}</p>
+                <p><md-icon>pin_drop</md-icon> From {{ getOriginStopTime().stop.name }}</p>
+                <p><md-icon>pin_drop</md-icon> To {{ getDestinationStopTime().stop.name }}</p>
+                <p><md-icon>monetization_on</md-icon> <span v-if="!trip.peak">Off </span>Peak</p>
             </div>
 
-            <div class="trip-details-stops" v-if="TRIP.isDefined">
-                <div v-for="(stop, index) in TRIP.stops" :key="stop.id" 
-                     :style="{'background-color': stop.highlight ? '#' + TRIP.route.color : index % 2 === 0 ? '#fff' : '#eee', 'color': stop.highlight ? '#' + TRIP.route.textColor : '#000'}"
+            <div class="trip-details-stops" v-if="isDefined()">
+                <div v-for="(stop, index) in getStopTimes()" :key="stop.id" 
+                     :style="{'background-color': stop.highlight ? stop.highlight : index % 2 === 0 ? '#fff' : '#eee', 'color': stop.highlight ? '#' + TRIP.route.textColor : '#000'}"
                      class="trip-details-stops-row">
                     <div class="trip-details-stop-row-item trip-details-stops-row-time">
                         <span v-if="stop.departure.seconds !== stop.arrival.seconds">
-                            <md-icon>access_time</md-icon>&nbsp;{{ stop.arrival.time }}<br />
+                            <md-icon>access_time</md-icon>&nbsp;{{ stop.arrival.time }}&nbsp;<br />
                         </span>
-                        <md-icon>access_time</md-icon>&nbsp;{{ stop.departure.time }}
+                        <md-icon>access_time</md-icon>&nbsp;{{ stop.departure.time }}&nbsp;
                     </div>
                     <div class="trip-details-stop-row-item trip-details-stops-row-stop">
-                        <span v-if="stop.departure.seconds !== stop.arrival.seconds">
-                            <md-icon>place</md-icon>&nbsp;{{ stop.stop.name }} (Arrive)<br />
-                            <md-icon>place</md-icon>&nbsp;{{ stop.stop.name }} (Depart)
-                        </span>
-                        <span v-else>
-                            <md-icon>place</md-icon>&nbsp;{{ stop.stop.name }}
-                        </span>
+                        <div v-if="stop.departure.seconds !== stop.arrival.seconds" class="stop-container-both">
+                            <div class="stop-icon-arrival">
+                                <md-icon>place</md-icon>
+                            </div>
+                            <div class="stop-name-arrival">
+                                {{ stop.stop.name }} (Arrive)
+                            </div>
+                            <div class="stop-icon-departure">
+                                <md-icon>place</md-icon>
+                            </div>
+                            <div class="stop-name-departure">
+                                {{ stop.stop.name }} (Depart)
+                            </div>
+                        </div>
+                        <div v-else class="stop-container">
+                            <div class="stop-icon">
+                                <md-icon>place</md-icon>
+                            </div>
+                            <div class="stop-name">
+                                {{ stop.stop.name }}
+                            </div>
+                        </div>
                     </div>
                     <div class="trip-details-stop-row-item trip-details-stops-row-traveltime">
                         {{ stop.traveltime }}
@@ -44,7 +59,7 @@
         </div>
 
         <!-- UNDEFINED TRIP -->
-        <div class="trip-details-unknown" v-if="!TRIP.isDefined">
+        <div class="trip-details-unknown" v-if="!isDefined()">
             <p><md-icon>help_outline</md-icon> Unknown Trip</p>
         </div>
 
@@ -53,52 +68,7 @@
 
 
 <script>
-
-    /**
-     * Convert the number of minutes into h hours m minutes string
-     * @param mins number of minutes
-     * @param [short] set hours to h and minutes to m
-     * @returns {string}
-     */
-    function minutesToString(mins, short) {
-        let h = Math.floor(mins/60);
-        let m = Math.floor(mins%60);
-        let s = "";
-
-        // Set Hours
-        if ( h === 1 ) {
-            s += h + " hour";
-        }
-        else if ( h > 1 ) {
-            s += h + " hours";
-        }
-
-        // Set Spacer
-        if ( m > 0 && h > 0 ) {
-            s += " ";
-        }
-
-        // Set Minutes
-        if ( h === 0 && m === 0 ) {
-            s += "0 minutes";
-        }
-        else if ( m === 1 ) {
-            s += m + " minute";
-        }
-        else if ( m > 1 ) {
-            s += m + " minutes";
-        }
-
-        // Shorten
-        if ( short ) {
-            s = s.replace(" minutes", "m");
-            s = s.replace(" minute", "m");
-            s = s.replace(" hours", "h");
-            s = s.replace(" hour", "h");
-        }
-
-        return s;
-    }
+    const datetime = require("@/utils/datetime.js");
 
     module.exports = {
 
@@ -120,6 +90,22 @@
              */
             station: {
                 type: Object
+            },
+
+            /**
+             * Enter Stop of the Trip Segment
+             * @type {Object}
+             */
+            enter: {
+                type: Object
+            },
+
+            /**
+             * Exit Stop of the Trip Segment
+             * @type {Object}
+             */
+            exit: {
+                type: Object
             }
 
         },
@@ -135,27 +121,115 @@
              */
             TRIP: function() {
                 
-                // Set if Trip is defined
-                this.trip.isDefined = this.trip.stops && this.trip.stops.length > 0;
+                // Rename stopTimes to stops
+                if ( this.trip.hasOwnProperty("stopTimes") ) {
+                    this.trip.stops = this.trip.stopTimes;
+                    delete this.trip.stopTimes;
+                }
 
-                // Add Stop Travel Times
-                if ( this.trip.isDefined && this.station ) {
+                // Station: Add Stop Travel Times
+                if ( this.isDefined() && this.station ) {
                     let start = undefined;
                     for ( let i = 0; i < this.trip.stops.length; i++ ) {
                         if ( this.trip.stops[i].stop.id === this.station.id ) {
-                            this.trip.stops[i].highlight = true;
+                            let o = i % 2 === 0 ? "cc" : "ff";
+                            this.trip.stops[i].highlight = "#" + this.trip.route.color + o;
                             start = this.trip.stops[i].departure.seconds;
                         }
                         else if ( start !== undefined ) {
                             let ts = this.trip.stops[i].arrival.seconds - start;
-                            this.trip.stops[i].traveltime = minutesToString(ts / 60, true);
+                            this.trip.stops[i].traveltime = datetime.minutesToString(ts / 60, true);
+                        }
+                    }
+                }
+
+                // Trip: Add Stop Travel Times
+                if ( this.isDefined() && this.enter && this.exit ) {
+                    let start = undefined;
+                    for ( let i = 0; i < this.trip.stops.length; i++ ) {
+                        console.log(this.trip.stops[i].stop.id + " =?= " + this.enter.stop.id);
+                        if ( this.trip.stops[i].stop.id === this.enter.stop.id ) {
+                            let o = i % 2 === 0 ? "cc" : "ff";
+                            this.trip.stops[i].highlight = "#" + this.trip.route.color + o;
+                            start = this.trip.stops[i].departure.time;
+                        }
+                        else if ( start !== undefined ) {
+                            let o = i % 2 === 0 ? "cc" : "ff";
+                            this.trip.stops[i].highlight = "#" + this.trip.route.color + o;
+                            let ts = this.trip.stops[i].arrival.time - start;
+                            this.trip.stops[i].traveltime = datetime.minutesToString(ts / 60, true);
+                            if ( this.trip.stops[i].stop.id === this.exit.stop.id ) {
+                                start = undefined;
+                            }
                         }
                     }
                 }
 
                 return this.trip;
             }
+        },
+
+        // ==== COMPONENT METHODS ==== //
+        methods: {
+
+            /**
+             * Check if the Trip is defined
+             * @return {Boolean} True if the trip is defined
+             */
+            isDefined: function() {
+                return this.getStopTimes() && this.getStopTimes().length > 0;
+            },
+
+            /**
+             * Get the Trip's StopTimes
+             * @return {Array} List of StopTimes
+             */
+            getStopTimes: function() {
+                if ( this.trip.stopTimes ) {
+                    return this.trip.stopTimes;
+                }
+                else if ( this.trip.stops ) {
+                    return this.trip.stops;
+                }
+                else { 
+                    return undefined;
+                }
+            },
+
+            /**
+             * Get the Trip's Origin StopTime
+             * @return {Object} The Trip's first StopTime
+             */
+            getOriginStopTime: function() {
+                let stops = this.getStopTimes();
+                if ( stops ) {
+                    return stops[0];
+                }
+                return undefined;
+            },
+
+            /**
+             * Get the Trip's Destination StopTime
+             * @return {Object} The Trip's last StopTime
+             */
+            getDestinationStopTime: function() {
+                let stops = this.getStopTimes();
+                if ( stops ) {
+                    return stops[stops.length-1];
+                }
+                return undefined;
+            },
+
+            /**
+             * Get the Trip's Direction Description
+             * @return {string} Direction Description
+             */
+            getDirectionDescription: function() {
+                return this.trip.directionDescription ? this.trip.directionDescription : this.trip.direction.description;
+            }
+
         }
+
     }
 </script>
 
@@ -163,7 +237,7 @@
 <style scoped>
     .trip-details-wrapper {
         width: 100%;
-        background-color: #f5f5f5;
+        background-color: #f9f9f9;
         padding: 5px 10px;
         box-shadow:
             inset 0 12px 3px -10px #CCC,
@@ -199,7 +273,7 @@
 
     .trip-details-stops-row {
         display: grid;
-        grid-template-columns: 90px 1fr 60px 30px;
+        grid-template-columns: max-content 1fr 60px 30px;
         grid-template-areas: "time stop traveltime ada";
         background-color: #fff;
         border-top: 1px solid #d4d4d488;
@@ -224,6 +298,38 @@
     .trip-details-stop-row-ada {
         grid-area: ada;
     }
+
+    .stop-container-both {
+        display: grid;
+        grid-template-columns: 24px 1fr;
+        grid-template-areas: "icon-arrival name-arrival" "icon-departure name-departure";
+        align-items: center;
+    }
+    .stop-icon-arrival {
+        grid-area: icon-arrival;
+    }
+    .stop-name-arrival {
+        grid-area: name-arrival;
+    }
+    .stop-icon-departure {
+        grid-area: icon-departure;
+    }
+    .stop-name-departure {
+        grid-area: name-departure;
+    }
+    .stop-container {
+        display: grid;
+        grid-template-columns: 24px 1fr;
+        grid-template-areas: "icon name";
+        align-items: center;
+    }
+    .stop-icon {
+        grid-area: icon;
+    }
+    .stop-name {
+        grid-area: name;
+    }
+    
 
     .trip-details-unknown {
         width: 100%;

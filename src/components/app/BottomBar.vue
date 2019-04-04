@@ -53,7 +53,6 @@
         position: fixed;
         bottom: 0;
         width: 100%;
-        margin-left: -16px;
         z-index: 500;
     }
 </style>

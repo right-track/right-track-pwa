@@ -1,7 +1,7 @@
 <template>
     <div>
         <md-list>
-            <md-list-item class="favorites-list-item" v-for="fav in favorites" :key="fav.sequence" @click="selectFavorite(fav)">
+            <md-list-item class="favorites-list-item" v-for="(fav, index) in favorites" :key="'favorite-' + index" @click="selectFavorite(fav)">
                 <div class="favorites-list-item-container">
                     <md-icon class="favorites-list-item-icon">{{ fav.icon }}</md-icon>
                     <p class="favorites-list-item-text">{{ fav.label }}</p>

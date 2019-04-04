@@ -13,8 +13,6 @@
 
                 <!-- APP TITLE -->
                 <span id="app-title" class="md-title rt-primary-text" style="flex: 1">{{ toolbarTitle }}</span>
-                
-                <!-- TODO: Add More Menu Icons here for (hide small, xsmall) -->
 
                 <!-- AUTH BUTTON -->
                 <md-button v-if="authButton.visible" class="md-xsmall-hide rt-primary-text" @click="auth"><md-icon>{{ authButton.icon }}</md-icon> {{ authButton.text }}</md-button>
@@ -47,6 +45,7 @@
                 <router-view 
                     @setMoreMenuItems="onSetMoreMenuItems" 
                     @setTitle="onSetTitle" 
+                    @updateFavorites="onUpdateFavorites"
                     @showDialog="onShowDialog" 
                     @showSnackbar="onShowSnackbar">
                 </router-view>
@@ -74,8 +73,7 @@
 
                 <!-- APP SNACKBAR -->
                 <md-snackbar md-position="center" :md-duration="snackbar.duration ? snackbar.duration : 4000" :md-active.sync="snackbar.visible" md-persistent>
-                    <span style="100%">{{ snackbar.message }}</span>
-                    <md-button class="md-flat" @click="snackbar.visible=false">Dismiss</md-button>
+                    <span style="width: 100%; text-align: left">{{ snackbar.message }}</span>
                 </md-snackbar>
 
             </md-app-content>
@@ -463,8 +461,7 @@
                     this.moreMenu = false;
                 }
             },
-
-
+            
             /**
              * Set the Document and Toolbar Title
              * @param  {string} title Toolbar Title
@@ -475,7 +472,14 @@
                     _setTitle(vm, title);
                 });
             },
-            
+
+            /**
+             * Force a favorites update for the side menu
+             * @return {[type]} [description]
+             */
+            onUpdateFavorites() {
+                _updateFavorites(this, true);
+            },
 
             /**
              * Show a confirmation dialog
@@ -567,19 +571,20 @@
     .md-app-drawer {
         padding-top: 15px;
         width: 230px;
-        height: calc(100vh - 64px);
-        z-index: 1000;
+        height: calc(100vh - 52px);
+        z-index: 1000 !important;
         background-color: #fff;
         border-right: 1px solid #ddd;
     }
     .md-app-toolbar {
-        height: 64px;
+        height: 52px !important;
+        min-height: 52px !important;
     }
     .md-app-content {
-        height: calc(100vh - 64px);
+        height: calc(100vh - 52px);
         overflow: auto;
         background-color: #eee !important;
-        padding-bottom: 20px;
+        padding: 0 !important;
     }
 
     // More Menu Components

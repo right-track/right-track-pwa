@@ -1,0 +1,47 @@
+TODO:
+
+APP:
+    station selection dialog:
+        filter by route
+        search by name
+    add network offline indicator
+    add transit feed updater
+
+
+PAGES:
+
+    Register:
+        add registration functionality
+
+    Favorites:
+        reorder favorites
+        remove favorites
+
+    Trips:
+        add trip selection
+
+    Station:
+        
+
+    Trip:
+        More Menu
+        real-time information
+        determine next departure / departs in time
+        audo-update feed
+        BUG: sometimes search doesn't work
+
+    Trip Details: 
+        move refactoring to methods
+        stop times
+
+
+UTILS:
+    db:
+        getDB:
+            when preparing database collect list of callback functions
+            if database is already in the process of being prepared, add 
+                callback to the list and return all callbacks once finished
+
+    api:
+        callback doesn't seem to be getting called when request fails due to 
+            no network availability

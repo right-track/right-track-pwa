@@ -48,6 +48,13 @@ const LOGIN = function(vm) {
             title: "Agencies",
             icon: "list",
             page: "agencies"
+        },
+        {
+            key: 5,
+            type: "item",
+            title: "Back",
+            icon: "keyboard_arrow_left",
+            page: vm.$route.query.src
         }
     ]
 }

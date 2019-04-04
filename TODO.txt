@@ -31,8 +31,6 @@ PAGES:
         BUG: sometimes search doesn't work
 
     Trip Details: 
-        move refactoring to methods
-        stop times
 
 
 UTILS:

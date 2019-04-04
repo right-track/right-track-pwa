@@ -44,7 +44,11 @@ function minutesToString(mins, short) {
     return s;
 }
 
-
+/**
+ * Convert HH:mm:ss time to h m ampm
+ * @param {String} input Input Time
+ * @return {String}      Formatted Time
+ */
 function HHmmssToTime(input) {
     
     // Split into hours and minutes

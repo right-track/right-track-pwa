@@ -44,19 +44,57 @@
                 <div class="date-time-container">
 
                     <div class="date-container">
-                        <v-btn color="primary" @click="selectTime" depressed>
-                            <v-icon>calendar_today</v-icon>&nbsp;&nbsp;
-                            <span>{{ getDepartureDateString() }}</span>
-                            &nbsp;&nbsp;<v-icon>arrow_drop_down</v-icon>
-                        </v-btn>
+
+                        <!-- Date Picker Dialog -->
+                        <v-dialog ref="dateDialog" v-model="dateDialogVisible" 
+                                  :return-value.sync="departure.date"
+                                  persistent lazy full-width width="290px">
+                            
+                            <!-- Date Picker Button -->
+                            <template v-slot:activator="{ on }">
+                                <v-btn color="primary" @click="dateDialogVisible = true" depressed>
+                                    <v-icon>calendar_today</v-icon>&nbsp;&nbsp;
+                                    <span>{{ departure.dateString }}</span>
+                                    &nbsp;&nbsp;<v-icon>arrow_drop_down</v-icon>
+                                </v-btn>
+                            </template>
+                            
+                            <!-- Date Picker -->
+                            <v-date-picker v-model="departure.date" scrollable>
+                                <v-spacer></v-spacer>
+                                <v-btn @click="dateDialogVisible = false" color="primary" flat>Cancel</v-btn>
+                                <v-btn @click="selectDate" color="primary">OK</v-btn>
+                            </v-date-picker>
+
+                        </v-dialog>
+
                     </div>
 
                     <div class="time-container">
-                        <v-btn color="primary" @click="selectTime" depressed>
-                            <v-icon>access_time</v-icon>&nbsp;&nbsp;
-                            <span>{{ getDepartureTimeString() }}</span>
-                            &nbsp;&nbsp;<v-icon>arrow_drop_down</v-icon>
-                        </v-btn>
+                        
+                        <!-- Time Picker Dialog -->
+                        <v-dialog ref="timeDialog" v-model="timeDialogVisible" 
+                                  :return-value.sync="departure.time"
+                                  persistent lazy full-width width="290px">
+                            
+                            <!-- Time Picker Button -->
+                            <template v-slot:activator="{ on }">
+                                <v-btn color="primary" @click="timeDialogVisible = true" depressed>
+                                    <v-icon>access_time</v-icon>&nbsp;&nbsp;
+                                    <span>{{ departure.timeString }}</span>
+                                    &nbsp;&nbsp;<v-icon>arrow_drop_down</v-icon>
+                                </v-btn>
+                            </template>
+                            
+                            <!-- Time Picker -->
+                            <v-time-picker v-model="departure.time" scrollable>
+                                <v-spacer></v-spacer>
+                                <v-btn @click="timeDialogVisible = false" color="primary" flat>Cancel</v-btn>
+                                <v-btn @click="selectTime" color="primary">OK</v-btn>
+                            </v-time-picker>
+
+                        </v-dialog>
+
                     </div>
 
                 </div>
@@ -127,10 +165,25 @@
                 destination: undefined,
 
                 /**
-                 * Trip Departure Date/Time
-                 * @type {Date}
+                 * Departure Information
+                 * @type {Object}
                  */
-                departure: new Date(),
+                departure: {
+                    date: new Date().toISOString().substr(0, 10),
+                    dateString: undefined,
+                    time: new Date().toLocaleTimeString().substr(0, 5),
+                    timeString: undefined
+                },
+
+                /**
+                 * Date Dialog Visibility
+                 */
+                dateDialogVisible: false,
+
+                /**
+                 * Time Dialog Visiblity
+                 */
+                timeDialogVisible: false,
 
                 /**
                  * Station Dialog Properties
@@ -170,6 +223,26 @@
             },
 
             /**
+             * Handle a selected Date
+             * - set the dialog reference
+             * - update the formatted string
+             */
+            selectDate: function() {
+                this.$refs.dateDialog.save(this.departure.date);
+                this.departure.dateString = this.getDepartureDateString();
+            },
+
+            /**
+             * Handle a selected Time
+             * - set the dialog reference
+             * - update the formatted string
+             */
+            selectTime: function() {
+                this.$refs.timeDialog.save(this.departure.time);
+                this.departure.timeString = this.getDepartureTimeString();
+            },
+
+            /**
              * Get the Departure Date String
              * @return {string} Formatted Departure Date
              */
@@ -177,19 +250,13 @@
                 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
                 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
                 
-                let dow = weekdays[this.departure.getDay()];
-                let mon = months[this.departure.getMonth()];
+                let date = new Date(this.departure.date + " 12:00");
+                let dow = weekdays[date.getDay()];
+                let mon = months[date.getMonth()];
+                let day = date.getDate();
 
-                let rtn = dow + ", " + mon + " " + this.departure.getDate() + ", " + this.departure.getFullYear();
+                let rtn = dow + ", " + mon + " " + day + ", " + date.getFullYear();
                 return rtn;
-            },
-
-            /**
-             * Handle for when date picker is opened
-             * @return {[type]} [description]
-             */
-            datePickerOpened: function() {
-                this.$emit('updateTheme');
             },
 
             /**
@@ -197,8 +264,11 @@
              * @return {string} Formatted Departure Time
              */
             getDepartureTimeString: function() {
-                let hr = this.departure.getHours();
-                let mi = this.departure.getMinutes();
+                console.log(this.departure.time);
+                let hr = parseInt(this.departure.time.split(':')[0]);
+                let mi = parseInt(this.departure.time.split(':')[1]);
+                console.log(hr);
+                console.log(mi);
                 let ap = undefined; 
                 if ( hr === 0 ) {
                     hr = "12";
@@ -218,13 +288,6 @@
                     mi = "0" + mi;
                 }
                 return hr + ":" + mi + " " + ap;
-            },
-
-            /**
-             * Show the Time Picker
-             */
-            selectTime: function() {
-
             },
 
             /**
@@ -256,6 +319,8 @@
             _getStops(vm, function(stops) {
                 vm.dialogProps.stops = stops;
             });
+            vm.departure.dateString = vm.getDepartureDateString();
+            vm.departure.timeString = vm.getDepartureTimeString();
         }
 
     }

@@ -4,23 +4,20 @@ API SERVER:
     change OPTIONS /users to GET /users/requirements
     intercept all OPTIONS request and return CORS response
 
-
-VUETIFY MIGRATION:
-    change all md- components to corresponding v- components
-    store setting-drawer-visible
-    app:
-        bottom toolbar for transit status information
-            format:
-                icon/colored line name  two line details
-            be able to include custom messages
-
         
 APP:
+    store setting-drawer-visible
     station selection dialog:
         filter by route
         search by name
     add network offline indicator
     add transit feed updater
+    bottom toolbar for transit status information
+            format:
+                icon/colored line name  two line details
+            be able to include custom messages
+    logout user when API receives a 401 when making a request
+    update manifest theme color when agency changes
 
 
 PAGES:

@@ -4,7 +4,7 @@
         <!-- List of Trip Results -->
         <template v-for="(trip, index) in results">
             <v-card class="trip-result-card" :key="'trip-' + trip.segments[0].trip.id">
-                <rt-trip-result-item  :trip=trip></rt-trip-result-item>
+                <rt-trip-result-item :trip="trip" :statusFeeds="statusFeeds"></rt-trip-result-item>
             </v-card>
         </template>
         
@@ -36,9 +36,21 @@
 <script>
     const core = require("right-track-core");
     const TripSearch = core.search.TripSearch;
+    const cache = require("@/utils/cache.js");
     const DB = require("@/utils/db.js");
     const favorites = require("@/utils/favorites.js");
     const TripResultItem = require("@/components/trip/TripResultItem.vue").default;
+
+    /**
+     * List of Stop IDs for Status Information
+     * @type {Array}
+     */
+    let STATUS_STOP_IDS = [];
+
+    /**
+     * Status Timer ID
+     */
+    let STATUS_TIMER_ID = undefined;
 
 
     /**
@@ -78,9 +90,17 @@
             {
                 key: 1,
                 type: "item",
-                title: "Test 1",
+                title: "Reverse Trip",
                 function: function() {
-                    console.log("Testing 1");
+                    console.log("Reverse Trip");
+                }
+            },
+            {
+                key: 2,
+                type: "item",
+                title: "Change Date/Time",
+                function: function() {
+                    console.log("Change Date/Time");
                 }
             }
         ]
@@ -190,10 +210,67 @@
             // Start Search
             search.search(db, function(err, results) {
                 vm.results = results;
+
+                // Set Status Stops
+                vm.statusStopIds = [vm.origin.id];
+                for ( let i = 0; i < results.length; i++ ) {
+                    for ( let j = 0; j < results[i].transfers.length; j++ ) {
+                        let id = results[i].transfers[j].stop.id;
+                        if ( !vm.statusStopIds.includes(id) ) {
+                            vm.statusStopIds.push(id);
+                        }
+                    }
+                }
+
+                // Update Status Information
+                _updateStatus(vm);
+
+                // Set Timer to Update Status Info
+                if ( STATUS_TIMER_ID ) {
+                    clearInterval(STATUS_TIMER_ID);
+                }
+                STATUS_TIMER_ID = setInterval(function(){ _updateStatus(vm) }, 60000);
+
             });
         });
 
     } 
+
+    /**
+     * Update the Status Information for the Origin and Transfer Stops
+     * @param  {Vue} vm Vue Instance
+     */
+    function _updateStatus(vm) {
+        vm.updatingStatus = true;
+        let count = 0;
+        let max = vm.statusStopIds.length;
+
+        for ( let i = 0; i < vm.statusStopIds.length; i++ ) {
+            cache.getStationFeed(vm.agencyId, vm.statusStopIds[i], function(err, feed) {
+                if ( !err ) {
+                    console.log("SETTING STATUS FEED: " + feed.origin.id);
+                    let exists = false;
+                    for ( let j = 0; j < vm.statusFeeds.length; j++ ) {
+                        if ( vm.statusFeeds[j].origin.id === feed.origin.id ) {
+                            exists = true;
+                            vm.statusFeeds[j] = feed;
+                        }
+                    }
+                    if ( !exists ) {
+                        vm.statusFeeds.push(feed);
+                    }
+                }
+                _finish();
+            });
+        }
+
+        function _finish() {
+            count++;
+            if ( count >= max ) {
+                vm.updatingStatus = false;
+            }
+        }
+    }
 
 
     module.exports = {
@@ -206,6 +283,8 @@
                 origin: {},
                 destination: {},
                 results: undefined,
+                statusStopIds: [],
+                statusFeeds: [],
                 updatingStatus: false,
                 updatingFavorite: true,
                 isFavorite: false
@@ -225,7 +304,7 @@
              * @return {[type]} [description]
              */
             refresh: function() {
-                console.log("Refresh Real-Time Status");
+                _updateStatus(this);
             },
 
             /**

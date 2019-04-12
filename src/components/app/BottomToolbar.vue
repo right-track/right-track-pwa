@@ -1,5 +1,5 @@
 <template>
-    <v-toolbar v-if="properties.visible" class="bottom-toolbar secondary-bg" flat dense></v-toolbar>
+    <v-toolbar v-if="properties.visible" class="bottom-toolbar secondary-bg" dense></v-toolbar>
 </template>
 
 <script>

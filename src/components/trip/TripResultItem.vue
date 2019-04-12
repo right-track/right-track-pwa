@@ -15,13 +15,13 @@
                 {{ formatTime(segment.enter.departureTime) }} <v-icon color="#111">arrow_forward</v-icon> {{ formatTime(segment.exit.arrivalTime) }}
             </div>
             <div class="trip-segment-status">
-                On Time
+                <span v-html="getStatus(segment)"></span>
             </div>
             <div class="trip-segment-traveltime">
                 &nbsp;<v-icon color="#111">access_time</v-icon> {{ formatTravelTime(segment.travelTime) }}
             </div>
             <div class="trip-segment-track">
-                Track 2
+                <span v-html="getTrack(segment)"></span>
             </div>
 
             <v-expand-transition>
@@ -61,6 +61,9 @@
             trip: {
                 type: Object,
                 required: true
+            },
+            statusFeeds: {
+                type: Array
             }
         },
 
@@ -78,6 +81,52 @@
 
         // ==== COMPONENT METHODS ==== //
         methods: {
+
+            /**
+             * Get the Segment's Departure Status
+             * @param  {Object} segment Trip Segment
+             * @return {string}         Departure Status
+             */
+            getStatus(segment) {
+                for ( let i = 0; i < this.statusFeeds.length; i++ ) {
+                    if ( this.statusFeeds[i].origin.id === segment.enter.stop.id ) {
+                        for ( let j = 0; j < this.statusFeeds[i].departures.length; j++ ) {
+                            if ( this.statusFeeds[i].departures[j].trip.id === segment.trip.id ) {
+                                let status = this.statusFeeds[i].departures[j].status.status;
+                                if ( status.toLowerCase() === "on time" || status.toLowerCase() === 'scheduled' ) {
+                                    return "<span style='background-color: #4caf50; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
+                                }
+                                else {
+                                    return "<span class='background-color: #ff5252; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
+            /**
+             * Get the Segment's Departure Status
+             * @param  {Object} segment Trip Segment
+             * @return {string}         Departure Status
+             */
+            getTrack(segment) {
+                for ( let i = 0; i < this.statusFeeds.length; i++ ) {
+                    if ( this.statusFeeds[i].origin.id === segment.enter.stop.id ) {
+                        for ( let j = 0; j < this.statusFeeds[i].departures.length; j++ ) {
+                            if ( this.statusFeeds[i].departures[j].trip.id === segment.trip.id ) {
+                                let track = this.statusFeeds[i].departures[j].status.track;
+                                if ( track && track !== "" ) {
+                                    return "<span style='font-weight: 500'>Track " + track + "</span>";
+                                }
+                                else {
+                                    return track;
+                                }
+                            }
+                        }
+                    }
+                }
+            },
 
             /**
              * Format the Arrival/Departure times to hh:mm ampm
@@ -213,5 +262,4 @@
         text-align: center;
         padding-top: 10px;
     }
-
 </style>

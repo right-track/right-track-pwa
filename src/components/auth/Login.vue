@@ -8,7 +8,7 @@
                 <h2>Log In</h2>
             </v-card-title>
             <v-card-text>
-                <p class="font-weight-light">
+                <p class="subheading">
                     Log in to your <strong>Right Track Account</strong> using either your <em>username</em> or 
                     <em>email address</em>.
                 </p>

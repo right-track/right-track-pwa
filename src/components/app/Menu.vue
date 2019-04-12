@@ -86,7 +86,6 @@
      * - Check Logged In State
      */
     function _update(vm) {
-        console.log("UPDATING MENU");
         _setMenuItems(vm);
         _setFavoritesExpansion(vm);
         vm.auth.display = !["login", "logout", "register"].includes(vm.$router.currentRoute.name);

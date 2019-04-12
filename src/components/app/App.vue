@@ -168,7 +168,6 @@
      * @param {string} title Page Title
      */
     function _setTitle(vm, title) {
-        console.log("--> SET TITLE: " + title);
         if ( title === undefined ) {
             title = vm.agencyTitle ? vm.agencyTitle : config.title;
         }
@@ -234,7 +233,6 @@
      * @param {Vue} vm    Vue Instance
      */
     function _applyTheme(vm) {
-        console.log("---> APPLYING THEME...");
         let colors = vm.colors;
         vm.$vuetify.theme.primary = colors.primary;
         vm.$vuetify.theme.primaryText = colors.primaryText;

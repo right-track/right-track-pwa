@@ -8,7 +8,7 @@
                 <h2>Create Account</h2>
             </v-card-title>
             <v-card-text>
-                <p class="font-weight-list">
+                <p class="subheading">
                     Create a <strong>Right Track Account</strong> to sync your favorites across devices.
                 </p>
 

@@ -4,35 +4,41 @@
         <!-- TRIP DETAILS -->
         <div class="trip-details">
 
-            <div class="trip-details-info" v-if="isDefined()">
-                <p><md-icon>train</md-icon> Train #{{ trip.shortName }}</p>
-                <p><md-icon>map</md-icon> {{ trip.route.shortName }}</p>
-                <p><md-icon>swap_horiz</md-icon> {{ getDirectionDescription() }}</p>
-                <p><md-icon>pin_drop</md-icon> From {{ getOriginStopTime().stop.name }}</p>
-                <p><md-icon>pin_drop</md-icon> To {{ getDestinationStopTime().stop.name }}</p>
-                <p><md-icon>monetization_on</md-icon> <span v-if="!trip.peak">Off </span>Peak</p>
+            <!-- TRIP METADATA -->
+            <div class="trip-details-info" v-if="isDefined">
+                <p><v-icon color="#111">train</v-icon> Train #{{ trip.shortName }}</p>
+                <p><v-icon color="#111">map</v-icon> {{ trip.route.shortName }}</p>
+                <p><v-icon color="#111">swap_horiz</v-icon> {{ getDirectionDescription() }}</p>
+                <p><v-icon color="#111">pin_drop</v-icon> From {{ getOriginStopTime().stop.name }}</p>
+                <p><v-icon color="#111">pin_drop</v-icon> To {{ getDestinationStopTime().stop.name }}</p>
+                <p><v-icon color="#111">monetization_on</v-icon> <span v-if="!trip.peak">Off </span>Peak</p>
             </div>
 
-            <div class="trip-details-stops" v-if="isDefined()">
+            <!-- TRIP STOP TIMES -->
+            <div class="trip-details-stops" v-if="isDefined">
                 <div v-for="(st, index) in getStopTimes()" :key="st.stop.id" 
                      :style="getStopTimeRowStyle(index)"
                      class="trip-details-stops-row">
+                    
+                    <!-- Arrival / Departure Time -->
                     <div class="trip-details-stop-row-item trip-details-stops-row-time">
                         <span v-if="stopTimeHasDepartureDelay(index)">
-                            <md-icon>access_time</md-icon>&nbsp;{{ getStopTimeArrival(index) }}&nbsp;<br />
+                            <v-icon :color="getStopTimeRowTextColor(index)">access_time</v-icon>&nbsp;{{ getStopTimeArrival(index) }}&nbsp;<br />
                         </span>
-                        <md-icon>access_time</md-icon>&nbsp;{{ getStopTimeDeparture(index) }}&nbsp;
+                        <v-icon :color="getStopTimeRowTextColor(index)">access_time</v-icon>&nbsp;{{ getStopTimeDeparture(index) }}&nbsp;
                     </div>
+
+                    <!-- Stop Name -->
                     <div class="trip-details-stop-row-item trip-details-stops-row-stop">
                         <div v-if="stopTimeHasDepartureDelay(index)" class="stop-container-both">
                             <div class="stop-icon-arrival">
-                                <md-icon>place</md-icon>
+                                <v-icon :color="getStopTimeRowTextColor(index)">place</v-icon>
                             </div>
                             <div class="stop-name-arrival">
                                 {{ st.stop.name }} (Arrive)
                             </div>
                             <div class="stop-icon-departure">
-                                <md-icon>place</md-icon>
+                                <v-icon :color="getStopTimeRowTextColor(index)">place</v-icon>
                             </div>
                             <div class="stop-name-departure">
                                 {{ st.stop.name }} (Depart)
@@ -40,27 +46,32 @@
                         </div>
                         <div v-else class="stop-container">
                             <div class="stop-icon">
-                                <md-icon>place</md-icon>
+                                <v-icon :color="getStopTimeRowTextColor(index)">place</v-icon>
                             </div>
                             <div class="stop-name">
                                 {{ st.stop.name }}
                             </div>
                         </div>
                     </div>
+
+                    <!-- Travel Time to Stop -->
                     <div class="trip-details-stop-row-item trip-details-stops-row-traveltime">
-                        {{ getStopTimeTravelTime(index) }}
+                        {{ stopTimesTravelTime[index] }}
                     </div>
+
+                    <!-- Stop ADA -->
                     <div class="trip-details-stop-row-item trip-details-stops-row-ada">
-                        <md-icon v-if="st.stop.wheelchairBoarding === 1">accessible</md-icon>
+                        <v-icon :color="getStopTimeRowTextColor(index)" v-if="st.stop.wheelchairBoarding === 1">accessible</v-icon>
                     </div>
+
                 </div>
             </div>
 
         </div>
 
         <!-- UNDEFINED TRIP -->
-        <div class="trip-details-unknown" v-if="!isDefined()">
-            <p><md-icon>help_outline</md-icon> Unknown Trip</p>
+        <div class="trip-details-unknown" v-if="!isDefined">
+            <p><v-icon>help_outline</v-icon> Unknown Trip</p>
         </div>
 
     </div>
@@ -110,11 +121,37 @@
 
         },
 
-        // ==== COMPONENT METHODS ==== //
-        methods: {
+        // ==== COMPUTED PROPERTIES ==== //
+        computed: {
 
             /**
-             * Check if the Trip is defined
+             * The Trip Details Type
+             * @return {string} 'station' or 'trip'
+             */
+            type: function() {
+                if ( this.station ) {
+                    return 'station';
+                }
+                else if ( this.enter && this.exit ) {
+                    return 'trip';
+                }
+            },
+
+            /**
+             * The Trip origination source
+             * @return {string} 'core' or 'api'
+             */
+            source: function() {
+                if ( this.trip.stopTimes ) {
+                    return 'core';
+                }
+                else if ( this.trip.stops ) {
+                    return 'api';
+                }
+            },
+
+            /**
+             * Flag for if the trip is defined
              * @return {Boolean} True if the trip is defined
              */
             isDefined: function() {
@@ -122,19 +159,114 @@
             },
 
             /**
+             * A list of indices of the highlighted stops
+             * @return {Array} Array of highlighted stop time indices
+             */
+            stopTimesHighlighted: function() {
+                let rtn = [];
+                let sts = this.getStopTimes();
+
+                if ( this.type === 'station') {
+                    for ( let i = 0; i < sts.length; i++ ) {
+                        if ( sts[i].stop.id === this.station.id ) {
+                            rtn.push(i);
+                        }
+                    }
+                }
+
+                else if ( this.type === 'trip' ) {
+                    let h = false;
+                    for ( let i = 0; i < sts.length; i++ ) {
+                        if ( sts[i].stop.id === this.enter.stop.id ) {
+                            h = true;
+                        }
+                        if ( h ) {
+                            rtn.push(i);
+                        }
+                        if ( sts[i].stop.id === this.exit.stop.id ) {
+                            h = false;
+                        }
+                    }
+                }
+                
+                return rtn;
+            },
+
+            /**
+             * A list of travel times to each of the stops
+             * @return {Array} Array of formatted travel times
+             */
+            stopTimesTravelTime: function() {
+                let rtn = [];
+                let sts = this.getStopTimes();
+
+                // Station
+                if ( this.type === 'station' ) {
+                    let start = undefined;
+                    let delta = 0;
+                    for ( let i = 0; i < sts.length; i++ ) {
+                        if ( sts[i].stop.id === this.station.id ) {
+                            start = this.source === 'core' ? sts[i].departure.time : sts[i].departure.seconds;
+                            rtn[i] = "";
+                        }
+                        else if ( start ) {
+                            let a = this.source === 'core' ? sts[i].arrival.time : sts[i].arrival.seconds;
+                            delta = a - start;
+                            rtn[i] = datetime.minutesToString(delta / 60, true);
+                        }
+                        else {
+                            rtn[i] = "";
+                        }
+                    }
+                }
+
+                // Trip
+                else if ( this.type === 'trip' ) {
+                    let start = undefined;
+                    for ( let i = 0; i < sts.length; i++ ) {
+                        let delta = 0;
+                        if ( sts[i].stop.id === this.enter.stop.id ) {
+                            start = this.source === 'core' ? sts[i].departure.time : sts[i].departure.seconds;
+                        }
+                        else if ( start ) {
+                            let a = this.source === 'core' ? sts[i].arrival.time : sts[i].arrival.seconds;
+                            delta = a - start;
+                        }
+
+                        if ( sts[i].stop.id === this.exit.stop.id ) {
+                            start = undefined;
+                        }
+
+                        if ( delta > 0 ) {
+                           rtn[i] = datetime.minutesToString(delta / 60, true);
+                        }
+                        else {
+                            rtn[i] = "";
+                        }
+                    }
+                    
+                }
+
+                return rtn;
+            }
+
+        },
+
+        // ==== COMPONENT METHODS ==== //
+        methods: {
+
+            /**
              * Get the Trip's StopTimes
              * @return {Array} List of StopTimes
              */
             getStopTimes: function() {
-                if ( this.trip.stopTimes ) {
+                if ( this.source === 'core' ) {
                     return this.trip.stopTimes;
                 }
-                else if ( this.trip.stops ) {
+                else if ( this.source === 'api' ) {
                     return this.trip.stops;
                 }
-                else { 
-                    return undefined;
-                }
+                return [];
             },
 
             /**
@@ -146,7 +278,6 @@
                 if ( stops ) {
                     return stops[0];
                 }
-                return undefined;
             },
 
             /**
@@ -158,7 +289,6 @@
                 if ( stops ) {
                     return stops[stops.length-1];
                 }
-                return undefined;
             },
 
             /**
@@ -166,7 +296,7 @@
              * @return {string} Direction Description
              */
             getDirectionDescription: function() {
-                return this.trip.directionDescription ? this.trip.directionDescription : this.trip.direction.description;
+                return this.source === 'core' ? this.trip.directionDescription : this.trip.direction.description;
             },
 
             /**
@@ -176,7 +306,7 @@
              * @return {Object}    Stop Time Row Style
              */
             getStopTimeRowStyle: function(index) {
-                if ( this.isStopTimeHighlighted(index) ) {
+                if ( this.stopTimesHighlighted.includes(index) ) {
                     let o = index % 2 === 0 ? "cc" : "ff";
                     return {
                         "background-color": "#" + this.trip.route.color + o,
@@ -192,31 +322,12 @@
             },
 
             /**
-             * Determine if the specified stop time row should 
-             * be highlighted
-             * @param  {int}  index Stop Time Row Index
-             * @return {Boolean}    True, if the row should be highlighted
+             * Get the text color for the specified stop time row
+             * @param  {int} index Stop Time Row Index
+             * @return {string}    Hex color code
              */
-            isStopTimeHighlighted: function(index) {
-                if ( this.station ) {
-                    return this.getStopTimes()[index].stop.id === this.station.id;
-                }
-                else if ( this.enter && this.exit ) {
-                    let sts = this.getStopTimes();
-                    let h = false;
-                    for ( let i = 0; i < sts.length; i++ ) {
-                        if ( sts[i].stop.id === this.enter.stop.id ) {
-                            h = true;
-                        }
-                        if ( i === index ) {
-                            return h;
-                        }
-                        if ( sts[i].stop.id === this.exit.stop.id ) {
-                            h = false;
-                        }
-                    }
-                }
-                return false;
+            getStopTimeRowTextColor: function(index) {
+                return this.stopTimesHighlighted.includes(index) ? "#" + this.trip.route.textColor : "#111";
             },
 
             /**
@@ -227,13 +338,7 @@
              */
             stopTimeHasDepartureDelay: function(index) {
                 let st = this.getStopTimes()[index];
-                if ( st.arrival.seconds ) {
-                    return st.departure.seconds !== st.arrival.seconds
-                }
-                else if ( st.arrival.time ) {
-                    return st.departure.time !== st.arrival.time;
-                }
-                return false;
+                return this.source === 'core' ? st.departure.time !== st.arrival.time : st.departure.seconds !== st.arrival.seconds;
             },
 
             /**
@@ -243,12 +348,7 @@
              */
             getStopTimeArrival: function(index) {
                 let st = this.getStopTimes()[index];
-                if ( st.arrivalTime ) {
-                    return datetime.HHmmssToTime(st.arrivalTime);
-                }
-                else if ( st.arrival.time ) {
-                    return st.arrival.time;
-                }
+                return this.source === 'core' ? datetime.HHmmssToTime(st.arrivalTime) : st.arrival.time;
             },
 
             /**
@@ -258,61 +358,7 @@
              */
             getStopTimeDeparture: function(index) {
                 let st = this.getStopTimes()[index];
-                if ( st.departureTime ) {
-                    return datetime.HHmmssToTime(st.departureTime);
-                }
-                else if ( st.departure.time ) {
-                    return st.departure.time;
-                }
-            },
-
-            /**
-             * Get the Travel Time to the specified Stop Time
-             * @param  {int} index Stop Time index row
-             * @return {String}    Formatted travel time
-             */
-            getStopTimeTravelTime: function(index) {
-                let sts = this.getStopTimes();
-
-                // Station
-                if ( this.station ) {
-                    let start = undefined;
-                    let delta = 0;
-                    for ( let i = 0; i < sts.length; i++ ) {
-                        if ( sts[i].stop.id === this.station.id ) {
-                            start = sts[i].departure.seconds ? sts[i].departure.seconds : sts[i].departure.time;
-                        }
-                        if ( start && i === index ) {
-                            let a = sts[i].arrival.seconds ? sts[i].arrival.seconds : sts[i].arrival.time;
-                            delta = a - start;
-                        }     
-                    }
-                    if ( delta > 0 ) {
-                        return datetime.minutesToString(delta / 60, true);
-                    }
-                }
-
-                // Trip
-                else if ( this.enter && this.exit ) {
-                    let start = undefined;
-                    let delta = 0;
-                    for ( let i = 0; i < sts.length; i++ ) {
-                        if ( sts[i].stop.id === this.enter.stop.id ) {
-                            start = sts[i].departure.seconds ? sts[i].departure.seconds : sts[i].departure.time;
-                        }
-                        if ( start && i === index ) {
-                            let a = sts[i].arrival.seconds ? sts[i].arrival.seconds : sts[i].arrival.time;
-                            delta = a - start;
-                        }
-                        if ( sts[i].stop.id === this.exit.stop.id ) {
-                            start = undefined;
-                        }
-                    }
-                    if ( delta > 0 ) {
-                        return datetime.minutesToString(delta / 60, true);
-                    }
-                }
-                
+                return this.source === 'core' ? datetime.HHmmssToTime(st.departureTime) : st.departure.time;
             }
 
         }
@@ -333,6 +379,7 @@
 
     .trip-details {
         width: 100%;
+        font-weight: normal;
         display: grid;
         grid-gap: 10px;
         grid-template-areas: "info" "stops";
@@ -343,7 +390,7 @@
             grid-template-areas: "info stops";
         }
     }
-    .trip-details .md-icon {
+    .trip-details .v-icon {
         font-size: 18px !important;
     }
     .trip-details p {

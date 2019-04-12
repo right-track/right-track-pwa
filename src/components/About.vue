@@ -1,13 +1,14 @@
 <template>
-    <div class="content-container">
+    <v-container class="container">
 
         <!-- ABOUT CARD -->
-        <md-card>
-            <md-card-header>
-                <h1>About</h1>
-            </md-card-header>
+        <v-card>
+            <v-card-title class="secondary-bg">
+                <v-icon large left>info</v-icon> 
+                <h2>About</h2>
+            </v-card-title>
 
-            <md-card-content>
+            <v-card-text>
 
                 <!-- Site Info -->
                 <p>
@@ -47,9 +48,9 @@
                     <li v-for="agency in agencies">{{ agency.name }} ({{ agency.database.version }})</li>
                 </ul>
 
-            </md-card-content>
-        </md-card>
-    </div>
+            </v-card-text>
+        </v-card>
+    </v-container>
 </template>
 
 
@@ -111,12 +112,6 @@
         // ==== COMPONTENT MOUNTED ==== //
         mounted() {
             this.agencyId = this.$route.params.agency;
-
-            // Set More Menu Items and Agency Information
-            this.$emit('setMoreMenuItems', []);
-            this.$emit('setAgencyId', this.agencyId);
-
-            // Update Server and Agency Information
             _updateServerInfo(this);
             _updateAgencies(this);
         }

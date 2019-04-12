@@ -1,26 +1,19 @@
 <template>
-    <div class="content-container">
+    <v-container class="container">
 
         <!-- AGENCY SELECTION CARD -->
-        <md-card>
-            
-            <!-- Card Header -->
-            <md-card-header>
-                <h1 class="agency-card-header-text">{{ title }}</h1>
-                <h2 class="agency-card-subheading-text md-small-hide">Select an Agency for schedules and status information:</h2>
-            </md-card-header>
-
-            <!-- Card Content / Agency List -->
-            <md-card-content class="agency-card-content">
-                <rt-agency-list :agencies="agencies"></rt-agency-list>
-            </md-card-content>
-
-        </md-card>
+        <v-card>
+            <v-card-title>
+                <h2 class="display-2">{{ title }}</h2>
+                <span class="subheading font-weight-light v-xsmall-hide">Select an Agency for schedules and status information:</span>
+            </v-card-title>
+            <rt-agency-list :agencies="agencies"></rt-agency-list>
+        </v-card>
 
         <!-- Right Track Information -->
         <rt-info></rt-info>
 
-    </div>
+    </v-container>
 </template>
 
 
@@ -105,33 +98,9 @@
 
 
 <style scoped>
-    .md-card-heading {
-        padding: 0;
+    .v-card {
+        padding: 20px 25px 25px 25px;
     }
-
-    .agency-card-header-text {
-        font-weight: normal;
-        font-size: 36px;
-        line-height: 36px;
-        margin-bottom: 0;
-        margin-right: 30px;
-        text-align: center;
-    }
-    @media (min-width: 600px) {
-        .agency-card-header-text {
-            text-align: left;
-        }
-    }
-    .agency-card-subheading-text {
-        font-weight: normal;
-        font-size: 16px;
-        color: #666;
-    }
-    
-    .agency-card-content {
-        padding: 0;
-    }
-
     .server-info {
         margin-top: 15px;
         text-align: center;

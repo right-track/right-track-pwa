@@ -1,33 +1,37 @@
 <template>
-    <div class="content-container">
+    <v-container class="container">
         
         <!-- Favorites Empty State -->
-        <div v-show="showEmptyState">
-            <md-empty-state md-icon="stars" md-label="Favorite Trips & Stations">
-                <p class="md-empty-state-description">
-                    Use the <md-icon>edit</md-icon> button below to add a favorite.
-                </p>
-                <p class="md-empty-state-description">
-                    A <strong>Trip</strong> <md-icon>train</md-icon> displays departure and arrival times between 
-                    two stops. A <strong>Station</strong> <md-icon>access_time</md-icon> displays real-time status 
-                    information for upcoming departures from a single stop.
+        <div v-show="showEmptyState" class="empty-state">
+            <v-icon class="empty-state-icon">stars</v-icon>
+
+            <p class="subheading">
+                Use the <v-icon>edit</v-icon> button below to add a favorite.
+            </p>
+            <p class="subheading">
+                A <strong>Trip</strong> <v-icon>train</v-icon> displays departure and arrival times between 
+                two stops. A <strong>Station</strong> <v-icon>access_time</v-icon> displays real-time status 
+                information for upcoming departures from a single stop.
+            </p>
+
+            <div class="favorites-login" v-show="showLogin">
+                <p class="subheading">
+                    Use your <strong>Right Track Account</strong> to sync your favorites across devices.
                 </p>
 
-                <div class="favorites-login" v-show="showLogin">
-                    <p class="md-empty-state-description">
-                        Use your <strong>Right Track Account</strong> to sync your favorites across devices.
-                    </p>
-
-                    <div class="md-layout" style="width: 100%">
-                        <div class="md-layout-item md-size-40 md-small-size-100" style="padding: 0 5px;">
-                            <md-button class="md-primary md-flat rt-primary-fg" @click="login"><md-icon>person_outline</md-icon> Log In</md-button>
-                        </div>
-                        <div class="md-layout-item md-size-60 md-small-size-100" style="padding: 0 5px;">
-                            <md-button class="md-primary md-flat rt-primary-fg" @click="register"><md-icon>person_add</md-icon> Create Account</md-button>
-                        </div>
+                <div class="button-container">
+                    <div class="button-login">
+                        <v-btn @click="login" color="primary">
+                            <v-icon>person_outline</v-icon> Log In
+                        </v-btn>
+                    </div>
+                    <div class="button-register">
+                        <v-btn @click="register" color="primary" outline>
+                            <v-icon>person_add</v-icon> Create Account
+                        </v-btn>
                     </div>
                 </div>
-            </md-empty-state>
+            </div>
         </div>
 
 
@@ -35,26 +39,16 @@
         <div v-show="showFavorites">
             
             <!-- Favorites List -->    
-            <md-card class="favorites-card">
-                <md-card-header class="md-card-header-bg rt-secondary">
-                    <div class="md-card-header-button-container">
-                        <md-button class="md-icon-button rt-secondary-text" @click="forceUpdate">
-                            <md-icon>refresh</md-icon>
-                        </md-button>
-                    </div>
-                    <div class="md-title">
-                        <md-icon>star</md-icon>
-                        Favorites
-                    </div>
-                </md-card-header>
-                <md-card-content class="favorites-card-content">
-                    <rt-favorites-list :favorites="favorites"></rt-favorites-list>
-                </md-card-content>
-            </md-card>
+            <v-card class="favorites-card">
+                <v-card-title class="headline secondary-bg">
+                    <v-icon>star</v-icon>&nbsp;&nbsp;Favorites
+                </v-card-title>
+                <rt-favorites-list :favorites="favorites"></rt-favorites-list>
+            </v-card>
 
             <!-- Database Info -->
             <div v-if="databaseInfo" class="db-info-container">
-                <p class="light">
+                <p class="font-weight-light">
                     <strong>Database Version {{ databaseInfo.version }}</strong><br />
                     Published: {{ databaseInfo.gtfs_publish_date }}<br />
                     Compiled: {{ databaseInfo.compile_date }}
@@ -65,35 +59,40 @@
 
         
         <!-- Favorites FAB -->
-        <md-speed-dial md-event="click" md-effect="scale" md-direction="top">
-            <md-speed-dial-target id="favorites-fab" class="favorites-fab rt-primary" :disabled="!selectDialogProps.stops">
-                <md-icon class="md-morph-initial">edit</md-icon>
-                <md-icon class="md-morph-final">close</md-icon>
-            </md-speed-dial-target>
-            <md-speed-dial-content class="favorites-fab-content">
-                <md-button class="md-icon-button rt-primary-fg">
-                    <md-icon>delete</md-icon>
-                </md-button>
-                <md-button class="md-icon-button rt-primary-fg">
-                    <md-icon>shuffle</md-icon>
-                </md-button>
-                <md-button class="md-icon-button rt-primary-fg" @click="selectStation">
-                    <span class="favorites-fab-button-add rt-secondary">+</span>
-                    <md-icon>access_time</md-icon>
-                </md-button>
-                <md-button class="md-icon-button rt-primary-fg" @click="selectTrip">
-                    <span class="favorites-fab-button-add rt-secondary">+</span>
-                    <md-icon>train</md-icon>
-                </md-button>
-            </md-speed-dial-content>
-        </md-speed-dial>
+        <v-speed-dial
+            v-model="fab"
+            class="favorites-fab"
+            fixed direction="top"
+            transition="slide-y-reverse-transition">
+            
+            <template v-slot:activator>
+                <v-btn v-model="fab" class="primary-bg" fab>
+                    <v-icon>edit</v-icon>
+                    <v-icon>close</v-icon>
+                </v-btn>
+            </template>
+            
+            <v-btn @click="selectTrip" class="primary-fg" small fab>
+                <v-icon>train</v-icon>
+            </v-btn>
+            <v-btn @click="selectStation" class="primary-fg" small fab>
+                <v-icon>access_time</v-icon>
+            </v-btn>
+            <v-btn class="primary-fg" small fab>
+                <v-icon>shuffle</v-icon>
+            </v-btn>
+            <v-btn color="error" small fab>
+                <v-icon>delete</v-icon>
+            </v-btn>
 
+        </v-speed-dial>
+        
 
         <!-- SELECT STATION DIALOG -->
         <rt-stop-selection-dialog :properties="selectDialogProps" @stopSelected="onStopSelected"></rt-stop-selection-dialog>
 
 
-    </div>
+    </v-container>
 </template>
 
 
@@ -105,6 +104,21 @@
     const DB = require("@/utils/db.js");
     const FavoritesList = require("@/components/favorites/FavoritesList.vue").default;
     const StopSelectionDialog = require("@/components/StopSelectionDialog.vue").default;
+
+
+    // MORE MENU ITEMS
+    const MORE_MENU_ITEMS = function(vm) {
+        return [
+            {
+                key: 1,
+                type: "item",
+                title: "Refresh Favorites",
+                function: function() {
+                    vm.forceUpdate();
+                }
+            }
+        ]
+    }
 
 
     /**
@@ -129,6 +143,7 @@
                 vm.favorites = favs;
                 vm.showEmptyState = favs.length === 0;
                 vm.showFavorites = !vm.showEmptyState;
+                vm.$emit('updateFavorites');
             }
         });
     }
@@ -183,6 +198,7 @@
                 showFavorites: false,
                 showLogin: false,
                 databaseInfo: undefined,
+                fab: false,
                 selectDialogProps: {
                     visible: false,
                     type: undefined,
@@ -258,7 +274,6 @@
              */
             onStopSelected(type, stop1, stop2) {
                 let vm = this;
-                vm.selectDialogProps.visible = false;
                 
                 if ( type === "station" ) {
                     favorites.addStation(vm.agencyId, stop1, _return);
@@ -296,12 +311,10 @@
             // Set Agency ID
             vm.agencyId = vm.$route.params.agency;
 
-            // Set More Menu Items
-            vm.$emit('setMoreMenuItems', []);
-
             // Set Logged In Status
             user.isLoggedIn(function(isLoggedIn) {
                 vm.showLogin = !isLoggedIn;
+                vm.$emit('setMoreMenuItems', isLoggedIn ? MORE_MENU_ITEMS(vm) : []);
             });
 
             // Display Favorites
@@ -323,21 +336,41 @@
 
 
 <style scoped>
-    .md-empty-state {
-        color: #444;
+    .empty-state {
         max-width: 500px;
+        text-align: center;
+        margin: auto;
     }
-    .favorites-login .md-button {
+    .empty-state * {
+        color: #666;
+    }
+    .empty-state-icon {
+        font-size: 160px;
+    }
+
+    .button-container {
+        display: grid;
+        grid-gap: 10px;
+        grid-template-columns: 1fr;
+        grid-template-areas: "login" "register";
+    }
+    @media (min-width: 600px) {
+        .button-container {
+            grid-template-columns: 1fr 1fr;
+            grid-template-areas: "register login";
+        }
+    }
+    .button-login {
+        grid-area: login;
+        text-align: center;
+    }
+    .button-register {
+        grid-area: register;
+        text-align: center;
+    }
+    .button-container .v-btn {
         width: 90%;
-    }
-
-    .md-card-header-button-container {
-        float: right;
-        margin-top: -3px;
-    }
-
-    .favorites-card-content {
-        padding-bottom: 0 !important;
+        max-width: 300px;
     }
 
     .db-info-container {
@@ -346,42 +379,14 @@
         text-align: center;
     }
 
-    .favorites-fab-content .md-button {
-        background-color: #fff;
-    }
-    .favorites-fab-button-add {
+    .favorites-fab {
         position: fixed;
-        top: 4px;
-        right: 5px;
-        font-size: 11px;
-        width: 13px;
-        height: 13px;
-        border-radius: 25px;
-        z-index: 999;
+        bottom: 70px;
+        right: 15px;
     }
-
-    @media screen and (min-width: 0px) and (max-width: 600px) {
+    @media (min-width: 960px) {
         .favorites-fab {
-            position: fixed;
-            right: 15px;
-            bottom: 65px;
-        }
-        .favorites-fab-content {
-            position: fixed;
-            right: 22px;
-            bottom: 130px;
-        }
-    }
-    @media screen and (min-width: 601px) {
-        .favorites-fab {
-            position: fixed;
-            right: 25px;
-            bottom: 25px;
-        }
-        .favorites-fab-content {
-            position: fixed;
-            right: 32px;
-            bottom: 90px;
+            bottom: 15px;
         }
     }
 </style>

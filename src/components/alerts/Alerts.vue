@@ -21,13 +21,7 @@
     module.exports = {
 
         mounted() {
-            let agency = this.$route.params.agency;
-            let vm = this;
-
-            // Set More Menu Items and Agency Information
             this.$emit('setMoreMenuItems', moreMenuItems);
-            this.$emit('setAgencyId', agency);
-            
         }
 
     }

@@ -1,5 +1,20 @@
 TODO:
 
+API SERVER:
+    change OPTIONS /users to GET /users/requirements
+    intercept all OPTIONS request and return CORS response
+
+
+VUETIFY MIGRATION:
+    change all md- components to corresponding v- components
+    store setting-drawer-visible
+    app:
+        bottom toolbar for transit status information
+            format:
+                icon/colored line name  two line details
+            be able to include custom messages
+
+        
 APP:
     station selection dialog:
         filter by route
@@ -11,6 +26,7 @@ APP:
 PAGES:
 
     Register:
+        get registration requirements from server
         add registration functionality
 
     Favorites:

@@ -1,50 +1,66 @@
 <template>
-    <div class="content-container">
+    <v-container class="container">
         
         <!-- LOGIN CARD -->
-        <md-card>
-            <md-card-header class="md-card-header-bg rt-secondary">
-                <div class="md-title">
-                    <md-icon>person_outline</md-icon>
-                    Log In
-                </div>
-            </md-card-header>
-            <md-card-content>
-                <p class="info">
+        <v-card>
+            <v-card-title class="secondary-bg">
+                <v-icon large left>person_outline</v-icon> 
+                <h2>Log In</h2>
+            </v-card-title>
+            <v-card-text>
+                <p class="font-weight-light">
                     Log in to your <strong>Right Track Account</strong> using either your <em>username</em> or 
                     <em>email address</em>.
                 </p>
 
-                <!-- User login -->
-                <md-field>
-                    <md-icon>person</md-icon>
-                    <label>Username or Email</label>
-                    <md-input v-model="user" @keyup.enter="login"></md-input>
-                </md-field>
+                <br />
 
-                <!-- User Password -->
-                <md-field :md-toggle-password="false">
-                    <md-icon>lock</md-icon>
-                    <label>Password</label>
-                    <md-input v-model="pass" type="password" @keyup.enter="login"></md-input>
-                </md-field>
+                <v-form v-model="valid" ref="form">
 
-                <!-- Buttons -->
-                <div class="md-layout">
-                    <div class="md-layout-item md-small-size-100 md-small-show"  style="text-align: center">
-                        <md-button class="md-raised rt-primary" @click="login" :disabled.sync="loggingIn"><md-icon>person_outline</md-icon> Log In</md-button>
-                    </div>
-                    <div class="md-layout-item md-small-size-100" style="text-align: center">
-                        <md-button class="md-flat rt-primary-fg" @click="register" :disabled.sync="loggingIn"><md-icon>person_add</md-icon> Create Account</md-button>
-                    </div>
-                    <div class="md-layout-item md-small-size-100 md-small-hide"  style="text-align: center">
-                        <md-button class="md-raised rt-primary" @click="login" :disabled.sync="loggingIn"><md-icon>person_outline</md-icon> Log In</md-button>
-                    </div>
-                </div>
-            </md-card-content>
-        </md-card>
+                    <!-- User login -->
+                    <v-text-field box
+                        prepend-icon="person"
+                        label="Username or Email"
+                        type="email"
+                        v-model="user"
+                        :rules="[rules.required]"
+                        @keyup.enter="login">
+                    </v-text-field>
 
-    </div>
+                    <br />
+
+                    <!-- User Password -->
+                    <v-text-field box
+                        prepend-icon="lock"
+                        label="Password"
+                        type="password"
+                        v-model="pass"
+                        :rules="[rules.required]"
+                        @keyup.enter="login">
+                    </v-text-field>
+
+                    <br />
+
+                    <!-- Buttons -->
+                    <div class="button-container">
+                        <div class="button-login">
+                            <v-btn @click="login" :disabled="!valid || loggingIn" color="primary">
+                                <v-icon>person_outline</v-icon> Log In
+                            </v-btn>
+                        </div>
+                        <div class="button-register">
+                            <v-btn @click="register" :disabled.sync="loggingIn" color="primary" outline>
+                                <v-icon>person_add</v-icon> Create Account
+                            </v-btn>
+                        </div>
+                    </div>
+
+                </v-form>
+            </v-card-text>
+            
+        </v-card>
+
+    </v-container>
 </template>
 
 
@@ -58,9 +74,15 @@
             return {
                 agencyId: undefined,
                 src: undefined,
+                valid: undefined,
                 user: null,
                 pass: null,
-                loggingIn: false
+                loggingIn: false,
+                rules: {
+                    required: function(value) {
+                       return !!value || 'Required';
+                    }
+                }
             }
         },
 
@@ -84,24 +106,26 @@
              * Start the login process
              */
             login() {
-                let vm = this;
-                vm.loggingIn = true;
+                if ( this.$refs.form.validate() ) {
+                    let vm = this;
+                    vm.loggingIn = true;
+                    
+                    // Attempt to Login
+                    user.login(this.user, this.pass, function(err, userInfo) {
+                        vm.loggingIn = false;
 
-                // Attempt to Login
-                user.login(this.user, this.pass, function(err, userInfo) {
-                    vm.loggingIn = false;
+                        // Login Error
+                        if ( err ) {
+                            vm.$emit('showSnackbar', err.message);
+                        }
 
-                    // Login Error
-                    if ( err ) {
-                        vm.$emit('showSnackbar', err.message);
-                    }
-
-                    // Login Successful
-                    else {
-                        vm.$emit('showSnackbar', "Welcome, " + userInfo.username + "!");
-                        vm.$router.push({path: vm.src});
-                    }
-                });
+                        // Login Successful
+                        else {
+                            vm.$emit('showSnackbar', "Welcome, " + userInfo.username + "!");
+                            vm.$router.push({path: vm.src});
+                        }
+                    });
+                }
             }
 
         },
@@ -110,10 +134,6 @@
         mounted() {
             this.agencyId = this.$route.query.agency;
             this.src = this.$route.query.src;
-
-            // Set More Menu Items and Agency Information
-            this.$emit('setMoreMenuItems', []);
-            this.$emit('setAgencyId', this.agencyId);    
         }
 
     }
@@ -121,11 +141,28 @@
 
 
 <style scoped>
-    p.info {
-        font-size: 140%;
-        color: #333;
+    .button-container {
+        display: grid;
+        grid-gap: 10px;
+        grid-template-columns: 1fr;
+        grid-template-areas: "login" "register";
     }
-    .md-button {
-        width: 75%;
+    @media (min-width: 600px) {
+        .button-container {
+            grid-template-columns: 1fr 1fr;
+            grid-template-areas: "register login";
+        }
+    }
+    .button-login {
+        grid-area: login;
+        text-align: center;
+    }
+    .button-register {
+        grid-area: register;
+        text-align: center;
+    }
+    .button-container .v-btn {
+        width: 90%;
+        max-width: 300px;
     }
 </style>

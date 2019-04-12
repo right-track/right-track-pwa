@@ -1,72 +1,28 @@
-
 <template>
-    <div class="container">
+    <v-container class="container" style="margin-bottom: 40px;">
 
         <!-- Station Table -->
-        <md-card>
+        <v-card>
             
-            <!-- Sticky: Card Header, Progress Bar, Table Header -->
-            <div class="sticky">
-
-                <!-- Station Table Header -->
-                <md-card-header class="md-card-header-bg rt-secondary">
-                    
-                    <!-- Header Buttons -->
-                    <div class="md-card-header-button-container">
-                        <md-button class="md-icon-button rt-secondary-text" @click="toggleFavorite" :disabled="updatingFavorite">
-                            <md-icon v-if="isFavorite">star</md-icon>
-                            <md-icon v-else>star_outline</md-icon>
-                        </md-button>
-                        <md-button class="md-icon-button rt-secondary-text" @click="refresh" :disabled="updating">
-                            <md-icon>refresh</md-icon>
-                        </md-button>
-                    </div>
-
-                    <!-- Header Title -->
-                    <div class="md-card-header-title">
-                        <div class="md-card-header-title-icon">
-                            <h2><md-icon>access_time</md-icon></h2>
-                        </div>
-                        <div class="md-card-header-title-name">
-                            <h2>{{ stop.name }}</h2>
-                        </div>
-                    </div>
-
-                </md-card-header>
-
-                <!-- Station Table Progress Bar -->
-                <div class="card-progress">
-                    <div class="card-progress-line rt-primary" :style="{opacity: updating ? 0.4 : 1.0}"></div>
-                    <div class="card-progress-subline rt-primary" :class="{'card-progress-subline-inc': updating}"></div>
-                    <div class="card-progress-subline rt-primary" :class="{'card-progress-subline-dec': updating}"></div>
-                </div>
-
-                <!-- Station Departures Header -->
-                <div class="departures-header">
-                    <div class="departures-header-item departures-header-time">Departure</div>
-                    <div class="departures-header-item departures-header-destination">Destination</div>
-                    <div class="departures-header-item departures-header-status">Status</div>
-                    <div class="departures-header-item departures-header-track">Track</div>
-                </div>
-
+            <!-- Station Departures Header -->
+            <div class="departures-header">
+                <div class="departures-header-item departures-header-time">Departure</div>
+                <div class="departures-header-item departures-header-destination">Destination</div>
+                <div class="departures-header-item departures-header-status">Status</div>
+                <div class="departures-header-item departures-header-track">Track</div>
             </div>
-            <!-- /Sticky -->
+
+            <!-- Loading Progress Bar -->
+            <v-progress-linear :indeterminate="updating" :value="updating ? undefined : 100" height="5" color="primary" style="margin: 0"></v-progress-linear>
 
             <!-- Station Departures -->
-            <md-card-content>
-                <div v-for="(departure, index) in departures" :key="stop.name + '-departure-' + index">
-                    <rt-departure-item :departure="departure" :station="stop"></rt-departure-item>
-                </div>
-            </md-card-content>
+            <template v-for="(departure, index) in departures">
+                <rt-departure-item :departure="departure" :station="stop" :key="stop.name + '-departure-' + departure.trip.id + '-' + index"></rt-departure-item>
+            </template>
 
-        </md-card>
+        </v-card>
 
-        <div class="transit-status-container rt-secondary">
-            <div class="transit-status-border rt-primary"></div>
-            <div class="transit-status-content"></div>
-        </div>
-
-    </div>
+    </v-container>
 </template>
 
 
@@ -100,6 +56,7 @@
         DB.getDB(vm.agencyId, function(err, db) {
             if ( err ) {
                 console.error(err);
+                vm.updating = false;
                 vm.$emit('showSnackbar', 'Could not get agency database.  Please try again.');
                 return;
             }
@@ -108,7 +65,24 @@
             core.query.stops.getStop(db, vm.$route.params.stop, function(err, stop) {
                 if ( err ) {
                     console.error(err);
+                    vm.updating = false;
                     vm.$emit('showSnackbar', 'Database Error.  Please try again.');
+                    return;
+                }
+
+                if ( !stop ) {
+                    vm.updating = false;
+                    vm.$emit('showSnackbar', {
+                        duration: 0,
+                        message: 'Unknown Station requested.  Please select another Station.',
+                        dismiss: 'Stations',
+                        onDismiss: function() {
+                            vm.$router.push({
+                                name: "stations",
+                                agency: vm.$router.currentRoute.params.agency
+                            });
+                        }
+                    });
                     return;
                 }
 
@@ -124,8 +98,12 @@
                 // Check for favorites
                 _updateFavorites(vm);
 
-                // Update the More Menu Items
+                // Update the Menu Items
                 _updateMoreMenu(vm);
+                _updateToolbarMenu(vm);
+
+                // Reset the Bottom Toolbar
+                vm.$emit('setBottomToolbar', {visible: true});
 
                 // Set auto-update timer
                 if ( TIMER_ID ) {
@@ -181,6 +159,34 @@
         });
     }
 
+
+    /**
+     * Update the Toolbar Menu Items
+     * @param  {Vue} vm    Vue Instance
+     */
+    function _updateToolbarMenu(vm) {
+        let toolbarMenuItems = [
+            {
+                key: 1,
+                type: "icon",
+                icon: vm.isFavorite ? "star" : "star_outline",
+                disabled: vm.updatingFavorite,
+                function() {
+                    vm.toggleFavorite();
+                }
+            },
+            {
+                key: 2,
+                type: "icon",
+                icon: "refresh",
+                disabled: vm.updating,
+                function() {
+                    vm.refresh();
+                }
+            }
+        ]
+        vm.$emit('setToolbarMenuItems', toolbarMenuItems);
+    }
 
     /**
      * Update the More Menu Items
@@ -294,103 +300,32 @@
              */
             $route (to, from) {
                 _updateStop(this);
+            },
+
+            /**
+             * Watchers for toolbar menu
+             */
+            updating() {
+                _updateToolbarMenu(this);
+            },
+            updatingFavorite() {
+                _updateToolbarMenu(this);
+            },
+            isFavorite() {
+                _updateToolbarMenu(this);
             }
 
         }
-
-
+        
     }
     
 </script>
 
 
 <style scoped>
-    .transit-status-container {
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        margin: 0;
-        width: 100%;
-        height: 56px;
-        z-index: 600;
-    }
-    @media (min-width: 600px) {
-        .transit-status-container {
-            padding-left: 230px;
-        }
-    }
-
-    .transit-status-border {
-        height: 2px;
-        width: 100%;
-    }
-
-
-    .container {
-        margin: 0 auto;
-        padding: 0 0 90px 0;
-        max-width: 650px;
-    }
-    @media (min-width: 960px) {
-        .container {
-            padding-top: 40px;
-        }
-    }
-
-    div.sticky {
-        position: -webkit-sticky;
-        position: sticky;
-        top: -5px;
-        z-index: 500;
-    }
-
-    .md-card {
-        margin: -5px 0 0 0 !important;
-        padding: 0 !important;
-    }
-
-    .md-card-header {
-        height: 56px;
-        padding: 12px 10px 10px 10px;
-        margin: 0;
-    }
-    @media (min-width: 960px) {
-        .md-card-header {
-            padding: 0 10px;
-        }
-    }
-    .md-card-header h2 {
-        margin: 0;
-        font-weight: normal !important;
-    }
-    .md-card-header-title {
-        display: grid;
-        grid-gap: 0 10px;
-        grid-template-columns: 24px 1fr;
-        grid-template-areas: "icon name";
-        align-items: center;
-        height: 100%;
-    }
-    .md-card-header-icon {
-        grid-area: icon;
-    }
-    .md-card-header-name {
-        grid-area: name;
-    }
-
-    .md-card-header-button-container {
-        float: right;
-        margin-top: -2px;
-    }
-    @media (min-width: 960px) {
-        .md-card-header-button-container {
-            margin-top: 8px;
-        }
-    }
-
     .departures-header {
-        margin: 5px 0 -5px 0;
         padding: 5px 0;
+        min-height: 50px;
         display: grid;
         grid-gap: 0 10px;
         grid-template-columns: 100px 1fr 75px;
@@ -405,13 +340,9 @@
         }
     }
 
-    .departures-header {
-        height: 50px;
-    }
     .departures-header-item {
         font-weight: bold;
         font-size: 16px;
-        padding-left: 5px;
         margin-top: auto;
         margin-bottom: auto;
     }
@@ -428,11 +359,5 @@
     .departures-header-track {
         grid-area: track;
         text-align: center;
-    }
-
-    .md-card-content {
-        margin: 5px 0;
-        padding: 0 !important;
-        background-color: rgba(0, 0, 0, 0.5);
     }
 </style>

@@ -1,64 +1,100 @@
 <template>
-    <div class="content-container">
+    <v-container class="container">
         
         <!-- REGISTRATION CARD -->
-        <md-card>
-            <md-card-header class="md-card-header-bg rt-secondary">
-                <div class="md-title">
-                    <md-icon>person_add</md-icon>
-                    Create Account
-                </div>
-            </md-card-header>
-            <md-card-content>
-                <p class="info">
+        <v-card>
+            <v-card-title class="secondary-bg">
+                <v-icon large left>person_add</v-icon> 
+                <h2>Create Account</h2>
+            </v-card-title>
+            <v-card-text>
+                <p class="font-weight-list">
                     Create a <strong>Right Track Account</strong> to sync your favorites across devices.
                 </p>
 
-                <!-- User Email -->
-                <md-field>
-                    <md-icon>email</md-icon>
-                    <label>Email</label>
-                    <md-input v-model="email"></md-input>
-                    <span class="md-helper-text">{{ emailHelperText }}</span>
-                </md-field>
+                <br />
 
-                <!-- User Email -->
-                <md-field>
-                    <md-icon>person</md-icon>
-                    <label>Username</label>
-                    <md-input v-model="username"></md-input>
-                    <span class="md-helper-text">{{ usernameHelperText }}</span>
-                </md-field>
+                <v-form v-model="valid" ref="form">
 
-                <!-- User Password -->
-                <md-field :md-toggle-password="false">
-                    <md-icon>lock</md-icon>
-                    <label>Password</label>
-                    <md-input v-model="password" type="password"></md-input>
-                    <span class="md-helper-text">{{ passwordHelperText }}</span>
-                </md-field>
+                    <!-- User Email -->
+                    <v-text-field box
+                        prepend-icon="email"
+                        label="Email Address"
+                        :hint="emailHint"
+                        type="email"
+                        v-model="email"
+                        :rules="[validate.email]"
+                        validate-on-blur
+                        @keyup.enter="register">
+                    </v-text-field>
 
-                <!-- Buttons -->
-                <div class="md-layout">
-                    <div class="md-layout-item md-small-size-100 md-small-show"  style="text-align: center">
-                        <md-button class="md-raised rt-primary" @click="register"><md-icon>person_add</md-icon> Create Account</md-button>
+                    <br />
+
+                    <!-- Username -->
+                    <v-text-field box
+                        prepend-icon="person"
+                        label="Username"
+                        :hint="usernameHint"
+                        v-model="username"
+                        :rules="[validate.username]"
+                        @keyup.enter="register">
+                    </v-text-field>
+
+                    <br />
+
+                    <!-- User Password -->
+                    <v-text-field box
+                        prepend-icon="lock"
+                        label="Password"
+                        :hint="passwordHint"
+                        type="password"
+                        v-model="password"
+                        :rules="[validate.password]"
+                        @keyup.enter="register">
+                    </v-text-field>
+
+                    <br />
+
+                    <!-- Buttons -->
+                    <div class="button-container">
+                        <div class="button-register">
+                            <v-btn @click="register" color="primary" :disabled="!valid">
+                                <v-icon>person_add</v-icon> Create Account
+                            </v-btn>
+                        </div>
+                        <div class="button-login">
+                            <v-btn @click="login" color="primary" outline>
+                                <v-icon>person_outline</v-icon> Log In
+                            </v-btn>
+                        </div>
                     </div>
-                    <div class="md-layout-item md-small-size-100" style="text-align: center">
-                        <md-button class="md-flat rt-primary-fg" @click="login"><md-icon>person_outline</md-icon> Log In</md-button>
-                    </div>
-                    <div class="md-layout-item md-small-size-100 md-small-hide"  style="text-align: center">
-                        <md-button class="md-raised rt-primary" @click="register"><md-icon>person_add</md-icon> Create Account</md-button>
-                    </div>
-                </div>
 
-            </md-card-content>
-        </md-card>
+                </v-form>
+            </v-card-text>
+        </v-card>
 
-    </div>
+    </v-container>
 </template>
 
 
 <script>
+    const api = require("@/utils/api.js");
+
+    /**
+     * Get the registration requirements and set the rules
+     * @param  {Vue} vm Vue Instance
+     */
+    _getRegistrationRequirements = function(vm) {
+        console.log("Getting Registration Requirements...");
+        api.options("/users", function(err, response) {
+            console.log(err);
+            if ( !err ) {
+                console.log(response);
+            }
+        });
+    }
+
+
     module.exports = {
 
         // ==== COMPONENT DATA ==== //
@@ -66,12 +102,40 @@
             return {
                 agencyId: undefined,
                 src: undefined,
+                valid: undefined,
                 email: undefined,
                 username: undefined,
                 password: undefined,
-                emailHelperText: "Your email will only be used for account recovery purposes",
-                usernameHelperText: undefined,
-                passwordHelperText: undefined
+                emailHint: "Your email will only be used for account recovery purposes",
+                usernameHint: undefined,
+                passwordHint: undefined,
+                validate: {
+                    email: function(value) {
+                        if ( !value ) {
+                            return 'Required'
+                        }
+                        else {
+                            const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                            return pattern.test(value) || 'E-mail must be valid';
+                        }
+                    },
+                    username: function(value) {
+                        if ( !value ) {
+                            return 'Required';
+                        }
+                        else {
+                            return true;
+                        }
+                    },
+                    password: function(value) {
+                        if ( !value ) {
+                            return 'Required';
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                }
             }
         },
 
@@ -91,7 +155,9 @@
                 });
             },
 
-
+            /**
+             * Attempt to register the new user
+             */
             register() {
                 console.log("TODO: Account Registration");
             }
@@ -102,10 +168,7 @@
         mounted() {
             this.agencyId = this.$route.query.agency;
             this.src = this.$route.query.src;
-
-            // Set More Menu Items and Agency Information
-            this.$emit('setMoreMenuItems', []);
-            this.$emit('setAgencyId', this.agencyId);    
+            _getRegistrationRequirements(this);
         }
 
     }
@@ -113,7 +176,28 @@
 
 
 <style scoped>
-    .md-helper-text {
-        margin-left: 35px;
+    .button-container {
+        display: grid;
+        grid-gap: 10px;
+        grid-template-columns: 1fr;
+        grid-template-areas: "register" "login";
+    }
+    @media (min-width: 600px) {
+        .button-container {
+            grid-template-columns: 1fr 1fr;
+            grid-template-areas: "login register";
+        }
+    }
+    .button-login {
+        grid-area: login;
+        text-align: center;
+    }
+    .button-register {
+        grid-area: register;
+        text-align: center;
+    }
+    .button-container .v-btn {
+        width: 90%;
+        max-width: 300px;
     }
 </style>

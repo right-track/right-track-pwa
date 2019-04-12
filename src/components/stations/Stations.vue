@@ -1,35 +1,29 @@
 <template>
-    <div class="content-container">
+    <v-container class="container">
         
         <!-- STATION SELECTION CARD -->
-        <md-card>
-            <md-card-header class="md-card-header-bg rt-secondary">
-                <div class="md-title">
-                    <md-icon>access_time</md-icon>
-                    Stations
-                </div>
-            </md-card-header>
-            <md-card-content class="favorites-card-content">
-                <p>Select a Station below to view upcoming departures and track assignments.</p>
+        <v-card>
+            <v-card-title class="headline secondary-bg">
+                <v-icon>access_time</v-icon>&nbsp;&nbsp;Stations
+            </v-card-title>
+            <v-card-text>
+                <p class="subheading">Select a Station below to view upcoming departures and track assignments.</p>
 
-                <div>
-                    <md-button class="btn-raised rt-primary" :disabled="!dialogProps.stops" @click="dialogProps.visible=true">
-                        <md-icon>place</md-icon>&nbsp;&nbsp;
+                <div class="card-button-container">
+                    <v-btn :disabled="!dialogProps.stops" @click="dialogProps.visible=true" color="primary" depressed>
+                        <v-icon>place</v-icon>&nbsp;&nbsp;
                         <span v-if="station">{{ station.name }}</span>
                         <span v-else>Select Station</span>
-                        &nbsp;&nbsp;<md-icon>arrow_drop_down</md-icon>
-                    </md-button>
+                        &nbsp;&nbsp;<v-icon>arrow_drop_down</v-icon>
+                    </v-btn>
                 </div>
-            </md-card-content>
-        </md-card>
+            </v-card-text>
+        </v-card>
 
         <div class="stations-button-container">
-            <md-button 
-                class="btn-raised rt-primary" 
-                @click="showStation"
-                :disabled="!station">
-                    Display
-            </md-button>
+            <v-btn @click="showStation" :disabled="!station" color="primary">
+                Display
+            </v-btn>
         </div>
 
 
@@ -37,7 +31,7 @@
         <rt-stop-selection-dialog :properties="dialogProps" @stopSelected="onStopSelected"></rt-stop-selection-dialog>
 
 
-    </div>
+    </v-container>
 </template>
 
 
@@ -122,12 +116,7 @@
         /// ==== COMPONENT MOUNTED ==== //
         mounted() {
             let vm = this;
-
-            // Set More Menu Items
-            this.$emit('setMoreMenuItems', []);
-
-            // Get the Stops
-            _getStops(this, function(stops) {
+            _getStops(vm, function(stops) {
                 vm.dialogProps.stops = stops;
             });
         }
@@ -138,12 +127,14 @@
 
 
 <style scoped>
-    .md-card-content p {
-        font-size: 18px;
-    }
-    .md-card-content > div {
+    .card-button-container {
         width: 100%; 
         text-align: center
+    }
+    .card-button-container .v-btn {
+        width: 50%;
+        min-width: 200px;
+        max-width: 400px;
     }
 
     .stations-button-container {
@@ -152,7 +143,9 @@
         margin: 25px auto;
         text-align: center;
     }
-    .stations-button-container .md-button {
+    .stations-button-container .v-btn {
         padding: 10px 50px;
+        width: 75%;
+        max-width: 400px;
     }
 </style>

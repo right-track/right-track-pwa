@@ -2,155 +2,76 @@ body {
     overflow: hidden;
 }
 
-.content-container {
-    max-width: 700px;
-    margin: 30px auto 80px auto;
-}
-.fixed-content-container {
-    max-width: 700px;
-    margin: 10px auto;
+/* Default Content BG Color */
+.v-content {
+    background-color: #F4F4F4;
 }
 
-p.light, p.light a {
-    color: #868e96 !important;
-    font-size: 90%;
-    margin: 0;
+/* Default Content Container Width */
+.container {
+    max-width: 750px !important;
 }
 
-.md-card {
-    background-color: #fff;
-    border-radius: 5px !important;
-    padding: 5px 25px;
-}
-.md-card-header-bg {
-    padding: 5px 10px 15px 10px;
-    margin: -5px -25px 0 -25px;
-    border-top-left-radius: 5px !important;
-    border-top-right-radius: 5px !important;
-}
-.md-card-header-bg .md-title {
-    margin-top: 0 !important;
+/* Remove underline from menu links */
+div.v-list a:hover {
+    text-decoration: none !important;
 }
 
-.md-button:disabled {
-    opacity: 0.5 !important;;
+
+/**
+ * COLOR THEMES
+ */
+.primary-bg {
+    background-color: var(--v-primary-base) !important;
+    color: var(--v-primaryText-base) !important;
+}
+.primary-bg * {
+    color: var(--v-primaryText-base) !important;
+}
+.secondary-bg {
+    background-color: var(--v-secondary-base) !important;
+    color: var(--v-secondaryText-base) !important;
+}
+.secondary-bg * {
+    color: var(--v-secondaryText-base) !important;
+}
+.primary-fg, .primary-fg * {
+    color: var(--v-primary-base) !important;
 }
 
-.md-field {
-    margin-bottom: 30px !important;
-}
-.md-field label, .md-field .md-icon {
-    color: #666;
-}
-.md-input {
-    border-bottom-style: solid !important;
-    border-width: 1px !important;
-    border-color: #ccc !important;
-}
-.md-input:focus {
-    border-color: #666 !important;
-}
-.md-helper-text {
-    color: #666;
-    line-height: 12px;
-}
 
-.md-menu-content {
-    background-color: #fff;
-}
-.md-menu-item:hover {
-    cursor: pointer;
-    background-color: #eee;
-}
-
-.md-tooltip {
-    background-color: rgba(0, 0, 0, 0.75);
-    color: #eee;
-    font-size: 16px !important;
-}
-
-.md-dialog {
-    background-color: #fff;
-}
-.md-dialog .md-button.md-raised {
-    background-color: #1565c0 !important;
-    color: #fff !important;
-}
-.md-dialog .md-button.md-flat {
-    color: #1565c0 !important;
-}
-
-.md-dialog .md-progress-spinner {
-    stroke: #1565c0 !important;
-}
-
-.md-snackbar {
-    background-color: #323232;
-    color: #fff;
-    text-align: center;
-}
-.md-snackbar .md-button.md-flat {
-    color: #fff !important;
-}
-
-/* CARD INDETERMINATE PROGRESS BAR */
-.card-progress {
-    position:absolute;
-    width:100%;
-    height:5px;
-    overflow-x: hidden;
-    background-color: #fff;
-}
-.card-progress-line {
-    position:absolute;
-    width:150%;
-    height:5px;
-}
-.card-progress-subline {
-    position:absolute;
-    height:5px; 
-}
-.card-progress-subline-inc {
-    animation: increase 2s infinite;
-}
-.card-progress-subline-dec {
-    animation: decrease 2s 0.5s infinite;
-}
-@keyframes increase {
-    from { left: -5%; width: 5%; }
-    to { left: 130%; width: 100%;}
-}
-@keyframes decrease {
-    from { left: -80%; width: 80%; }
-    to { left: 110%; width: 10%;}
-}
-
-/* SHOW ON XS & HIDE ON SM/MD/L/XL */
+/* SHOW/HIDE ON XS & HIDE/SHOW ON SM/MD/L/XL */
 @media screen and (min-width: 0px) and (max-width: 599px) {
-    .md-xsmall-show {
+    .md-xsmall-show, .v-xsmall-show {
         display: block !important;
+    }
+    .v-xsmall-hide {
+        display: none !important;
     }
 }
 @media screen and (min-width: 600px) {
-    .md-xsmall-show {
+    .md-xsmall-show, .v-xsmall-show {
         display: none !important;
+    }
+    .v-small-hide {
+        display: block !important;
     }
 }
 
 /* SHOW/HIDE ON XS/SM & HIDE/SHOW ON MD/L/XL */
 @media screen and (min-width: 0px) and (max-width: 959px) {
-    .md-small-show {
+    .md-small-show, .v-small-show {
         display: block !important;
     }
-    .md-small-hide {
+    .md-small-hide, .v-small-hide {
         display: none !important;
     }
 }
 @media screen and (min-width: 960px) {
-    .md-small-show {
+    .md-small-show, .v-small-show {
         display: none !important;
     }
-    .md-small-hide {
+    .md-small-hide, .v-small-hide {
         display: block !important;
     }
 }
@@ -159,5 +80,7 @@ p.light, p.light a {
  * MEDIA QUERY BREAK POINTS:
  * xsmall: 0 - 599
  * small: 600 - 959
- * medium: 960 - 1279
+ * medium: 960 - 1263
+ * large: 1264 - 1903;
+ * xlarge: 1904+;
  */

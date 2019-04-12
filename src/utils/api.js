@@ -2,6 +2,15 @@ const config = require('@/utils/config.js').api;
 
 
 /**
+ * Make an OPTIONS request to the specified API Path
+ * @param {string} path API Rquest Path
+ * @param {callback} callback Callback function(err, response)
+ */
+function options(path, callback) {
+    _request("OPTIONS", path, null, false, callback);
+}
+
+/**
  * Make a GET request to the specified API Path
  * @param  {string} path API Request Path
  * @param  {boolean} [binary] Flag for binary data (images, etc)
@@ -59,7 +68,7 @@ function _request(method, path, body, binary, callback) {
     xhr.setRequestHeader("Authorization", "Token " + config.clientKey);
     xhr.responseType = binary ? "arraybuffer" : "text";
 
-    // Set Listener
+    // Set Load Listener
     xhr.onload = function(e) {
         if ( xhr.response ) {
 
@@ -136,6 +145,7 @@ function _request(method, path, body, binary, callback) {
 }
 
 module.exports = {
+    options: options,
     get: get,
     post: post,
     del: del

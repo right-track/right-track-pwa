@@ -1,64 +1,35 @@
 <template>
-    <div class="container">
+    <v-container class="container">
+
+        <!-- List of Trip Results -->
+        <template v-for="(trip, index) in results">
+            <v-card class="trip-result-card" :key="'trip-' + trip.segments[0].trip.id">
+                <rt-trip-result-item  :trip=trip></rt-trip-result-item>
+            </v-card>
+        </template>
         
-        <!-- Trips Table -->
-        <md-card>
-            
-            <!-- Sticky: Card Header, Progress Bar, Table Header -->
-            <div class="sticky">
 
-                <!-- Trips Table Header -->
-                <md-card-header class="md-card-header-bg rt-secondary">
-                    
-                    <!-- Header Buttons -->
-                    <div class="md-card-header-button-container">
-                        <md-button class="md-icon-button rt-secondary-text" @click="toggleFavorite" :disabled="updatingFavorite">
-                            <md-icon v-if="isFavorite">star</md-icon>
-                            <md-icon v-else>star_outline</md-icon>
-                        </md-button>
-                    </div>
-
-                    <!-- Header Title -->
-                    <div class="md-card-header-title">
-                        <div class="md-card-header-title-icon">
-                            <h2><md-icon>train</md-icon></h2>
-                        </div>
-                        <div class="md-card-header-title-name">
-                            <h2 v-if="origin.name">{{ origin.name }} <md-icon>arrow_right</md-icon> {{ destination.name }}</h2>
-                        </div>
-                    </div>
-
-                </md-card-header>
-
-                <!-- Trip Table Progress Bar -->
-                <div class="card-progress">
-                    <div class="card-progress-line rt-primary" :style="{opacity: updatingStatus ? 0.4 : 1.0}"></div>
-                    <div class="card-progress-subline rt-primary" :class="{'card-progress-subline-inc': updatingStatus}"></div>
-                    <div class="card-progress-subline rt-primary" :class="{'card-progress-subline-dec': updatingStatus}"></div>
-                </div>
-
+        <!-- No Results Found -->
+        <v-fade-transition>
+            <div v-if="results && results.length === 0" class="trip-results-none">
+                <br /><br />
+                <v-icon color="#111" size="75">error_outline</v-icon>
+                <br />
+                <h2>No Results Found</h2>
+                <br />
+                <p class="subheading">No Trips were found between the specified stops at this time.</p>
             </div>
-            <!-- /Sticky -->
-
-            <!-- Station Departures -->
-            <md-card-content>
+        </v-fade-transition>
                 
-                <!-- Loading Indicator -->
-                <div v-if="!results" class="md-card-content-loading">
-                    <md-progress-spinner md-mode="indeterminate" class="rt-primary-stroke"></md-progress-spinner>
-                    <h3>Calculating Routes...</h3>
-                </div>
+        <!-- Loading Indicator -->
+        <div v-if="!results" class="trip-results-loading">
+            <v-progress-circular :size="100" color="primary" indeterminate></v-progress-circular>
+            <br /><br />
+            <h3>Calculating Routes...</h3>
+        </div>
+                
 
-                <!-- List of Trip Results -->
-                <div v-for="(trip, index) in results" :key="'trip-' + trip.segments[0].trip.id">
-                    <rt-trip-result-item :trip=trip></rt-trip-result-item>
-                </div>
-
-            </md-card-content>
-
-        </md-card>
-
-    </div>
+    </v-container>
 </template>
 
 
@@ -69,6 +40,34 @@
     const favorites = require("@/utils/favorites.js");
     const TripResultItem = require("@/components/trip/TripResultItem.vue").default;
 
+
+    /**
+     * Update the Toolbar Menu Items
+     * @param  {Vue} vm    Vue Instance
+     */
+    function _updateToolbarMenu(vm) {
+        let toolbarMenuItems = [
+            {
+                key: 1,
+                type: "icon",
+                icon: vm.isFavorite ? "star" : "star_outline",
+                disabled: vm.updatingFavorite,
+                function() {
+                    vm.toggleFavorite();
+                }
+            },
+            {
+                key: 2,
+                type: "icon",
+                icon: "refresh",
+                disabled: vm.updatingStatus,
+                function() {
+                    vm.refresh();
+                }
+            }
+        ]
+        vm.$emit('setToolbarMenuItems', toolbarMenuItems);
+    }
 
     /**
      * Update the More Menu Items
@@ -133,6 +132,22 @@
             // Get Origin and Destination
             core.query.stops.getStop(db, originId, function(err, origin) {
                 core.query.stops.getStop(db, destinationId, function(err, destination) {
+                    if ( !origin || !destination ) {
+                        vm.results = [];
+                        vm.$emit('showSnackbar', {
+                        duration: 0,
+                        message: 'Unknown Origin or Destination Stop.  Please select another Trip.',
+                        dismiss: 'Trips',
+                        onDismiss: function() {
+                            vm.$router.push({
+                                name: "trips",
+                                agency: vm.$router.currentRoute.params.agency
+                            });
+                        }
+                    });
+                    }
+
+                    // Set the Stops
                     vm.origin = origin;
                     vm.destination = destination;
 
@@ -142,7 +157,8 @@
                     // Update the Favorite
                     _updateFavorites(vm);
 
-                    // Update the More Menu Items
+                    // Update the Menu Items
+                    _updateToolbarMenu(vm);
                     _updateMoreMenu(vm);
 
                     // Update the Results
@@ -166,14 +182,13 @@
         DB.getDB(vm.agencyId, function(err, db) {
             if ( err ) {
                 console.log(err);
+                vm.$emit('showSnackbar', "Database Error. Please try again later.");
+                vm.results = [];
+                return;
             }
 
             // Start Search
-            console.log("Starting Search...");
             search.search(db, function(err, results) {
-                console.log("Results:");
-                console.log(err);
-                console.log(JSON.stringify(results[0]));
                 vm.results = results;
             });
         });
@@ -204,6 +219,18 @@
 
         // ==== COMPONENT METHODS ==== //
         methods: {
+
+            /**
+             * Refresh the real-time status information
+             * @return {[type]} [description]
+             */
+            refresh: function() {
+                console.log("Refresh Real-Time Status");
+            },
+
+            /**
+             * Toggle the Trip as a Favorite
+             */
             toggleFavorite: function() {
                 let vm = this;
                 if ( vm.isFavorite ) {
@@ -233,6 +260,7 @@
                     });
                 }
             }
+
         },
 
         // ==== COMPONENT MOUNTED ==== //
@@ -252,6 +280,19 @@
             $route (to, from) {
                 this.results = undefined;
                 _updateStops(this);
+            },
+
+            /**
+             * Watchers for toolbar menu
+             */
+            updatingStatus() {
+                _updateToolbarMenu(this);
+            },
+            updatingFavorite() {
+                _updateToolbarMenu(this);
+            },
+            isFavorite() {
+                _updateToolbarMenu(this);
             }
 
         }
@@ -262,73 +303,18 @@
 
 
 <style scoped>
-    .container {
-        margin: 0 auto;
-        padding: 0 0 90px 0;
-        max-width: 650px;
-    }
-    @media (min-width: 960px) {
-        .container {
-            padding-top: 40px;
-        }
+    .trip-result-card {
+        margin: 10px 0 40px 0;
     }
 
-    div.sticky {
-        position: -webkit-sticky;
-        position: sticky;
-        top: -5px;
-        z-index: 500;
+    .trip-results-none {
+        text-align: center;
     }
 
-    .md-card {
-        margin: -5px 0 0 0 !important;
-        padding: 0 !important;
-    }
-
-    .md-card-header {
-        height: 56px;
-        padding: 7px 10px 5px 10px;
-        margin: 0;
-    }
-    @media (min-width: 960px) {
-        .md-card-header {
-            padding: 5px 10px;
-        }
-    }
-    .md-card-header h2 {
-        margin: 0;
-        font-weight: normal !important;
-    }
-    .md-card-header-title {
-        display: grid;
-        grid-gap: 10px;
-        grid-template-columns: 24px 1fr;
-        grid-template-areas: "icon name";
-        height: 100%;
-        align-items: center;
-    }
-    .md-card-header-icon {
-        grid-area: icon;
-    }
-    .md-card-header-name {
-        grid-area: name;
-    }
-
-    .md-card-header-button-container {
-        float: right;
-        margin-top: 3px;
-    }
-
-    .md-card-content {
-        padding: 0 !important;
-        margin-top: -10px;
-    }
-
-    .md-card-content-loading {
+    .trip-results-loading {
         width: 100%;
         text-align: center;
         margin: 40px 5px 20px 5px;
         padding: 20px 5px 40px 5px;
     }
-
 </style>

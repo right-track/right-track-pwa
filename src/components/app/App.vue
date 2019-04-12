@@ -1,98 +1,102 @@
 <template>
-    <div class="page-container">
-        <md-app md-waterfall md-mode="fixed">
+    <v-app>
+
+        <!-- NAVIGATION DRAWER -->
+        <v-navigation-drawer mobile-break-point="960" width="250" v-model="drawerVisible" clipped app>
+            <rt-drawer-menu :favorites="favorites.favorites" @showDialog="onShowDialog"></rt-drawer-menu>
+        </v-navigation-drawer>
+
+
+        <!-- APP TOOLBAR -->
+        <v-toolbar id="app-toolbar" class="primary-bg" clipped-left fixed app>
+            <v-toolbar-side-icon @click.stop="drawerVisible = !drawerVisible"></v-toolbar-side-icon>
+            <v-toolbar-title @click="onClickToolbar" :style="{'cursor': agencyId ? 'pointer' : 'auto'}">
+                {{ toolbarTitle }}
+            </v-toolbar-title>
             
+            <v-spacer></v-spacer>
 
-            <!-- MAIN APP TOOLBAR -->
-            <md-app-toolbar class="md-primary rt-primary">
+            <!-- TOOLBAR MENU ITEMS -->
+            <template 
+                    v-if="toolbarMenu && toolbarMenu.length > 0" 
+                    v-for="item in toolbarMenu">
+                <v-btn :disabled="item.disabled" dark icon>
+                    <v-icon v-if="item.type==='icon'" @click="item.function">{{ item.icon }}</v-icon>
+                </v-btn>
+            </template>
+
+            <!-- MORE MENU ITEMS -->
+            <v-menu v-if="moreMenu  && moreMenu.length > 0" bottom left>
+                <template v-slot:activator="{ on }">
+                    <v-btn dark icon v-on="on">
+                        <v-icon>more_vert</v-icon>
+                    </v-btn>
+                </template>
+                <v-list>
+                    <div v-for="item in moreMenu" :key="item.key">
+                        <v-divider v-if="item.type==='divider'"></v-divider>
+                        <v-list-tile v-if="item.type==='item'" @click="item.function">
+                            <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+                        </v-list-tile>
+                    </div>
+                </v-list>
+            </v-menu>
+        </v-toolbar>
+        
+
+        <!-- APP CONTENT -->
+        <v-content>
+            <v-container fluid>
                 
-                <!-- DRAWER TOGGLE -->
-                <md-button class="md-icon-button md-xsmall-show" @click="menuVisible = !menuVisible">
-                    <md-icon class="rt-primary-text">menu</md-icon>
-                </md-button>
-
-                <!-- APP TITLE -->
-                <span id="app-title" class="md-title rt-primary-text" style="flex: 1">{{ toolbarTitle }}</span>
-
-                <!-- AUTH BUTTON -->
-                <md-button v-if="authButton.visible" class="md-xsmall-hide rt-primary-text" @click="auth"><md-icon>{{ authButton.icon }}</md-icon> {{ authButton.text }}</md-button>
-                <md-button v-if="authButton.visible" class="md-xsmall-show md-icon-button rt-primary-text" @click="auth"><md-icon>{{ authButton.icon }}</md-icon></md-button>
-                
-                <!-- MORE MENU -->
-                <md-menu md-size="small" v-if="moreMenu">
-                    <md-button md-menu-trigger class="md-icon-button rt-primary-text"><md-icon>more_vert</md-icon></md-button>
-                    <md-menu-content>
-                        <div v-for="item in moreMenu" :key="item.key">
-                            <hr v-if="item.type=='divider'" class="more-menu-divider" />
-                            <md-menu-item v-if="item.type=='item'" @click="item.function">{{ item.title }}</md-menu-item>
-                        </div>
-                    </md-menu-content>
-                </md-menu>
-
-            </md-app-toolbar>
-
-
-            <!-- MAIN APP DRAWER -->
-            <md-app-drawer :md-active.sync="menuVisible" md-permanent="clipped">
-                <rt-drawer-menu :favorites="favorites.favorites" @menuItemSelected="onMenuItemSelected"></rt-drawer-menu>
-            </md-app-drawer>
-
-
-            <!-- MAIN APP CONTENT -->
-            <md-app-content>
-
                 <!-- ROUTER VIEW CONTENT -->
                 <router-view 
+                    @setToolbarMenuItems="onSetToolbarMenuItems"
                     @setMoreMenuItems="onSetMoreMenuItems" 
                     @setTitle="onSetTitle" 
+                    @setBottomToolbar="onSetBottomToolbar"
                     @updateFavorites="onUpdateFavorites"
                     @showDialog="onShowDialog" 
                     @showSnackbar="onShowSnackbar">
                 </router-view>
-                
+
                 <!-- BOTTOM BAR -->
                 <rt-bottom-bar v-if="bottomBarEnabled"></rt-bottom-bar>
 
                 <!-- APP CONFIRMATION DIALOG -->
-                <md-dialog :md-active.sync="dialog.active" :md-close-on-esc="false" :md-click-outside-to-close="false" :md-fullscreen="false">
-                    <md-dialog-title>{{ dialog.title }}</md-dialog-title>
-                    <md-dialog-content v-html="dialog.content"></md-dialog-content>
-                    <md-dialog-actions>
-                        <md-button class="md-flat" @click="dialog.onCancel">{{ dialog.cancel }}</md-button>
-                        <md-button class="md-raised" @click="dialog.onConfirm">{{ dialog.confirm }}</md-button>
-                    </md-dialog-actions>
-                </md-dialog>
+                <rt-confirmation-dialog :properties="dialog"></rt-confirmation-dialog>
 
                 <!-- APP PROGRESS DIALOG -->
-                <md-dialog :md-active.sync="progress.active" :md-close-on-esc="false" :md-click-outside-to-close="false" :md-fullscreen="false">
-                    <md-dialog-title>{{ progress.title }}</md-dialog-title>
-                    <md-dialog-content style="text-align: center">
-                        <md-progress-spinner :v-if="progress.type==='spinner'" md-mode="indeterminate"></md-progress-spinner>
-                    </md-dialog-content>
-                </md-dialog>
+                <rt-progress-dialog :properties="progress"></rt-progress-dialog>
 
                 <!-- APP SNACKBAR -->
-                <md-snackbar md-position="center" :md-duration="snackbar.duration ? snackbar.duration : 4000" :md-active.sync="snackbar.visible" md-persistent>
-                    <span style="width: 100%; text-align: left">{{ snackbar.message }}</span>
-                </md-snackbar>
+                <rt-snackbar :properties="snackbar"></rt-snackbar>
 
-            </md-app-content>
+            </v-container>
+        </v-content>
 
+        <!-- STATUS BOTTOM TOOLBAR -->
+        <rt-bottom-toolbar :properties="bottomToolbar"></rt-bottom-toolbar>
 
-        </md-app>
-    </div>
+    </v-app>
 </template>
 
 
 <script>
     const Vue = require("vue").default;
+    
     const config = require("@/utils/config.js");
     const cache = require("@/utils/cache.js");
     const user = require("@/utils/user.js");
     const database = require("@/utils/db.js");
     const favorites = require("@/utils/favorites.js");
+    
     const DrawerMenu = require("@/components/app/Menu.vue").default;
     const BottomBar = require("@/components/app/BottomBar.vue").default;
+    const BottomToolbar = require("@/components/app/BottomToolbar.vue").default;
+    const ConfirmationDialog = require("@/components/app/ConfirmationDialog.vue").default;
+    const ProgressDialog = require("@/components/app/ProgressDialog.vue").default;
+    const Snackbar = require("@/components/app/Snackbar.vue").default;
+
     const bottomBarPages = ['favorites', 'trips', 'stations', 'agencyAlerts'];
 
 
@@ -116,27 +120,30 @@
         });
     }
 
-
     /**
      * Page Update Procedure
-     * - Check Logged In State
+     * - Reset Menu Items
+     * - Enable / Disable Bottom Bar
      * - Update Agency Information, if changed
      * - Prep Agency Database, if necessary
-     * - Enable / Disable Bottom Bar
-     * - Apply Theme
      * - Update Favorites, if necessary
-     * - Reapply Theme, if favorites updated
-     * - Reset Title
      * @param  {Vue}      vm          Vue Instance
      * @param  {Function} [callback]  Callback function()
      */
     function _pageUpdate(vm, callback) {
 
-        // Reset Toolbar Title
-        vm.toolbarTitle = undefined;
+        // Reset Menu Items
+        vm.toolbarMenu = false;
+        vm.moreMenu = false;
 
-        // Check Logged In State
-        _checkLoggedIn(vm);
+        // Reset Title
+        _setTitle(vm);
+
+        // Enable / Disbale Bottom Bar
+        vm.bottomBarEnabled = bottomBarPages.includes(vm.$route.name);
+
+        // Reset Bottom Toolbar
+        vm.bottomToolbar = {};
 
         // Update the Agency
         _updateAgency(vm, function() {
@@ -146,14 +153,6 @@
 
             // Prep the Database
             _prepDatabase(vm);
-
-            // Enable / Disbale Bottom Bar
-            vm.bottomBarEnabled = bottomBarPages.includes(vm.$route.name);
-            
-            // Apply theme colors
-            Vue.nextTick(function() {
-                _applyTheme(vm);
-            });
 
             // Update the Favorites
             _updateFavorites(vm);
@@ -169,21 +168,19 @@
      * @param {string} title Page Title
      */
     function _setTitle(vm, title) {
+        console.log("--> SET TITLE: " + title);
         if ( title === undefined ) {
-            title = vm.agencyName ? vm.agencyName : config.title;
+            title = vm.agencyTitle ? vm.agencyTitle : config.title;
         }
         
-        if ( title !== config.title && title !== vm.agencyName && vm.agencyName !== undefined ) {
-            document.title = title + " | " + vm.agencyName + " | " + config.title;
-        }
-        else if ( title !== config.title ) {
-            document.title = title + " | " + config.title;
+        if ( title !== config.title && title !== vm.agencyTitle && vm.agencyTitle !== undefined ) {
+            document.title = title + " | " + vm.agencyTitle;
         }
         else {
             document.title = title;
         }
 
-        vm.toolbarTitle = vm.agencyName ? vm.agencyName : config.title;
+        vm.toolbarTitle = title ? title : config.title;
     }
 
 
@@ -193,7 +190,7 @@
      * - Agency Name
      * - Theme Colors
      * @param  {Vue}      vm         Vue Instance
-     * @param  {Function} [callback] Callback function()
+     * @param  {Function} [callback] Callback function(), used when agency has updated
      */
     function _updateAgency(vm, callback) {
         let agencyId = vm.$route.query.agency ? vm.$route.query.agency : vm.$route.params.agency;
@@ -210,7 +207,9 @@
                     }
                     else {
                         vm.agencyName = agency.name;
+                        vm.agencyTitle = agency.config.title;
                         vm.colors = agency.config.colors;
+                        _applyTheme(vm);
                         if ( callback ) return callback();
                     }
                 });
@@ -219,15 +218,12 @@
             // Clear Agency Properties
             else {
                 vm.agencyName = undefined;
+                vm.agencyTitle = undefined;
                 vm.colors = config.colors;
+                _applyTheme(vm);
                 if ( callback ) return callback();
             }
 
-        }
-
-        // Agency has not changed...
-        else {
-            if ( callback ) return callback();
         }
         
     }
@@ -238,27 +234,12 @@
      * @param {Vue} vm    Vue Instance
      */
     function _applyTheme(vm) {
+        console.log("---> APPLYING THEME...");
         let colors = vm.colors;
-        let theme = config.theme;
-        for ( let i = 0; i < theme.length; i++ ) {
-            let t = theme[i];
-            for ( const property in t.style ) {
-                if ( t.style.hasOwnProperty(property) ) {
-                    let color = t.style[property];
-                    if ( !color.startsWith("#") ) {
-                        color = colors[color]
-                    }
-                    for ( let j = 0; j < t.selectors.length; j++ ) {
-                        let elems = document.querySelectorAll(t.selectors[j]);
-                        if ( elems !== undefined ) {
-                            for ( let k = 0; k < elems.length; k++ ) {
-                                elems[k].style[property] = color;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        vm.$vuetify.theme.primary = colors.primary;
+        vm.$vuetify.theme.primaryText = colors.primaryText;
+        vm.$vuetify.theme.secondary = colors.secondary;
+        vm.$vuetify.theme.secondaryText = colors.secondaryText;
     }
 
 
@@ -288,50 +269,14 @@
      * @param  {boolean}  [force]    Force update of favorites
      */
     function _updateFavorites(vm, force) {
-        if ( force || (vm.agencyId && vm.agencyId !== vm.favorites.agencyId) ) {
+        if ( vm.agencyId && (force || (vm.agencyId && vm.agencyId !== vm.favorites.agencyId)) ) {
             favorites.get(vm.agencyId, function(err, favorites) {
                 vm.favorites.favorites = favorites;
                 vm.favorites.agencyId = vm.agencyId;
-                
-                // Reapply the Theme
-                Vue.nextTick(function() {
-                    _applyTheme(vm);
-                });
             });
         }
     }
 
-
-    /**
-     * Check the User Logged In state and update the Auth Button
-     * @param  {Vue}      vm         Vue Instance
-     * @param  {Function} [callback] Callback function()
-     */
-    function _checkLoggedIn(vm, callback) {
-        user.isLoggedIn(function(isLoggedIn, user) {
-            vm.authButton = {
-                visible: !vm.$route.path.startsWith("/auth"),
-                icon: isLoggedIn ? "person" : "person_outline",
-                text: isLoggedIn ? user.username : "Log In",
-                page: isLoggedIn ? "logout" : "login"
-            }
-        });
-    }
-
-
-    /**
-     * Start the Auth process by chaging to the login/logout page
-     * @param  vm Vue Instance
-     */
-    function _startAuth(vm) {
-        vm.$router.push({
-            name: vm.authButton.page,
-            query: {
-                agency: vm.agencyId,
-                src: vm.$route.path
-            }
-        });
-    }
 
 
     module.exports = {
@@ -347,24 +292,19 @@
                 colors: config.colors,
 
                 // Current Agency ID
-                agencyId: undefined,
+                agencyId: null,
 
                 // Current Agency Name
                 agencyName: undefined,
 
+                // Current Agency Title
+                agencyTitle: undefined,
+
                 // Toolbar Title
                 toolbarTitle: config.title,
 
-                // Auth Button Properties
-                authButton: {
-                    visible: undefined,
-                    icon: undefined,
-                    text: undefined,
-                    page: undefined
-                },
-
-                // Menu visibility flag
-                menuVisible: false,
+                // Navigation Drawer Visiblity
+                drawerVisible: null,
 
                 // Favorites for the Menu
                 favorites: {
@@ -372,11 +312,17 @@
                     favorites: []
                 },
 
-                // Bottom Bar visibility flag
+                 // Bottom Bar visibility flag
                 bottomBarEnabled: bottomBarPages.includes(this.$router.currentRoute.name),
 
+                // Toolbar Menu Items
+                toolbarMenu: [],
+
                 // More Menu Items
-                moreMenu: false,
+                moreMenu: [],
+
+                // BottomToolbar Properties
+                bottomToolbar: {},
 
                 // Confirmation Dialog Info
                 dialog: {
@@ -385,8 +331,8 @@
                     content: undefined,
                     confirm: undefined,
                     cancel: undefined,
-                    onConfirm: undefined,
-                    onCancel: undefined
+                    onConfirm: function(){},
+                    onCancel: function(){}
                 },
 
                 // Progress Dialog Info
@@ -398,68 +344,66 @@
 
                 // Snackbar Info
                 snackbar: {
-                    visible: false,
-                    message: undefined,
-                    duration: undefined
+                    visible: false
                 }
+
             }
         },
+
 
         // ==== ADDITIONAL COMPONENTS ==== //
         components: {
             'rt-drawer-menu': DrawerMenu,
-            'rt-bottom-bar': BottomBar
+            'rt-bottom-bar': BottomBar,
+            'rt-bottom-toolbar': BottomToolbar,
+            'rt-confirmation-dialog': ConfirmationDialog,
+            'rt-progress-dialog': ProgressDialog,
+            'rt-snackbar': Snackbar
         },
 
-        // ==== COMPONENT FUNCTIONS ==== //
+
+        // ==== COMPONENT METHODS ==== //
         methods: {
 
             /**
-             * Change to the login/logout page
-             * @return {[type]} [description]
+             * Handle the click of the toolbar title
              */
-            auth() {
+            onClickToolbar() {
+                if ( this.agencyId ) {
+                    this.$router.push({name: "favorites", params: {agency: this.agencyId}});
+                }
+            },
+
+            /**
+             * Set the Toolbar Menu Items
+             * @param {Array} items The list of toolbar menu items
+             */
+            onSetToolbarMenuItems(items) {
                 let vm = this;
-
-                // LOGOUT
-                if ( vm.authButton.page === "logout" ) {
-                    vm.onShowDialog(
-                        "Log Out?",
-                        "<p>Are you sure you want to log out?</p><p>Your saved favorites will be removed from this device and you will need to log back in to access your favorites.</p>",
-                        "Log Out",
-                        "Cancel",
-                        function() {
-                            _startAuth(vm);
-                        }
-                    );
-                }
-
-                // LOGIN
-                else {
-                    _startAuth(vm);
-                }
-
+                Vue.nextTick(function() {
+                    if ( items && items.length > 0 ) {
+                        vm.toolbarMenu = items;
+                    }
+                    else {
+                        vm.toolbarMenu = false;
+                    }
+                });
             },
 
-            /**
-             * Hide the drawer menu when an item is selected
-             * @param {string} route The name of the next route
-             */
-            onMenuItemSelected(route) {
-                this.menuVisible = false;
-            },
-
-            /**
+             /**
              * Set the More Menu Items
              * @param {Array} items The list of more menu items
              */
             onSetMoreMenuItems(items) {
-                if ( items && items.length > 0 ) {
-                    this.moreMenu = items;
-                }
-                else {
-                    this.moreMenu = false;
-                }
+                let vm = this;
+                Vue.nextTick(function() {
+                    if ( items && items.length > 0 ) {
+                        vm.moreMenu = items;
+                    }
+                    else {
+                        vm.moreMenu = false;
+                    }
+                });
             },
             
             /**
@@ -470,6 +414,17 @@
                 let vm = this;
                 Vue.nextTick(function() {
                     _setTitle(vm, title);
+                });
+            },
+
+            /**
+             * Set the Bottom Toolbar Properties
+             * @param  {Object} properties Bottom Toolbar Properties
+             */
+            onSetBottomToolbar(properties) {
+                let vm = this;
+                Vue.nextTick(function() {
+                    vm.bottomToolbar = properties;
                 });
             },
 
@@ -513,14 +468,16 @@
 
             /**
              * Display the site snackbar with the specified message
-             * @param  {string} message  Snackbar Message
-             * @param  {integer} [duration] Snackbar Duration (ms)
+             * @param {Object} properties Snackbar Properties (or message text)
              */
-            onShowSnackbar(message, duration) {
-                this.snackbar.message = message;
-                this.snackbar.duration = duration;
-                this.snackbar.visible = true;
+            onShowSnackbar(properties) {
+                if ( typeof properties === 'string' ) {
+                    properties = { message: properties };
+                }
+                properties.visible = true;
+                this.snackbar = properties;
             }
+
         },
 
         // ==== COMPONTENT MOUNTED ==== //
@@ -539,12 +496,8 @@
              */
             $route: function(to, from) {
                 let vm = this;
-
-                // Update the Page
-                Vue.nextTick(function() {
-                    _pageUpdate(vm);
-                });
-
+                _pageUpdate(vm);
+                
                 // Update favorites after login/logout
                 if ( from.name === "login" || from.name === "logout" ) {
                     _updateFavorites(vm, true);
@@ -554,42 +507,5 @@
         }
 
     }
+
 </script>
-
-
-<style lang="scss" scoped>
-    // Set theme properties
-    @import "~vue-material/dist/theme/engine";
-    @include md-register-theme("default", (
-        primary: #424242,
-        accent: #607d8b,
-        theme: light
-    ));
-    @import "~vue-material/dist/theme/all";
-
-    // Main App Components
-    .md-app-drawer {
-        padding-top: 15px;
-        width: 230px;
-        height: calc(100vh - 52px);
-        z-index: 1000 !important;
-        background-color: #fff;
-        border-right: 1px solid #ddd;
-    }
-    .md-app-toolbar {
-        height: 52px !important;
-        min-height: 52px !important;
-    }
-    .md-app-content {
-        height: calc(100vh - 52px);
-        overflow: auto;
-        background-color: #eee !important;
-        padding: 0 !important;
-    }
-
-    // More Menu Components
-    .more-menu-divider {
-        border-top: 1px solid rgba(238, 238, 238, 0.75);
-        color: rgba(238, 238, 238, 0.75);
-    }
-</style>

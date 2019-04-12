@@ -1,58 +1,59 @@
 <template>
-    <md-bottom-bar class="md-xsmall-show rt-secondary" md-type="fixed" :md-active-item="'bottom-bar-item-' + page">
-        <md-bottom-bar-item 
-            id="bottom-bar-item-favorites"
-            class="rt-secondary-text"
-            md-label="Favorites" 
-            md-icon="star"
-            @click="onBottomBarItemSelected('favorites')">
-        </md-bottom-bar-item>
-        <md-bottom-bar-item 
-            id="bottom-bar-item-trips" 
-            class="rt-secondary-text"
-            md-label="Trips" 
-            md-icon="train"
-            @click="onBottomBarItemSelected('trips')">
-        </md-bottom-bar-item>
-        <md-bottom-bar-item 
-            id="bottom-bar-item-stations" 
-            class="rt-secondary-text"
-            md-label="Stations" 
-            md-icon="access_time"
-            @click="onBottomBarItemSelected('stations')">
-        </md-bottom-bar-item>
-        <md-bottom-bar-item 
-            id="bottom-bar-item-agencyAlerts" 
-            class="rt-secondary-text"
-            md-label="Alerts" 
-            md-icon="check_circle"
-            @click="onBottomBarItemSelected('agencyAlerts')">
-        </md-bottom-bar-item>
-    </md-bottom-bar>
+    <v-bottom-nav class="secondary-bg" :value.sync="display" :active.sync="page" v-resize="onResize" fixed>
+        <v-btn value="favorites" @click="onBottomBarItemSelected('favorites')" flat>
+            <span>Favorites</span>
+            <v-icon>star</v-icon>
+        </v-btn>
+        <v-btn value="trips" @click="onBottomBarItemSelected('trips')" flat>
+            <span>Trips</span>
+            <v-icon>train</v-icon>
+        </v-btn>
+        <v-btn value="stations" @click="onBottomBarItemSelected('stations')" flat>
+            <span>Stations</span>
+            <v-icon>access_time</v-icon>
+        </v-btn>
+        <v-btn value="agencyAlerts" @click="onBottomBarItemSelected('agencyAlerts')" flat>
+            <span>Alerts</span>
+            <v-icon>check_circle</v-icon>
+        </v-btn>
+    </v-bottom-nav>
 </template>
 
 
 <script>
+    const BREAK_POINT = 960;
+
     module.exports = {
+
+        // ==== COMPONENT DATA ==== //
         data: function() {
             return {
+                display: true,
                 page: this.$router.currentRoute.name
             }
         },
+
+        // ==== COMPONENT METHODS ==== //
         methods: {
             onBottomBarItemSelected(page) {
                 this.$router.push({name: page});
+            },
+            onResize() {
+                if ( window.innerWidth < BREAK_POINT ) {
+                    this.display = true;
+                }
+                else {
+                    this.display = false;
+                }
+            }
+        },
+
+        // ==== COMPONENT WATCHERS ==== //
+        watch: {
+            $route: function(to, from) {
+                this.page = to.name;
             }
         }
+
     }
 </script>
-
-
-<style scoped>
-    .md-bottom-bar {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        z-index: 500;
-    }
-</style>

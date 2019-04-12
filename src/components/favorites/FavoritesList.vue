@@ -1,15 +1,31 @@
 <template>
-    <div>
-        <md-list>
-            <md-list-item class="favorites-list-item" v-for="(fav, index) in favorites" :key="'favorite-' + index" @click="selectFavorite(fav)">
-                <div class="favorites-list-item-container">
-                    <md-icon class="favorites-list-item-icon">{{ fav.icon }}</md-icon>
-                    <p class="favorites-list-item-text">{{ fav.label }}</p>
-                    <md-icon class="favorites-list-item-more">chevron_right</md-icon>
-                </div>
-            </md-list-item>
-        </md-list>
-    </div>
+    <v-list>
+        <template v-for="(fav, index) in favorites">
+            <v-list-tile 
+                    @click="selectFavorite(fav)" 
+                    :key="index" 
+                    :style="{'background-color': index % 2 === 0 ? '#fff' : '#fafafa'}"
+                    avatar>
+                
+                <v-list-tile-avatar>
+                    <v-icon>{{ fav.icon }}</v-icon>
+                </v-list-tile-avatar>
+                
+                <v-list-tile-content>
+                    <v-list-tile-title>
+                        {{ fav.label }}
+                    </v-list-tile-title>
+                </v-list-tile-content>
+
+                <v-list-tile-action>
+                    <v-icon>chevron_right</v-icon>
+                </v-list-tile-action>
+
+            </v-list-tile>
+
+            <v-divider v-if="index !== favorites.length - 1"></v-divider>
+        </template>
+    </v-list>
 </template>
 
 
@@ -62,44 +78,3 @@
         
     }
 </script>
-
-
-<style scoped>
-    .favorites-list-item {
-        border-bottom: 1px solid #eee;
-        margin: 0px -41px;
-        padding: 5px 0;
-    }
-    .favorites-list-item:last-child {
-        border:none;
-    }
-    .favorites-list-item:nth-child(even) {
-        background-color: #f2f2f2;
-    }
-    .favorites-list-item:hover {
-        background-color: #E0E0E0;
-    }
-
-    .favorites-list-item-container {
-        width: 100%;
-        display: table;
-    }
-
-    .favorites-list-item-container > * {
-        display: table-cell;
-        vertical-align: middle;
-    }
-
-    .favorites-list-item-icon {
-        width: 50px;
-        padding: 10px;
-    }
-    .favorites-list-item-text {
-        font-size: 20px;
-        overflow: visible;
-        white-space: normal;
-    }
-    .favorites-list-item-more {
-        font-size: 20px;
-    }
-</style>

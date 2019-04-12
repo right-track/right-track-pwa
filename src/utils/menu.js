@@ -176,54 +176,11 @@ const MENU = function(vm) {
 
 
 /**
- * Get the menu items for the specified page
- * @param  {Vue} vm          Vue Instance
- * @param  {Array} favorites User Favorites
- * @return {array}           List of menu items
- */
-function getMenuItems(vm, favorites) {
-    
-    // Set items based on page
-    let items = _getItems(vm)
-
-    // Add favorites
-    for ( let i = 0; i < items.length; i++ ) {
-        if ( items[i].type === "favorites" ) {
-            let a = items.slice(0, i);
-            let b = items.slice(i+1);
-            let favs = _buildFavoriteItems(favorites);
-            items = a.concat(favs).concat(b);
-            break;
-        }
-    }
-
-    // Set active menu item
-    for ( let i = 0; i < items.length; i++ ) {
-        items[i].isActive = false;
-        if ( items[i].type === 'favorite' ) {
-            if ( items[i].favorite.type === 1 && vm.$route.name === "station" ) {
-                items[i].isActive = items[i].favorite.stop.id === vm.$route.params.stop;
-            }
-            else if ( items[i].favorite.type === 2 && vm.$route.name === "trip" ) {
-                items[i].isActive = items[i].favorite.origin.id === vm.$route.params.origin && items[i].favorite.destination.id === vm.$route.params.destination;
-            }
-        }
-        else if ( items[i].page === vm.$route.name ) {
-            items[i].isActive = true;
-        }
-    }
-
-    // Return the menu items
-    return items;
-
-}
-
-/**
  * Get the items based on the current route
  * @param  {Vue} vm    Vue Instance
  * @return {[type]}    List of menu items
  */
-function _getItems(vm) {
+function getMenuItems(vm) {
     let page = vm.$route.name;
     if ( page === "agencies" || page == "about" || page == "alerts" || page == "pageNotFound" ) {
         return HOME(vm);
@@ -237,44 +194,6 @@ function _getItems(vm) {
     else {
         return MENU(vm);
     }
-}
-
-/**
- * Build the Favorites Menu Items
- * @param  {Array} favorites User Favorites
- * @return {Array}           List of Favorites menu items
- */
-function _buildFavoriteItems(favorites) {
-    let items = [];
-
-    // Add Divider, if there are favorites
-    if ( favorites.length > 0 ) {
-        items.push({
-            key: 100,
-            type: "divider"
-        });
-    }
-
-    // Add Each Favorite
-    for ( let i = 0; i < favorites.length; i++ ) {
-        let page = undefined;
-        if ( favorites[i].type === 1 ) {
-            page = "station";
-        }
-        else if ( favorites[i].type === 2 ) {
-            page = "trip";
-        }
-        items.push({
-            key: 101 + i,
-            type: "favorite",
-            title: favorites[i].label,
-            icon: favorites[i].icon,
-            page: page,
-            favorite: favorites[i]
-        });
-    }
-
-    return(items);
 }
 
 

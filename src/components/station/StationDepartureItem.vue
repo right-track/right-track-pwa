@@ -1,49 +1,53 @@
 <template>
     <div>
-        <div class="departure-wrapper" 
-             @click="selectDeparture"
-             v-bind:style="{'background-color': '#' + departure.trip.route.color, background: 'linear-gradient(to bottom, #' + departure.trip.route.color + 'dd, #' + departure.trip.route.color + 'bb)', color: '#' + departure.trip.route.textColor}">
-            
-            <!-- Departure Time / Estimated Departure Time -->
-            <div class="departure-item departure-time">
-                <span v-if="departure.status.delay > 0" class="departure-item-estimated">
-                    <span style="text-decoration: line-through;">
+        <div style="background-color: rgba(0, 0, 0, 0.5);">
+            <div class="departure-wrapper" 
+                 @click="selectDeparture"
+                 v-bind:style="{'background-color': '#' + departure.trip.route.color, background: 'linear-gradient(to bottom, #' + departure.trip.route.color + 'dd, #' + departure.trip.route.color + 'bb)', color: '#' + departure.trip.route.textColor}">
+                
+                <!-- Departure Time / Estimated Departure Time -->
+                <div class="departure-item departure-time">
+                    <span v-if="departure.status.delay > 0" class="departure-item-estimated">
+                        <span style="text-decoration: line-through;">
+                            {{ departure.departure.time }}
+                        </span>
+                        <br />{{ departure.status.estimatedDeparture.time }}
+                    </span>
+                    <span v-else>
                         {{ departure.departure.time }}
                     </span>
-                    <br />{{ departure.status.estimatedDeparture.time }}
-                </span>
-                <span v-else>
-                    {{ departure.departure.time }}
-                </span>
-            </div>
+                </div>
 
-            <!-- Destination / Remarks (medium+) -->
-            <div class="departure-item departure-destination">
-                {{ departure.destination.name }}
-                <span v-if="departure.status.remarks" class="md-small-hide">
+                <!-- Destination / Remarks (medium+) -->
+                <div class="departure-item departure-destination">
+                    {{ departure.destination.name }}
+                    <span v-if="departure.status.remarks" class="v-small-hide">
+                        {{ departure.status.remarks }}
+                    </span>
+                </div>
+
+                <!-- Status -->
+                <div class="departure-item departure-status">
+                    {{ departure.status.status }}
+                </div>
+
+                <!-- Track -->
+                <div class="departure-item departure-track">
+                    {{ departure.status.track }}
+                </div> 
+
+                <!-- Remarks (xs, sm) -->
+                <div class="departure-item departure-remarks">
                     {{ departure.status.remarks }}
-                </span>
+                </div>
+
             </div>
-
-            <!-- Status -->
-            <div class="departure-item departure-status">
-                {{ departure.status.status }}
-            </div>
-
-            <!-- Track -->
-            <div class="departure-item departure-track">
-                {{ departure.status.track }}
-            </div> 
-
-            <!-- Remarks (xs, sm) -->
-            <div class="departure-item departure-remarks">
-                {{ departure.status.remarks }}
-            </div>
-
         </div>
 
         <!-- Trip Details -->
-        <rt-trip-details v-if="tripDetailsVisible" :trip="departure.trip" :station="station"></rt-trip-details>
+        <v-expand-transition>
+            <rt-trip-details v-if="tripDetailsVisible" :trip="departure.trip" :station="station"></rt-trip-details>
+        </v-expand-transition>
 
     </div>
 </template>
@@ -117,7 +121,6 @@
 
     .departure-item {
         margin: auto 0;
-        padding-left: 5px;
         font-weight: bold;
     }
 

@@ -1,23 +1,35 @@
 <template>
-    <md-dialog :md-active.sync="properties.visible">
-        <md-dialog-title>
-            <md-icon>place</md-icon>&nbsp;Select {{ label() }}
-        </md-dialog-title>
+    <v-dialog v-model.sync="properties.visible" max-width="400" scrollable>
+        <v-card class="card">
+            <v-card-title class="headline secondary-bg">                
+                <v-icon>place</v-icon>&nbsp;&nbsp;Select {{ label() }}
+            </v-card-title>
+        
+            <v-card-text class="card-body">
+                <v-list>
+                    <v-list-tile 
+                            v-for="stop in properties.stops" 
+                            :key="stop.id" 
+                            class="list-item" 
+                            @click="stopSelected(stop)">
+                        <v-list-tile-content>
+                            <v-list-tile-title :class="{'disabled': properties.type === 'station' && stop.statusId === '-1'}">
+                                {{ stop.name }}
+                            </v-list-tile-title>
+                        </v-list-tile-content>
+                    </v-list-tile>
+                </v-list>
+            </v-card-text>
 
-        <md-content class="dialog-content">
-            <ul class="dialog-content-list">
-                <li v-for="stop in properties.stops" 
-                    :class="{'disabled': properties.type === 'station' && stop.statusId === '-1'}"
-                    @click="stopSelected(stop)">
-                    <p>{{ stop.name }}</p>
-                </li>
-            </ul>
-        </md-content>
+            <v-divider></v-divider>
 
-        <md-dialog-actions>
-            <md-button class="md-primary" @click="properties.visible=false">Close</md-button>
-        </md-dialog-actions>
-    </md-dialog>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn @click="properties.visible=false" color="primary" depressed>Close</v-btn>
+            </v-card-actions>
+
+        </v-card>
+    </v-dialog>
 </template>
 
 
@@ -78,14 +90,15 @@
                 }
                 else if ( this.properties.type === "origin" || this.properties.type === "destination" ) {
                     this.$emit('stopSelected', this.properties.type, stop);
+                    this.properties.visible = false;
                 }
                 else if ( this.properties.type === "trip" && !this.properties.origin ) {
-                    console.log("Setting Origin: " + stop.name)
                     this.properties.origin = stop; 
                     this.$forceUpdate();
                 }
                 else if ( this.properties.type === "trip" && this.properties.origin ) {
                     this.$emit('stopSelected', this.properties.type, this.properties.origin, stop);
+                    this.properties.visible = false;
                 }
             }
             
@@ -95,29 +108,20 @@
 
 
 <style scoped>
-    .dialog-content {
-        overflow: auto;
-    }
-    .dialog-content-list {
-        list-style-type: none;
+    .card-body {
         padding: 0;
+        max-height: 600px;
     }
-    .dialog-content-list li {
-        cursor: pointer;
-        padding-left: 25px;
-        border-top: 1px solid #dfdfdf;
-        height: 52px;
-        font-size: 16px;
+    .list-item {
+        border-bottom: 1px solid #eee;
+        background-color: #fff;
     }
-    .dialog-content-list li.disabled {
-        cursor: auto;
+    .list-item:nth-child(even) {
+        background-color: #fafafa;
+    }
+    .list-item .disabled {
         text-decoration: line-through;
-        color: #666;
-    }
-    .dialog-content-list li:hover {
-        background-color: #eee !important;
-    }
-    .dialog-content-list li:nth-child(even) {
-        background-color: #f5f5f5;
+        cursor: auto;
+        color: #999;
     }
 </style>

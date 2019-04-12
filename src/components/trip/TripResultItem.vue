@@ -7,34 +7,36 @@
         <div v-for="(segment, index) in trip.segments" :key="'trip-segment-' + index" class="trip-segment-wrapper">
             <div class="trip-segment-headsign">
                 <span :style="{'background-color': '#' + segment.trip.route.color, 'color': '#' + segment.trip.route.textColor}">
-                    <md-icon>train</md-icon> <strong>{{ segment.trip.headsign }}&nbsp;</strong>
+                    <v-icon :color="'#' + segment.trip.route.textColor">train</v-icon> <strong>{{ segment.trip.headsign }}&nbsp;</strong>
                 </span>
             </div>
             
             <div class="trip-segment-times">
-                {{ formatTime(segment.enter.departureTime) }} <md-icon>arrow_forward</md-icon> {{ formatTime(segment.exit.arrivalTime) }}
+                {{ formatTime(segment.enter.departureTime) }} <v-icon color="#111">arrow_forward</v-icon> {{ formatTime(segment.exit.arrivalTime) }}
             </div>
             <div class="trip-segment-status">
                 On Time
             </div>
             <div class="trip-segment-traveltime">
-                <md-icon>access_time</md-icon> {{ formatTravelTime(segment.travelTime) }}
+                &nbsp;<v-icon color="#111">access_time</v-icon> {{ formatTravelTime(segment.travelTime) }}
             </div>
             <div class="trip-segment-track">
                 Track 2
             </div>
 
-            <rt-trip-details v-if="tripDetailsVisible" class="trip-segment-details" 
-                :trip="segment.trip" :enter="segment.enter" :exit="segment.exit">
-            </rt-trip-details>
+            <v-expand-transition>
+                <rt-trip-details v-if="tripDetailsVisible" class="trip-segment-details" 
+                    :trip="segment.trip" :enter="segment.enter" :exit="segment.exit">
+                </rt-trip-details>
+            </v-expand-transition>
 
             <div v-if="trip.transfers[index]" class="trip-segment-transfer">
                 <div class="trip-segment-transfer-icon">
-                    <md-icon>call_split</md-icon>
+                    <v-icon color="#111">call_split</v-icon>
                 </div>
                 <div class="trip-segment-transfer-info">
                     <strong>&nbsp;Transfer @ {{ trip.transfers[index].stop.name }}</strong><br />
-                    <md-icon>timelapse</md-icon> {{ formatTravelTime(trip.transfers[index].layoverTime) }}
+                    <v-icon color="#111">timelapse</v-icon> {{ formatTravelTime(trip.transfers[index].layoverTime) }}
                 </div>
             </div>
 
@@ -42,7 +44,7 @@
 
         <div v-if="trip.segments.length > 1" class="trip-total-traveltime">
             <strong>Total Travel Time</strong><br />
-            <md-icon>access_time</md-icon> {{ formatTravelTime(trip.travelTime) }}
+            <v-icon color="#111">access_time</v-icon> {{ formatTravelTime(trip.travelTime) }}
         </div>
     </div>
 </template>
@@ -123,7 +125,7 @@
         background-color: #ecececaa;
     }
 
-    .trip-wrapper .md-icon {
+    .trip-wrapper .v-icon {
         font-size: 16px !important;
     }
     
@@ -145,10 +147,11 @@
     .trip-segment-headsign {
         grid-area: headsign;
         text-align: center;
+        margin-bottom: 5px;
     }
     .trip-segment-headsign > span {
         border-radius: 5px;
-        padding: 2px 0;
+        padding: 2px;
     }
 
     .trip-segment-times {
@@ -189,7 +192,7 @@
         grid-area: transfer-icon;
         margin: 0 auto;
     }
-    .trip-segment-transfer-icon .md-icon {
+    .trip-segment-transfer-icon .v-icon {
         font-size: 24px !important;
         -webkit-transform: rotate(90deg);
         -moz-transform: rotate(90deg);

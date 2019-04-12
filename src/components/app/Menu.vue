@@ -1,50 +1,180 @@
 <template>
     <div>
-        <div v-for="item in menu" :key="item.key">
 
-            <!-- Divider -->
-            <hr v-if="item.type==='divider'" class="menu-divider" />
+        <!-- User Info -->
+        <v-list v-if="auth.display" class="py-0" two-line>
+            <v-list-tile @click="startAuth">
+                <v-list-tile-action>
+                    <v-icon v-if="auth.isLoggedIn">person</v-icon>
+                    <v-icon v-if="!auth.isLoggedIn">person_outline</v-icon>
+                </v-list-tile-action>
+                <v-list-tile-content>
+                    <v-list-tile-title v-if="auth.isLoggedIn">{{ auth.user.username }}</v-list-tile-title>
+                    <v-list-tile-sub-title v-if="auth.isLoggedIn">{{ auth.user.email }}</v-list-tile-sub-title>
+                    <v-list-tile-title v-if="!auth.isLoggedIn">Log In</v-list-tile-title>
+                    <v-list-tile-sub-title v-if="!auth.isLoggedIn">Right Track Account</v-list-tile-sub-title>
+                </v-list-tile-content>
+            </v-list-tile>
+        </v-list>
+        <v-divider></v-divider>
 
-            <!-- Menu Item / Badge -->
-            <md-list v-if="item.type==='item' || item.type==='badge' || item.type==='favorite'">
-                <span v-if="item.type==='badge'" class="md-list-item-badge rt-primary">4</span>
-                <md-list-item @click="drawerLink(item)">
-                    <md-icon class="md-list-item-icon" :class="{'rt-primary-fg': item.isActive, 'md-list-item-inactive': !item.isActive}">{{ item.icon }}</md-icon>
-                    <span class="md-list-item-text" :class="{'rt-primary-fg': item.isActive, 'md-list-item-inactive': !item.isActive}">{{ item.title }}</span>
-                </md-list-item>
-            </md-list>
+        <!-- Menu Items List -->
+        <v-list class="pt-0" subheader>
+            <template v-for="item in menu">
 
-        </div>
+                <!-- Divider -->
+                <v-divider v-if="item.type === 'divider'" :key="item.key" />
+
+                <!-- Menu Item / Badge -->
+                <v-list-tile v-if="item.type === 'item' || item.type === 'badge'" :class="{'active-menu-item': isActiveMenuItem(item, 'item')}" @click="drawerLink(item)" :key="item.key">
+                    <v-list-tile-action>
+                        <v-icon>{{ item.icon }}</v-icon>                        
+                    </v-list-tile-action>
+                    <v-list-tile-content>
+                        <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+                    </v-list-tile-content>
+                </v-list-tile>
+
+                <!-- Favorites Expansion Panel -->
+                <div v-if="item.type === 'favorites' && favorites && favorites.length > 0">
+                    <v-divider></v-divider>
+                    <v-expansion-panel class="favorites-expansion-panel" v-model="favoritesExpansion">
+                        <v-expansion-panel-content>
+                            
+                            <!-- Favorites Sub Header -->
+                            <template v-slot:header>
+                                <v-subheader class="favorites-list-subheader">Favorites</v-subheader>
+                            </template>
+
+                            <!-- Favorites List -->
+                            <template v-for="favorite in favorites">
+                                <v-list-tile :class="{'active-menu-item': isActiveMenuItem(favorite, 'favorite')}" @click="favoriteLink(favorite)">
+                                    <v-list-tile-action>
+                                        <v-icon>{{ favorite.icon }}</v-icon>
+                                    </v-list-tile-action>
+                                    <v-list-tile-content>
+                                        <v-list-tile-title class="favorites-list-label-container">
+                                            <div class="favorites-list-label-text">
+                                                {{ favorite.label }}
+                                            </div>
+                                        </v-list-tile-title>
+                                    </v-list-tile-content>
+                                </v-list-tile>
+                            </template>
+
+                        </v-expansion-panel-content>
+                    </v-expansion-panel>
+                </div>
+
+            </template>
+        </v-list>
     </div>
 </template>
 
 
 <script>
     const menu = require("@/utils/menu.js");
+    const user = require("@/utils/user.js");
+    const store = require("@/utils/store.js");
+    const STORE_KEY = "setting-menu-favorites-expansion";
+
 
     /**
-     * Get Menu Items
-     * @param  {Vue} vm    Vue Instance
-     * @return {Array}     List of menu items
+     * Update Procedure
+     * - Get Menu Items
+     * - Set Favorites Expansion
+     * - Check Logged In State
      */
-    function _getMenuItems(vm) {
-        return menu(vm, vm.favorites);
+    function _update(vm) {
+        console.log("UPDATING MENU");
+        _setMenuItems(vm);
+        _setFavoritesExpansion(vm);
+        vm.auth.display = !["login", "logout", "register"].includes(vm.$router.currentRoute.name);
+        if ( vm.auth.display ) {
+            _checkLoggedIn(vm);
+        }
     }
+
+
+    /**
+     * Set the Menu Items
+     * - get menu items from utils/menu.js
+     * @param  {Vue} vm    Vue Instance
+     */
+    function _setMenuItems(vm) {
+        vm.menu = menu(vm);
+    }
+
+    /**
+     * Check the User Logged In state and update the Auth Button
+     * @param  {Vue}      vm         Vue Instance
+     * @param  {Function} [callback] Callback function()
+     */
+    function _checkLoggedIn(vm, callback) {
+        user.isLoggedIn(function(isLoggedIn, user) {
+            vm.auth.isLoggedIn = isLoggedIn;
+            vm.auth.user = user;
+            if ( callback ) return callback();
+        });
+    }
+
+    /**
+     * Start the Auth process by chaging to the login/logout page
+     * @param {Vue}    vm   Vue Instance
+     * @param {String} page Auth router page name
+     */
+    function _startAuth(vm, page) {
+        vm.$router.push({
+            name: page,
+            query: {
+                agency: vm.$router.currentRoute.params.agency,
+                src: vm.$route.path
+            }
+        });
+    }
+
+    /**
+     * Set the favorites expansion panel setting
+     * @param {Vue} vm Vue Instance
+     */
+    function _setFavoritesExpansion(vm) {
+        store.get(STORE_KEY, function(err, value) {
+            if ( value === undefined || value === true ) {
+                vm.favoritesExpansion = 0;
+            }
+        });
+    }
+
+    /**
+     * Store the favorites expansion panel setting
+     * @param  {Vue} vm Vue Instance
+     */
+    function _storeFavoritesExpansion(vm) {
+        let value = vm.favoritesExpansion === 0;
+        store.put(STORE_KEY, value);
+    }
+
 
     module.exports = {
 
-        // ==== COMPONENT PROPS ==== //
+        // ==== COMPONENT PROPERTIES ==== //
         props: {
             favorites: {
                 type: Array,
-                required: true
+                default: []
             }
         },
         
         // ==== COMPONENT DATA ==== //
         data: function() {
             return {
-                menu: _getMenuItems(this)
+                menu: [],
+                auth: {
+                    isLoggedIn: false,
+                    display: undefined,
+                    user: undefined
+                },
+                favoritesExpansion: null
             }
         },
 
@@ -52,8 +182,62 @@
         methods: {
 
             /**
+             * Determine if a menu item should be classified as active
+             * @param  {Object}  item Menu Item / Favorite
+             * @param  {string}  type 'item' or 'favorite'
+             * @return {Boolean}      True if the item is active
+             */
+            isActiveMenuItem(item, type) {
+                let current = this.$router.currentRoute.name;
+                
+                // Item
+                if ( type === "item" ) {
+                    return current === item.page;
+                }
+
+                // Favorite
+                else if ( type === "favorite" ) {
+                    if ( current === "station" && item.type === 1 ) {
+                        return this.$router.currentRoute.params.stop === item.stop.id;
+                    }
+                    else if ( current === "trip" && item.type === 2 ) {
+                        return this.$router.currentRoute.params.origin === item.origin.id && 
+                               this.$router.currentRoute.params.destination === item.destination.id;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            },
+
+            /**
+             * Start the auth procedure
+             */
+            startAuth() {
+                let vm = this;
+
+                // LOGOUT
+                if ( vm.auth.isLoggedIn ) {
+                    vm.$emit("showDialog",
+                        "Log Out?",
+                        "<p>Are you sure you want to log out?</p><p>Your saved favorites will be removed from this device and you will need to log back in to access your favorites.</p>",
+                        "Log Out",
+                        "Cancel",
+                        function() {
+                            _startAuth(vm, 'logout');
+                        }
+                    );
+                }
+
+                // LOGIN
+                else {
+                    _startAuth(vm, 'login');
+                }
+
+            },
+
+            /**
              * Handle a menu drawer link
-             * - Close the menu
              * - Set the router to view the linked route
              * @param  {Object} item Menu Item
              */
@@ -61,41 +245,10 @@
                 let route = item.page;
                 let params = item.params;
                 let query = item.query;
-
-                // Send message to App
-                this.$emit('menuItemSelected', route);
                 
                 // Go to external site
                 if ( route.startsWith("http") ) {
                     window.location = route;
-                }
-
-                // Go to favorites page
-                else if ( item.type === "favorite" ) {
-                    let favorite = item.favorite;
-
-                    // Station
-                    if ( favorite.type === 1 ) {
-                        this.$router.push({
-                            name: "station",
-                            params: {
-                                agency: this.$route.params.agency,
-                                stop: favorite.stop.id
-                            }
-                        });
-                    }
-
-                    // Trip
-                    else if ( favorite.type === 2 ) {
-                        this.$router.push({
-                            name: "trip",
-                            params: {
-                                agency: this.$route.params.agency,
-                                origin: favorite.origin.id,
-                                destination: favorite.destination.id
-                            }
-                        });
-                    }
                 }
 
                 // Go to Router Path
@@ -110,7 +263,6 @@
 
                 }
 
-
                 // Set Router Link
                 else {
 
@@ -123,8 +275,44 @@
 
                 }
 
+            },
+
+            /**
+             * Handle a menu favorite link
+             * @param  {Object} favorite Selected favorite
+             */
+            favoriteLink(favorite) {
+
+                // Station
+                if ( favorite.type === 1 ) {
+                    this.$router.push({
+                        name: "station",
+                        params: {
+                            agency: this.$route.params.agency,
+                            stop: favorite.stop.id
+                        }
+                    });
+                }
+
+                // Trip
+                else if ( favorite.type === 2 ) {
+                    this.$router.push({
+                        name: "trip",
+                        params: {
+                            agency: this.$route.params.agency,
+                            origin: favorite.origin.id,
+                            destination: favorite.destination.id
+                        }
+                    });
+                }
+
             }
 
+        },
+
+        // ==== COMPONENT MOUNTED ==== //
+        mounted: function() {
+            _update(this);
         },
 
 
@@ -138,15 +326,22 @@
              * @param  {Route} from From Route
              */
             $route: function(to, from) {
-                this.menu = _getMenuItems(this)
+                _update(this);
             },
 
             /**
-             * Watch for an update to the favorites
+             * Watch for updates to the favorites list
              */
-            favorites: function(favorites) {
-                this.favorites = favorites;
-                this.menu = _getMenuItems(this);
+            favorites: function() {
+                _update(this);
+            },
+
+            /**
+             * Watch for changes in the favorites expansion panel
+             * @return {[type]} [description]
+             */
+            favoritesExpansion: function() {
+                _storeFavoritesExpansion(this);
             }
 
         }
@@ -156,41 +351,28 @@
 
 
 <style scoped>
-    .md-list {
-        padding: 0;
+    .favorites-expansion-panel {
+        box-shadow: none;
     }
-
-    .md-list-item:hover {
-        background-color: #eee;
+    .favorites-list-subheader {
+        margin: -16px;
     }
-
-    .md-list-item-inactive {
-        color: #777;
-    }
-
-    .md-list-item-text {
-        font-weight: bold;
-        word-wrap: break-word;
+    .favorites-list-label-container {
+        height: 100%;
         white-space: normal;
+        line-height: 1;
+        display: table;
+    }
+    .favorites-list-label-text {
+        display: table-cell;
+        vertical-align: middle;
+        font-size: 95%;
     }
 
-    .md-list-item-badge {
-         position: absolute; 
-         top: 14px;
-         right: 15px; 
-         background-color: red;
-         border-radius: 25px;
-         color: #fff;
-         font-weight: bold;
-         font-size: 14px;
-         height: 20px;
-         width: 20px;
-         text-align: center;
-         z-index: 900;
+    .active-menu-item * {
+        color: var(--v-primary-base) !important;
     }
-
-    .menu-divider {
-        border-top: 1px solid rgba(238, 238, 238, 0.75);
-        color: rgba(238, 238, 238, 0.75);
+    .active-menu-item .v-list__tile__title {
+        font-weight: 700;
     }
 </style>

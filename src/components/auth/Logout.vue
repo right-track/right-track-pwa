@@ -1,7 +1,7 @@
 <template>
-    <div class="content-container">
+    <v-container class="container">
         <p>Logging out...</p>
-    </div>
+    </v-container>
 </template>
 
 
@@ -23,10 +23,6 @@
             let vm = this;
             vm.agencyId = vm.$route.query.agency;
             vm.src = vm.$route.query.src;
-
-            // Set More Menu Items and Agency Information
-            vm.$emit('setMoreMenuItems', []);
-            vm.$emit('setAgencyId', vm.agencyId);
 
             // Perform Logout
             user.logout(function() {

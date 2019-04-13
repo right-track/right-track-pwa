@@ -336,6 +336,10 @@
 
 
 <style scoped>
+    .container {
+        padding-bottom: 40px;
+    }
+
     .empty-state {
         max-width: 500px;
         text-align: center;

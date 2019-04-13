@@ -12,7 +12,7 @@
                 </v-list-tile-avatar>
                 
                 <v-list-tile-content>
-                    <v-list-tile-title>
+                    <v-list-tile-title class="list-title">
                         {{ fav.label }}
                     </v-list-tile-title>
                 </v-list-tile-content>
@@ -78,3 +78,13 @@
         
     }
 </script>
+
+
+<style scoped>
+    .list-title {
+        height: auto; 
+        max-height: 48px; 
+        line-height: 24px; 
+        white-space: normal;
+    }
+</style>

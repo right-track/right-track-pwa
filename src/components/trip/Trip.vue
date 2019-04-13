@@ -67,15 +67,6 @@
                 function() {
                     vm.toggleFavorite();
                 }
-            },
-            {
-                key: 2,
-                type: "icon",
-                icon: "refresh",
-                disabled: vm.updatingStatus,
-                function() {
-                    vm.refresh();
-                }
             }
         ]
         vm.$emit('setToolbarMenuItems', toolbarMenuItems);
@@ -90,13 +81,21 @@
             {
                 key: 1,
                 type: "item",
+                title: "Refresh Status",
+                function: function() {
+                    vm.refresh();
+                }
+            },
+            {
+                key: 2,
+                type: "item",
                 title: "Reverse Trip",
                 function: function() {
                     console.log("Reverse Trip");
                 }
             },
             {
-                key: 2,
+                key: 3,
                 type: "item",
                 title: "Change Date/Time",
                 function: function() {
@@ -304,7 +303,11 @@
              * @return {[type]} [description]
              */
             refresh: function() {
-                _updateStatus(this);
+                let vm = this;
+                vm.updatingStatus = true;
+                setTimeout(function() {
+                    _updateStatus(vm);
+                }, 500);
             },
 
             /**
@@ -366,6 +369,7 @@
              */
             updatingStatus() {
                 _updateToolbarMenu(this);
+                this.$emit('setProgress', this.updatingStatus);
             },
             updatingFavorite() {
                 _updateToolbarMenu(this);

@@ -12,9 +12,6 @@
                 <div class="departures-header-item departures-header-track">Track</div>
             </div>
 
-            <!-- Loading Progress Bar -->
-            <v-progress-linear :indeterminate="updating" :value="updating ? undefined : 100" height="5" color="primary" style="margin: 0"></v-progress-linear>
-
             <!-- Station Departures -->
             <template v-for="(departure, index) in departures">
                 <rt-departure-item :departure="departure" :station="stop" :key="stop.name + '-departure-' + departure.trip.id + '-' + index"></rt-departure-item>
@@ -307,6 +304,7 @@
              */
             updating() {
                 _updateToolbarMenu(this);
+                this.$emit('setProgress', this.updating);
             },
             updatingFavorite() {
                 _updateToolbarMenu(this);

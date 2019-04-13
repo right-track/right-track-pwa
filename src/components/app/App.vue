@@ -41,6 +41,17 @@
                     </div>
                 </v-list>
             </v-menu>
+
+            <!-- TOOLBAR PROGRESS BAR -->
+            <v-fade-transition>
+                <v-progress-linear class="toolbar-progress" 
+                        v-if="toolbarProgress.isActive"
+                        color="secondary"
+                        height="5"
+                        :value="toolbarProgress.progress" 
+                        :indeterminate="!toolbarProgress.progress">
+                </v-progress-linear>
+            </v-fade-transition>
         </v-toolbar>
         
 
@@ -53,6 +64,7 @@
                     @setToolbarMenuItems="onSetToolbarMenuItems"
                     @setMoreMenuItems="onSetMoreMenuItems" 
                     @setTitle="onSetTitle" 
+                    @setProgress="onSetProgress"
                     @setBottomToolbar="onSetBottomToolbar"
                     @updateFavorites="onUpdateFavorites"
                     @showDialog="onShowDialog" 
@@ -238,6 +250,7 @@
         vm.$vuetify.theme.primaryText = colors.primaryText;
         vm.$vuetify.theme.secondary = colors.secondary;
         vm.$vuetify.theme.secondaryText = colors.secondaryText;
+        document.querySelector("meta[name=theme-color]").setAttribute("content", colors.primary);
     }
 
 
@@ -312,6 +325,12 @@
 
                  // Bottom Bar visibility flag
                 bottomBarEnabled: bottomBarPages.includes(this.$router.currentRoute.name),
+
+                // Toolbar Progress Properties
+                toolbarProgress: {
+                    isActive: false,
+                    progress: undefined
+                },
 
                 // Toolbar Menu Items
                 toolbarMenu: [],
@@ -416,6 +435,18 @@
             },
 
             /**
+             * Set the properties of the toolbar progress bar
+             * @param  {Boolean} isActive True if progress bar should be displayed
+             * @param  {int}     progress Percent progress or undefined for indeterminate
+             */
+            onSetProgress(isActive, progress) {
+                this.toolbarProgress = {
+                    isActive: isActive,
+                    progress: progress
+                }
+            },
+
+            /**
              * Set the Bottom Toolbar Properties
              * @param  {Object} properties Bottom Toolbar Properties
              */
@@ -507,3 +538,13 @@
     }
 
 </script>
+
+
+<style scoped>
+    .toolbar-progress {
+        position: absolute;
+        bottom: 0; 
+        left: 0; 
+        margin: -5px 0 0 0
+    }
+</style>

@@ -23,22 +23,22 @@
                     <!-- Arrival / Departure Time -->
                     <div class="trip-details-stop-row-item trip-details-stops-row-time">
                         <span v-if="stopTimeHasDepartureDelay(index)">
-                            <v-icon :color="getStopTimeRowTextColor(index)">access_time</v-icon>&nbsp;{{ getStopTimeArrival(index) }}&nbsp;<br />
+                            <v-icon class="v-xsmall-hide" :color="getStopTimeRowTextColor(index)">access_time</v-icon>&nbsp;{{ getStopTimeArrival(index) }}&nbsp;<br />
                         </span>
-                        <v-icon :color="getStopTimeRowTextColor(index)">access_time</v-icon>&nbsp;{{ getStopTimeDeparture(index) }}&nbsp;
+                        <v-icon class="v-xsmall-hide" :color="getStopTimeRowTextColor(index)">access_time</v-icon>&nbsp;{{ getStopTimeDeparture(index) }}&nbsp;
                     </div>
 
                     <!-- Stop Name -->
                     <div class="trip-details-stop-row-item trip-details-stops-row-stop">
                         <div v-if="stopTimeHasDepartureDelay(index)" class="stop-container-both">
                             <div class="stop-icon-arrival">
-                                <v-icon :color="getStopTimeRowTextColor(index)">place</v-icon>
+                                <v-icon class="v-xsmall-hide" :color="getStopTimeRowTextColor(index)">place</v-icon>
                             </div>
                             <div class="stop-name-arrival">
                                 {{ st.stop.name }} (Arrive)
                             </div>
                             <div class="stop-icon-departure">
-                                <v-icon :color="getStopTimeRowTextColor(index)">place</v-icon>
+                                <v-icon class="v-xsmall-hide" :color="getStopTimeRowTextColor(index)">place</v-icon>
                             </div>
                             <div class="stop-name-departure">
                                 {{ st.stop.name }} (Depart)
@@ -46,7 +46,7 @@
                         </div>
                         <div v-else class="stop-container">
                             <div class="stop-icon">
-                                <v-icon :color="getStopTimeRowTextColor(index)">place</v-icon>
+                                <v-icon class="v-xsmall-hide" :color="getStopTimeRowTextColor(index)">place</v-icon>
                             </div>
                             <div class="stop-name">
                                 {{ st.stop.name }}
@@ -407,6 +407,7 @@
 
     .trip-details-stops-row {
         display: grid;
+        grid-gap: 0 5px;
         grid-template-columns: max-content 1fr 60px 30px;
         grid-template-areas: "time stop traveltime ada";
         background-color: #fff;

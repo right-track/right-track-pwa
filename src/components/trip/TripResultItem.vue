@@ -91,13 +91,13 @@
                 for ( let i = 0; i < this.statusFeeds.length; i++ ) {
                     if ( this.statusFeeds[i].origin.id === segment.enter.stop.id ) {
                         for ( let j = 0; j < this.statusFeeds[i].departures.length; j++ ) {
-                            if ( this.statusFeeds[i].departures[j].trip.id === segment.trip.id ) {
+                            if ( this.statusFeeds[i].departures[j].trip.shortName === segment.trip.shortName ) {
                                 let status = this.statusFeeds[i].departures[j].status.status;
                                 if ( status.toLowerCase() === "on time" || status.toLowerCase() === 'scheduled' ) {
                                     return "<span style='background-color: #4caf50; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
                                 }
                                 else {
-                                    return "<span class='background-color: #ff5252; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
+                                    return "<span style='background-color: #ff5252; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
                                 }
                             }
                         }
@@ -114,7 +114,7 @@
                 for ( let i = 0; i < this.statusFeeds.length; i++ ) {
                     if ( this.statusFeeds[i].origin.id === segment.enter.stop.id ) {
                         for ( let j = 0; j < this.statusFeeds[i].departures.length; j++ ) {
-                            if ( this.statusFeeds[i].departures[j].trip.id === segment.trip.id ) {
+                            if ( this.statusFeeds[i].departures[j].trip.shortName === segment.trip.shortName ) {
                                 let track = this.statusFeeds[i].departures[j].status.track;
                                 if ( track && track !== "" ) {
                                     return "<span style='font-weight: 500'>Track " + track + "</span>";
@@ -187,7 +187,7 @@
 
     .trip-segment-wrapper {
         display: grid;
-        grid-gap: 0 10px;
+        grid-gap: 2px 10px;
         grid-template-columns: 1fr 125px;
         grid-template-areas: "headsign headsign" "times status" "traveltime track" "details details" "transfer transfer";
         padding: 15px 0 10px 0;

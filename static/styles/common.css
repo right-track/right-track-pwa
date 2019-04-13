@@ -42,7 +42,7 @@ div.v-list a:hover {
 
 /* SHOW/HIDE ON XS & HIDE/SHOW ON SM/MD/L/XL */
 @media screen and (min-width: 0px) and (max-width: 599px) {
-    .md-xsmall-show, .v-xsmall-show {
+    .v-xsmall-show {
         display: block !important;
     }
     .v-xsmall-hide {
@@ -50,7 +50,7 @@ div.v-list a:hover {
     }
 }
 @media screen and (min-width: 600px) {
-    .md-xsmall-show, .v-xsmall-show {
+    .v-xsmall-show {
         display: none !important;
     }
     .v-small-hide {
@@ -60,18 +60,18 @@ div.v-list a:hover {
 
 /* SHOW/HIDE ON XS/SM & HIDE/SHOW ON MD/L/XL */
 @media screen and (min-width: 0px) and (max-width: 959px) {
-    .md-small-show, .v-small-show {
+    .v-small-show {
         display: block !important;
     }
-    .md-small-hide, .v-small-hide {
+    .v-small-hide {
         display: none !important;
     }
 }
 @media screen and (min-width: 960px) {
-    .md-small-show, .v-small-show {
+    .v-small-show {
         display: none !important;
     }
-    .md-small-hide, .v-small-hide {
+    .v-small-hide {
         display: block !important;
     }
 }

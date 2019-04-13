@@ -10,7 +10,7 @@
         <!-- APP TOOLBAR -->
         <v-toolbar id="app-toolbar" class="primary-bg" clipped-left fixed app>
             <v-toolbar-side-icon @click.stop="drawerVisible = !drawerVisible"></v-toolbar-side-icon>
-            <v-toolbar-title @click="onClickToolbar" :style="{'cursor': agencyId ? 'pointer' : 'auto'}">
+            <v-toolbar-title @click="onClickToolbar" class="toolbar-title" :style="{'cursor': agencyId ? 'pointer' : 'auto'}">
                 {{ toolbarTitle }}
             </v-toolbar-title>
             
@@ -541,6 +541,12 @@
 
 
 <style scoped>
+    .toolbar-title {
+        max-height: 40px;
+        line-height: 20px;
+        word-wrap: normal !important;
+        white-space: normal !important;
+    }
     .toolbar-progress {
         position: absolute;
         bottom: 0; 

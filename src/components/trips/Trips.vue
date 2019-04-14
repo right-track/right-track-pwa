@@ -14,7 +14,7 @@
                 <div class="origin-destination-container">
 
                     <div class="origin-container">
-                        <v-btn color="primary" :disabled="!dialogProps.stops" @click="selectOrigin" depressed>
+                        <v-btn color="primary" :disabled="!stationDialogProps.stops" @click="selectOrigin" depressed>
                             <v-icon>place</v-icon>&nbsp;&nbsp;
                             <span v-if="origin">{{ origin.name }}</span>
                             <span v-else>Origin</span>
@@ -27,7 +27,7 @@
                     </div>
 
                     <div class="destination-container">
-                        <v-btn color="primary" :disabled="!dialogProps.stops" @click="selectDestination" depressed>
+                        <v-btn color="primary" :disabled="!stationDialogProps.stops" @click="selectDestination" depressed>
                             <v-icon>place</v-icon>&nbsp;&nbsp;
                             <span v-if="destination">{{ destination.name }}</span>
                             <span v-else>Destination</span>
@@ -63,7 +63,7 @@
                             <v-date-picker v-model="departure.date" scrollable>
                                 <v-spacer></v-spacer>
                                 <v-btn @click="dateDialogVisible = false" color="primary" flat>Cancel</v-btn>
-                                <v-btn @click="selectDate" color="primary">OK</v-btn>
+                                <v-btn @click="updateDate" color="primary">OK</v-btn>
                             </v-date-picker>
 
                         </v-dialog>
@@ -90,7 +90,7 @@
                             <v-time-picker v-model="departure.time" scrollable>
                                 <v-spacer></v-spacer>
                                 <v-btn @click="timeDialogVisible = false" color="primary" flat>Cancel</v-btn>
-                                <v-btn @click="selectTime" color="primary">OK</v-btn>
+                                <v-btn @click="updateTime" color="primary">OK</v-btn>
                             </v-time-picker>
 
                         </v-dialog>
@@ -111,7 +111,7 @@
 
 
         <!-- SELECT STATION DIALOG -->
-        <rt-stop-selection-dialog :properties="dialogProps" @stopSelected="onStopSelected"></rt-stop-selection-dialog>
+        <rt-stop-selection-dialog :properties="stationDialogProps" @stopSelected="onStopSelected"></rt-stop-selection-dialog>
 
     </v-container>
 </template>
@@ -146,6 +146,31 @@
         });
     }
 
+    /**
+     * Set the initial date / time
+     * @param {Vue}  vm Vue Instance
+     * @param {Date} d  Initial Date/Time
+     */
+    function _setDateTime(vm, d) {
+        let yyyy = d.getFullYear();
+        let mm = d.getMonth() + 1;
+        if ( mm < 10 ) mm = "0" + mm;
+        let dd = d.getDate();
+
+        let hr = d.getHours();
+        if ( hr < 10 ) hr = "0" + hr;
+        let mi = d.getMinutes();
+        if ( mi < 10 ) mi = "0" + mi;
+        
+        // Set the initial date and time
+        vm.departure.date = yyyy + "-" + mm + "-" + dd;
+        vm.departure.time = hr + ":" + mi;
+
+        // Set date and time buttons
+        vm.departure.dateString = vm.getDepartureDateString();
+        vm.departure.timeString = vm.getDepartureTimeString();
+    }
+
     module.exports = {
 
         // ==== COMPONENT DATA ==== //
@@ -169,9 +194,9 @@
                  * @type {Object}
                  */
                 departure: {
-                    date: new Date().toISOString().substr(0, 10),
+                    date: undefined,
                     dateString: undefined,
-                    time: new Date().toLocaleTimeString().substr(0, 5),
+                    time: undefined,
                     timeString: undefined
                 },
 
@@ -189,7 +214,7 @@
                  * Station Dialog Properties
                  * @type {Object}
                  */
-                dialogProps: {
+                stationDialogProps: {
                     visible: false,
                     type: undefined,
                     stops: undefined
@@ -210,16 +235,16 @@
              * Show the Station Selection Dialog for the Origin
              */
             selectOrigin: function() {
-                this.dialogProps.type = "origin";
-                this.dialogProps.visible = true;
+                this.stationDialogProps.type = "origin";
+                this.stationDialogProps.visible = true;
             },
 
             /**
              * Show the Station Selection Dialog for the Destination
              */
             selectDestination: function() {
-                this.dialogProps.type = "destination";
-                this.dialogProps.visible = true;
+                this.stationDialogProps.type = "destination";
+                this.stationDialogProps.visible = true;
             },
 
             /**
@@ -227,7 +252,7 @@
              * - set the dialog reference
              * - update the formatted string
              */
-            selectDate: function() {
+            updateDate: function() {
                 this.$refs.dateDialog.save(this.departure.date);
                 this.departure.dateString = this.getDepartureDateString();
             },
@@ -237,7 +262,7 @@
              * - set the dialog reference
              * - update the formatted string
              */
-            selectTime: function() {
+            updateTime: function() {
                 this.$refs.timeDialog.save(this.departure.time);
                 this.departure.timeString = this.getDepartureTimeString();
             },
@@ -264,11 +289,8 @@
              * @return {string} Formatted Departure Time
              */
             getDepartureTimeString: function() {
-                console.log(this.departure.time);
                 let hr = parseInt(this.departure.time.split(':')[0]);
                 let mi = parseInt(this.departure.time.split(':')[1]);
-                console.log(hr);
-                console.log(mi);
                 let ap = undefined; 
                 if ( hr === 0 ) {
                     hr = "12";
@@ -290,6 +312,10 @@
                 return hr + ":" + mi + " " + ap;
             },
 
+            allowedMinutes: function(value) {
+                return v % 5 === 0;
+            },
+
             /**
              * Handle the selected Stop
              * - Set property
@@ -308,6 +334,47 @@
              * Display the Trip Results Page
              */
             showTripResults: function() {
+                let agencyId = this.$router.currentRoute.params.agency;
+                let originId = this.origin.id;
+                let destinationId = this.destination.id;
+
+                let t = this.departure.time.split(':');
+                let d = this.departure.date.split('-');
+                let departure = new Date(
+                    parseInt(d[0]),
+                    parseInt(d[1]) - 1,
+                    parseInt(d[2]),
+                    parseInt(t[0]),
+                    parseInt(t[1])
+                );
+                let now = new Date();
+
+                // Get trip results for current time
+                if ( Math.abs(now.getTime() - departure.getTime()) < 900000 ) {
+                    this.$router.push({
+                        name: "trip",
+                        params: {
+                            agency: agencyId,
+                            origin: originId,
+                            destination: destinationId
+                        }
+                    });
+                }
+
+                // Get trip results for specified departure
+                else {
+                    this.$router.push({
+                        name: "tripDT",
+                        params: {
+                            agency: agencyId,
+                            origin: originId,
+                            destination: destinationId,
+                            date: d[0] + "" + d[1] + "" + d[2],
+                            time: t[0] + "" + t[1]
+                        }
+                    });
+                }
+                
 
             }
 
@@ -317,10 +384,9 @@
         mounted() {
             let vm = this;
             _getStops(vm, function(stops) {
-                vm.dialogProps.stops = stops;
+                vm.stationDialogProps.stops = stops;
             });
-            vm.departure.dateString = vm.getDepartureDateString();
-            vm.departure.timeString = vm.getDepartureTimeString();
+            _setDateTime(vm, new Date());
         }
 
     }

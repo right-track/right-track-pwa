@@ -315,10 +315,8 @@
             user.isLoggedIn(function(isLoggedIn) {
                 vm.showLogin = !isLoggedIn;
                 vm.$emit('setMoreMenuItems', isLoggedIn ? MORE_MENU_ITEMS(vm) : []);
+                _displayFavorites(vm);
             });
-
-            // Display Favorites
-            _displayFavorites(vm);
 
             // Display Database Info
             _displayDBInfo(vm);

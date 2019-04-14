@@ -1,14 +1,16 @@
 <template>
-    <v-dialog v-model.sync="properties.visible" max-width="400" scrollable>
+    <v-dialog v-model.sync="properties.visible" max-width="400" v-on:keydown.enter="onKeyDownEnter" v-on:keydown="onKeyDown" scrollable>
         <v-card class="card">
             <v-card-title class="headline secondary-bg">                
                 <v-icon>place</v-icon>&nbsp;&nbsp;Select {{ label() }}
+                <v-spacer></v-spacer>
+                <v-icon @click="close">close</v-icon>
             </v-card-title>
         
             <v-card-text class="card-body">
                 <v-list>
                     <v-list-tile 
-                            v-for="stop in properties.stops" 
+                            v-for="stop in filterStops || properties.stops" 
                             :key="stop.id" 
                             class="list-item" 
                             @click="stopSelected(stop)">
@@ -23,9 +25,12 @@
 
             <v-divider></v-divider>
 
-            <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn @click="properties.visible=false" color="primary" depressed>Close</v-btn>
+            <v-card-actions style="background-color: #eee">
+                <v-text-field ref="filter"
+                    label="Filter Stops" 
+                    v-model="filterValue" 
+                    hide-details>
+                </v-text-field>
             </v-card-actions>
 
         </v-card>
@@ -51,6 +56,14 @@
                 required: true
             }
 
+        },
+
+        // ==== COMPONENT DATA ==== //
+        data: function() {
+            return {
+                filterValue: undefined,
+                filterStops: undefined
+            }
         },
 
         // ==== COMPONENT METHODS ==== //
@@ -86,11 +99,11 @@
             stopSelected(stop) {
                 if ( this.properties.type === "station" && stop.statusId !== "-1" ) {
                     this.$emit('stopSelected', this.properties.type, stop);
-                    this.properties.visible = false;
+                    this.close();
                 }
                 else if ( this.properties.type === "origin" || this.properties.type === "destination" ) {
                     this.$emit('stopSelected', this.properties.type, stop);
-                    this.properties.visible = false;
+                    this.close();
                 }
                 else if ( this.properties.type === "trip" && !this.properties.origin ) {
                     this.properties.origin = stop; 
@@ -98,11 +111,56 @@
                 }
                 else if ( this.properties.type === "trip" && this.properties.origin ) {
                     this.$emit('stopSelected', this.properties.type, this.properties.origin, stop);
-                    this.properties.visible = false;
+                    this.close();
+                }
+            },
+
+            /**
+             * Reset and close the dialog
+             */
+            close() {
+                let vm = this;
+                vm.properties.visible = false;
+                vm.$nextTick(function() {
+                    vm.filterValue = "";
+                });
+            },
+
+            /**
+             * Handle Key Down Event
+             * - switch focus to filter field
+             * @param  {[type]} e [description]
+             */
+            onKeyDown(e) {
+                let key = e.key;
+                this.$refs.filter.focus();
+            },
+
+            /**
+             * Handle Enter Key Down Event
+             * - select stop, if only 1 stop in filter field
+             */
+            onKeyDownEnter() {
+                if ( this.filterStops.length === 1 ) {
+                    this.stopSelected(this.filterStops[0]);
                 }
             }
             
+        },
+
+        // ==== COMPONENT WATCHERS ==== //
+        watch: {
+            filterValue(filter) {
+                let stops = [];
+                for ( let i = 0; i < this.properties.stops.length; i++ ) {
+                    if ( this.properties.stops[i].name.toLowerCase().indexOf(filter.toLowerCase()) !== -1 ) {
+                        stops.push(this.properties.stops[i]);
+                    }
+                }
+                this.filterStops = stops;
+            }
         }
+
     }
 </script>
 

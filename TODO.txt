@@ -38,10 +38,7 @@ PAGES:
 
     Trip:
         More Menu
-        real-time information
         determine next departure / departs in time
-        audo-update feed
-        BUG: sometimes search doesn't work
 
     Trip Details: 
 

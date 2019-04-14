@@ -529,7 +529,9 @@
                 
                 // Update favorites after login/logout
                 if ( from.name === "login" || from.name === "logout" ) {
-                    _updateFavorites(vm, true);
+                    Vue.nextTick(function() {
+                        _updateFavorites(vm, true);
+                    });
                 }
             }
 

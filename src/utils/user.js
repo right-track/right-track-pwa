@@ -41,14 +41,14 @@ function login(user, pass, callback) {
 
 /**
  * User Logout
- * @param  {[type]} finished Callback function()
+ * @param  {[type]} [finished] Callback function()
  */
 function logout(finished) {
 
     // Logout: server then local
     _server(function() {
         _local(function() {
-            return finished();
+            if ( finished ) return finished();
         });
     });
 

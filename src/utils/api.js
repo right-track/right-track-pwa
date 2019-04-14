@@ -72,8 +72,16 @@ function _request(method, path, body, binary, callback) {
     xhr.onload = function(e) {
         if ( xhr.response ) {
 
+            // HANDLE EXPIRED USER SESSION
+            if ( xhr.status === 401 && path !== "/auth/login" ) {
+                user.logout(function() {
+                    location.reload();
+                });
+                return callback(new Error("Session Expired - You have been logged out."));
+            }
+
             // PARSE JSON RESPONSE
-            if ( !binary ) {
+            else if ( !binary ) {
                 try {
 
                     // Parse Response to JSON

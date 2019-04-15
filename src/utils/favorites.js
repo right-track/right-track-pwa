@@ -370,7 +370,7 @@ function _getLastCheck(agencyId, callback) {
             return callback(0);
         }
         return callback(value);
-    })
+    });
 }
 
 /**

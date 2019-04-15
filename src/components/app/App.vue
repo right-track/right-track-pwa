@@ -3,13 +3,25 @@
 
         <!-- NAVIGATION DRAWER -->
         <v-navigation-drawer mobile-break-point="960" width="250" v-model="drawerVisible" clipped app>
-            <rt-drawer-menu :favorites="favorites.favorites" @showDialog="onShowDialog"></rt-drawer-menu>
+            <rt-drawer-menu 
+                :favorites="favorites.favorites" 
+                :update="update"
+                @showDialog="onShowDialog"
+                @startUpdate="onStartUpdate">
+            </rt-drawer-menu>
         </v-navigation-drawer>
 
 
         <!-- APP TOOLBAR -->
         <v-toolbar id="app-toolbar" class="primary-bg" clipped-left fixed app>
+            
+            <!-- Menu Toggle -->
             <v-toolbar-side-icon @click.stop="drawerVisible = !drawerVisible"></v-toolbar-side-icon>
+            <v-fade-transition>
+                <span v-if="update.isAvailable && drawerVisible === false" class="toolbar-badge secondary-bg"></span>
+            </v-fade-transition>
+
+            <!-- Toolbar Title -->
             <v-toolbar-title @click="onClickToolbar" class="toolbar-title" :style="{'cursor': agencyId ? 'pointer' : 'auto'}">
                 {{ toolbarTitle }}
             </v-toolbar-title>
@@ -101,6 +113,7 @@
     const user = require("@/utils/user.js");
     const database = require("@/utils/db.js");
     const favorites = require("@/utils/favorites.js");
+    const updates = require("@/utils/updates.js");
     
     const DrawerMenu = require("@/components/app/Menu.vue").default;
     const BottomBar = require("@/components/app/BottomBar.vue").default;
@@ -169,7 +182,15 @@
             // Update the Favorites
             _updateFavorites(vm);
 
+            // Check for DB Update
+            _dbUpdateCheck(vm);
+
         });
+
+        // Clear update info if no agency specified
+        if ( !vm.agencyId ) {
+            vm.update = {};
+        }
 
     }
 
@@ -288,6 +309,35 @@
     }
 
 
+    /**
+     * Check for agency database updates
+     * @param  {Vue}     vm      Vue Instance
+     * @param  {boolean} [force] When true, force an update check
+     */
+    function _dbUpdateCheck(vm, force) {
+        if ( vm.agencyId ) {
+            updates.check(vm.agencyId, force, function(err, updateInfo) {
+                if ( updateInfo ) {
+                    vm.update = {
+                        isAvailable: updateInfo.isAvailable,
+                        version: updateInfo.version
+                    }
+                    if ( force ) {
+                        vm.onShowSnackbar({
+                            message: "A schedule database update is available (" + updateInfo.version + ")",
+                            dismiss: "Update",
+                            onDismiss: vm.onStartUpdate
+                        });
+                    }
+                }
+                else {
+                    if ( force ) vm.onShowSnackbar("There is no database update available at this time");
+                }
+            });
+        }
+    }
+
+
 
     module.exports = {
 
@@ -322,7 +372,14 @@
                     favorites: []
                 },
 
-                 // Bottom Bar visibility flag
+                // Agency DB Update Information
+                update: {
+                    isAvailable: false,
+                    version: undefined,
+                    notes: undefined
+                },
+
+                // Bottom Bar visibility flag
                 bottomBarEnabled: bottomBarPages.includes(this.$router.currentRoute.name),
 
                 // Toolbar Progress Properties
@@ -504,6 +561,26 @@
                 }
                 properties.visible = true;
                 this.snackbar = properties;
+            },
+
+            /**
+             * Start the database download / update process
+             * @param  {string} [agency] Agency ID Code
+             */
+            onStartUpdate(agency) {
+                let vm = this;
+                if ( !agency ) {
+                    agency = vm.agencyId;
+                }
+                vm.onShowDialog(
+                    "Database Update Available", 
+                    "<p class='subheading'>Version <strong>" + vm.update.version + "</strong> of the schedule database is now available.  Download and install it now to get the most up to date trip schedules.</p>",
+                    "Download & Install",
+                    "Cancel",
+                    function() {
+                        console.log("START UPDATE");
+                    }
+                );
             }
 
         },
@@ -542,9 +619,18 @@
 
 
 <style scoped>
+    .toolbar-badge {
+        position: relative;
+        margin-right: -15px;
+        top: -6px;
+        right: 22px;
+        width: 15px;
+        height: 15px;
+        border-radius: 15px;
+    }
     .toolbar-title {
-        max-height: 40px;
-        line-height: 20px;
+        max-height: 44px;
+        line-height: 22px;
         word-wrap: normal !important;
         white-space: normal !important;
     }

@@ -1,6 +1,22 @@
 <template>
     <div>
 
+        <!-- Database Update -->
+        <v-slide-y-transition>
+            <v-list v-if="update.isAvailable" class="py-0 secondary-bg" two-line>
+                <v-list-tile @click="startUpdate">
+                    <v-list-tile-action>
+                        <v-icon>save_alt</v-icon>
+                    </v-list-tile-action>
+                    <v-list-tile-content>
+                        <v-list-tile-title>Database Update</v-list-tile-title>
+                        <v-list-tile-sub-title>Download and Install</v-list-tile-sub-title>
+                    </v-list-tile-content>
+                </v-list-tile>
+            </v-list>
+        </v-slide-y-transition>
+        <v-divider v-if="update.isAvailable"></v-divider>
+        
         <!-- User Info -->
         <v-list v-if="auth.display" class="py-0" two-line>
             <v-list-tile @click="startAuth">
@@ -161,6 +177,14 @@
             favorites: {
                 type: Array,
                 default: []
+            },
+            update: {
+                type: Object,
+                default: {
+                    isAvailable: false,
+                    version: undefined,
+                    message: undefined
+                }
             }
         },
         
@@ -219,7 +243,7 @@
                 if ( vm.auth.isLoggedIn ) {
                     vm.$emit("showDialog",
                         "Log Out?",
-                        "<p>Are you sure you want to log out?</p><p>Your saved favorites will be removed from this device and you will need to log back in to access your favorites.</p>",
+                        "<p class='subheading'>Are you sure you want to log out?</p><p class='subheading'>Your saved favorites will be removed from this device and you will need to log back in to access your favorites.</p>",
                         "Log Out",
                         "Cancel",
                         function() {
@@ -232,7 +256,14 @@
                 else {
                     _startAuth(vm, 'login');
                 }
+            },
 
+            /**
+             * Start the DB Update Process
+             * @return {[type]} [description]
+             */
+            startUpdate() {
+                this.$emit('startUpdate');
             },
 
             /**

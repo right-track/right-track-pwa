@@ -3,21 +3,19 @@ TODO:
 API SERVER:
     change OPTIONS /users to GET /users/requirements
     intercept all OPTIONS request and return CORS response
+    add update notes to /updates/database/agency
 
-        
+    
 APP:
     store setting-drawer-visible
-    station selection dialog:
-        filter by route
-        search by name
     add network offline indicator
     add transit feed updater
     bottom toolbar for transit status information
             format:
                 icon/colored line name  two line details
             be able to include custom messages
-    logout user when API receives a 401 when making a request
     update manifest theme color when agency changes
+            default color: black
 
 
 PAGES:
@@ -30,25 +28,20 @@ PAGES:
         reorder favorites
         remove favorites
 
-    Trips:
-        add trip selection
-
-    Station:
-        
-
     Trip:
+        set departure Date/Time if provided with a date and time
         More Menu
+            - origin, destination, layover Stop information (website, map, station page)
         determine next departure / departs in time
-
-    Trip Details: 
+        scroll to next departure
+        display estimated departure and arrival times for delayed segments
 
 
 UTILS:
-    db:
-        getDB:
-            when preparing database collect list of callback functions
-            if database is already in the process of being prepared, add 
-                callback to the list and return all callbacks once finished
+
+    favorites:
+        get:
+            task queue: only fetch fresh favorites once while existing request in progress
 
     api:
         callback doesn't seem to be getting called when request fails due to 

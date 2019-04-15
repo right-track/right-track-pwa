@@ -250,7 +250,6 @@
         vm.$vuetify.theme.primaryText = colors.primaryText;
         vm.$vuetify.theme.secondary = colors.secondary;
         vm.$vuetify.theme.secondaryText = colors.secondaryText;
-        document.querySelector("meta[name=theme-color]").setAttribute("content", colors.primary);
     }
 
 

@@ -83,7 +83,7 @@ module.exports = (env, argv) => ({
     }]),
     new WorkboxPlugin.GenerateSW({
       swDest: 'sw.js',
-      include: [/\.html$/, /\.js$/, /\.css$/],
+      include: [/\.html$/, /\.js$/, /\.css$/, /\.woff2$/],
       clientsClaim: true,
       skipWaiting: true
     }),

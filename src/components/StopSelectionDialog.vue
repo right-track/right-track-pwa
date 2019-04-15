@@ -61,7 +61,7 @@
         // ==== COMPONENT DATA ==== //
         data: function() {
             return {
-                filterValue: undefined,
+                filterValue: "",
                 filterStops: undefined
             }
         },
@@ -107,6 +107,8 @@
                 }
                 else if ( this.properties.type === "trip" && !this.properties.origin ) {
                     this.properties.origin = stop; 
+                    this.filterValue = undefined;
+                    this.filterStops = undefined;
                     this.$forceUpdate();
                 }
                 else if ( this.properties.type === "trip" && this.properties.origin ) {
@@ -119,11 +121,7 @@
              * Reset and close the dialog
              */
             close() {
-                let vm = this;
-                vm.properties.visible = false;
-                vm.$nextTick(function() {
-                    vm.filterValue = "";
-                });
+                this.properties.visible = false;
             },
 
             /**
@@ -132,7 +130,6 @@
              * @param  {[type]} e [description]
              */
             onKeyDown(e) {
-                let key = e.key;
                 this.$refs.filter.focus();
             },
 
@@ -150,6 +147,12 @@
 
         // ==== COMPONENT WATCHERS ==== //
         watch: {
+
+            /**
+             * Watch filterValue
+             * - update the list of filterStops that match filterValue
+             * @param  {string} filter New filterValue to match
+             */
             filterValue(filter) {
                 let stops = [];
                 for ( let i = 0; i < this.properties.stops.length; i++ ) {
@@ -158,7 +161,23 @@
                     }
                 }
                 this.filterStops = stops;
+            },
+
+            /**
+             * Watch the dialog properties
+             * - when visible becomes true, reset the filter stops and value
+             * @type {Object}
+             */
+            properties: {
+                handler(value) {
+                    if ( value.visible ) {
+                        this.filterStops = undefined;
+                        this.filterValue = "";
+                    }
+                },
+                deep: true
             }
+
         }
 
     }

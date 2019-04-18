@@ -11,7 +11,7 @@
                     <v-toolbar-title :key="title.text">
                         <span class="title" 
                               :style="{'background-color': title.backgroundColor ? title.backgroundColor : 'transparent', 'color': title.textColor ? title.textColor + ' !important' : 'inherit'}">
-                            {{ title.text }}
+                            <v-icon v-if="title.icon" style="font-size: 18px !important">{{ title.icon }}</v-icon> {{ title.text }}
                         </span>
                         <span class="subtitle"
                               :style="{'background-color': subtitle.backgroundColor ? subtitle.backgroundColor : 'transparent', 'color': subtitle.textColor ? subtitle.textColor + ' !important' : 'inherit'}">
@@ -74,7 +74,8 @@
         if ( vm.properties.messages && index < vm.properties.messages.length ) {
             let message = vm.properties.messages[index];
             vm.title = {
-                text: message.title
+                text: message.title,
+                icon: message.icon
             }
             vm.subtitle = {
                 text: message.subtitle

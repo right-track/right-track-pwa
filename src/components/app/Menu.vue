@@ -59,7 +59,10 @@
                     </v-list-tile-action>
                     <v-list-tile-content>
                         <v-list-tile-title>{{ item.title }}</v-list-tile-title>
-                        <span v-if="transitAlertCount && transitAlertCount > 0" class="alerts-badge primary-bg">{{ transitAlertCount }}</span>
+                        <span v-if="transitAlertCount && transitAlertCount > 0 && !isActiveMenuItem(item, 'item')" 
+                              class="alerts-badge primary-bg">
+                          {{ transitAlertCount }}
+                      </span>
                     </v-list-tile-content>
                 </v-list-tile>
 

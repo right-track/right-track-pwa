@@ -49,19 +49,10 @@
             <!-- Database Info -->
             <div v-if="databaseInfo" class="db-info-container">
                 <p class="font-weight-light">
-                    <strong>Database Version</strong><br />{{ databaseInfo.version }}<br />
+                    <strong>Database Version:</strong> {{ databaseInfo.version }}<br />
+                    <strong>Published:</strong> {{ databaseInfo.gtfs_publish_date_formatted }}
                 </p>
             </div>
-
-            <!-- Database Update -->
-            <v-fade-transition>
-                <div v-if="updateInfo.isAvailable" class="db-update-container">
-                    <v-btn @click="startDBUpdate" color="primary" depressed>
-                        <v-icon left dark>save_alt</v-icon>
-                        Database Update Available
-                    </v-btn>
-                </div>
-            </v-fade-transition>
 
         </div>
 
@@ -174,6 +165,8 @@
                 db.get("SELECT compile_date, gtfs_publish_date, start_date, end_date, version, notes FROM rt_about;", function(err, info) {
                     if ( !err ) {
                         vm.databaseInfo = info;
+                        let p = info.gtfs_publish_date.toString();
+                        vm.databaseInfo.gtfs_publish_date_formatted = p.substring(4,6) + "/" + p.substring(6,8) + "/" + p.substring(0,4);
                     }
                 });
             }
@@ -204,14 +197,6 @@
 
 
     module.exports = {
-
-        // ==== COMPONENT PROPS ==== //
-        props: {
-            updateInfo: {
-                type: Object,
-                default: {}
-            }
-        },
 
         // ==== COMPONENT DATA ==== //
         data: function() {

@@ -376,8 +376,11 @@
             force = false;
         }
 
+        // Agency Set...
         if ( vm.agencyId ) {
             updates.check(vm.agencyId, force, function(err, updateInfo) {
+                
+                // Update Available
                 if ( updateInfo ) {
                     vm.update = {
                         isAvailable: updateInfo.isAvailable,
@@ -391,6 +394,8 @@
                         });
                     }
                 }
+
+                // No Update Available
                 else {
                     vm.update = {
                         isAvailable: false,
@@ -398,8 +403,20 @@
                     }
                     if ( force ) vm.onShowSnackbar("There is no database update available at this time");
                 }
+
+                // Return to callback, if provided
                 if ( callback ) return callback();
+
             });
+        }
+
+        // Agency Not Set...
+        else {
+            vm.update = {
+                isAvailable: false,
+                version: undefined
+            }
+            if ( callback ) return callback();
         }
     }
 
@@ -419,7 +436,8 @@
         }
 
         // Start Download and Install
-        database.update(vm.agencyId, function(progress) {
+        database.update(vm.agencyId, 
+            function(progress) {
                 if ( progress > 95 ) {
                     vm.progress.title = "Installing Database...";
                     vm.progress.progress = undefined;
@@ -434,9 +452,11 @@
                     vm.onShowSnackbar("ERROR: Could not install database. Please try again later.");
                 }
                 else {
-                    _dbUpdateCheck(vm, false, function() {
-                        vm.progress.active = false;
-                        location.reload();
+                    updates.clearDBVersionLatest(vm.agencyId, function() {
+                        _dbUpdateCheck(vm, false, function() {
+                            vm.progress.active = false;
+                            location.reload();
+                        });
                     });
                 }
             }

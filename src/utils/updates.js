@@ -98,6 +98,20 @@ function isUpdateAvailable(agency, callback) {
 
 
 /**
+ * Clear the latest db version info for the specified agency
+ * @param  {string}   agency   Agency ID Code
+ * @param  {Function} callback Callback function()
+ */
+function clearDBVersionLatest(agency, callback) {
+    store.del("db-version-latest-" + agency, function() {
+        store.del("db-version-latest-checked-" + agency, function() {
+            return callback();
+        });
+    });
+}
+
+
+/**
  * Get the timestamp of the time the agency database version 
  * was last checked
  * @param  {string}   agency   Agency ID Code
@@ -150,5 +164,6 @@ function _saveDBVersionLatest(agency, version, callback) {
 
 module.exports = {
     check: check,
-    isUpdateAvailable: isUpdateAvailable
+    isUpdateAvailable: isUpdateAvailable,
+    clearDBVersionLatest: clearDBVersionLatest
 }

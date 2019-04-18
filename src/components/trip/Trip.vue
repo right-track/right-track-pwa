@@ -221,6 +221,26 @@
                     }
                 }
 
+                // Set messages for Bottom Bar
+                let messages = [{
+                    icon: "train",
+                    title: vm.origin.name + " to " + vm.destination.name,
+                }, {
+                    icon: "calendar_today",
+                    title: "Next Departure"
+                }]
+
+                // Set Routes for Bottom Bar
+                let routes = [];
+                for ( let i = 0; i < results.length; i++ ) {
+                    for ( let j = 0; j < results[i].segments.length; j++ ) {
+                        if ( !routes.includes(results[i].segments[j].trip.route.shortName) ) {
+                            routes.push(results[i].segments[j].trip.route.shortName);
+                        }
+                    }
+                }
+                vm.$emit('setBottomToolbar', {visible: true, transitLines: routes, messages: messages});
+
                 // Update Status Information
                 _updateStatus(vm);
 

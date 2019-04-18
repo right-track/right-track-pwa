@@ -115,10 +115,91 @@ function isLoggedIn(callback) {
 }
 
 
+/**
+ * Get the user registration requirements
+ * @param  {Function} callback Callback function({usernameRequirements, usernameHint, passwordRequirements, passwordHint})
+ */
+function getRegistrationRequirements(callback) {
+    let rtn = {
+        usernameRequirements: {},
+        usernameHint: "",
+        passwordRequirements: {},
+        passwordHint: ""
+    }
+
+    // Get requirements from API Server
+    api.get("/users", function(err, response) {
+        if ( !err ) {
+
+            // Parse username requirements
+            let ur = response.requirements.username;
+            rtn.usernameRequirements = {
+                cannotContain: ur.cannotContain,
+                minLength: ur.minLength,
+                maxLength: ur.maxLength
+            }
+            
+            // Set username hint
+            let cc = ur.cannotContain.split('');
+            cc[cc.indexOf(' ')] = "space";
+            rtn.usernameHint = "Cannot contain '" + cc.join(',') + "' and must be between " + ur.minLength + " and " + ur.maxLength + " characters long.";
+            
+            // Parse password requirements
+            let pr = response.requirements.password;
+            rtn.passwordRequirements = {
+                blockUsername: pr.blockUsername,
+                minLength: pr.minLength,
+                maxLength: pr.maxLength,
+                requireDigits: pr.requireDigits,
+                requireLetters: pr.requireLetters,
+                requireLowercase: pr.requireLowercase,
+                requireSymbols: pr.requireSymbols,
+                requireUppercase: pr.requireUppercase
+            }
+
+            // Set password hint
+            let ph = "Must be between " + pr.minLength + " and " + pr.maxLength + " characters long";
+            let phr = [];
+            if ( pr.requireDigits ) phr.push("digit");
+            if ( pr.requireLetters ) phr.push("letter");
+            if ( pr.requireLowercase ) phr.push("lowercase letter");
+            if ( pr.requireUppercase ) phr.push("uppercase letter");
+            if ( pr.requireSymbols ) phr.push("symbol");
+            if ( phr.length > 0 ) {
+                ph = ph + " and contain at least one " + phr.join(", ");
+            }
+            rtn.passwordHint = ph;
+
+        }
+
+        return callback(rtn);
+    });
+}
+
+/**
+ * Register a new account
+ * @param  {string}   email    Email address
+ * @param  {string}   username Username
+ * @param  {string}   password password
+ * @param  {Function} callback Callback function(err)
+ */
+function register(email, username, password, callback) {
+    let body = {
+        email: email,
+        username: username,
+        password: password
+    }
+    api.post("/users", body, function(err, resp) {
+        return callback(err);
+    });
+}
+
 
 
 module.exports = {
     login: login,
     logout: logout,
-    isLoggedIn: isLoggedIn
+    isLoggedIn: isLoggedIn,
+    getRegistrationRequirements: getRegistrationRequirements,
+    register: register
 }

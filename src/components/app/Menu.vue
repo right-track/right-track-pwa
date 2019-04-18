@@ -41,13 +41,25 @@
                 <!-- Divider -->
                 <v-divider v-if="item.type === 'divider'" :key="item.key" />
 
-                <!-- Menu Item / Badge -->
-                <v-list-tile v-if="item.type === 'item' || item.type === 'badge'" :class="{'active-menu-item': isActiveMenuItem(item, 'item')}" @click="drawerLink(item)" :key="item.key">
+                <!-- Menu Item -->
+                <v-list-tile v-if="item.type === 'item'" :class="{'active-menu-item': isActiveMenuItem(item, 'item')}" @click="drawerLink(item)" :key="item.key">
                     <v-list-tile-action>
                         <v-icon>{{ item.icon }}</v-icon>                        
                     </v-list-tile-action>
                     <v-list-tile-content>
                         <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+                    </v-list-tile-content>
+                </v-list-tile>
+
+                <!-- Alerts Item -->
+                <v-list-tile v-if="item.type === 'alerts'" :class="{'active-menu-item': isActiveMenuItem(item, 'item')}" @click="drawerLink(item)" :key="item.key">
+                    <v-list-tile-action>
+                        <v-icon v-if="transitAlertCount && transitAlertCount > 0">warning</v-icon>
+                        <v-icon v-else>check_circle</v-icon>
+                    </v-list-tile-action>
+                    <v-list-tile-content>
+                        <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+                        <span v-if="transitAlertCount && transitAlertCount > 0" class="alerts-badge primary-bg">{{ transitAlertCount }}</span>
                     </v-list-tile-content>
                 </v-list-tile>
 
@@ -185,6 +197,10 @@
                     version: undefined,
                     message: undefined
                 }
+            },
+            transitAlertCount: {
+                type: Number,
+                default: 0
             }
         },
         
@@ -404,5 +420,17 @@
     }
     .active-menu-item .v-list__tile__title {
         font-weight: 700;
+    }
+
+    .alerts-badge {
+        position: absolute;
+        right: 25px;
+        top: 15px;
+        font-size: 12px;
+        font-weight: 500;
+        text-align: center;
+        border-radius: 15px;
+        min-width: 20px;
+        padding: 1px;
     }
 </style>

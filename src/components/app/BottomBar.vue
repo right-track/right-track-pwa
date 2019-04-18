@@ -13,8 +13,9 @@
             <v-icon>access_time</v-icon>
         </v-btn>
         <v-btn value="agencyAlerts" @click="onBottomBarItemSelected('agencyAlerts')" flat>
-            <span>Alerts</span>
-            <v-icon>check_circle</v-icon>
+            <span>Alerts <template v-if="transitAlertCount && transitAlertCount > 0"> ({{ transitAlertCount }})</template></span>
+            <v-icon v-if="transitAlertCount && transitAlertCount > 0">warning</v-icon>
+            <v-icon v-else>check_circle</v-icon>
         </v-btn>
     </v-bottom-nav>
 </template>
@@ -24,6 +25,14 @@
     const BREAK_POINT = 960;
 
     module.exports = {
+
+        // ==== COMPONENT PROPS ==== //
+        props: {
+            transitAlertCount: {
+                type: Number,
+                default: 0
+            }
+        },
 
         // ==== COMPONENT DATA ==== //
         data: function() {

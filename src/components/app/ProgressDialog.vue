@@ -5,7 +5,8 @@
                 {{ properties.title }}
             </v-card-title>
             <v-card-text style="text-align: center">
-                <v-progress-circular :v-if="properties.type==='spinner'" :size="60" color="primary" indeterminate></v-progress-circular>
+                <v-progress-circular v-if="properties.type==='spinner'" :size="60" color="primary" indeterminate></v-progress-circular>
+                <v-progress-linear v-if="properties.type==='linear'" :indeterminate="!properties.progress" :value="properties.progress" color="primary"></v-progress-linear>
             </v-card-text>
         </v-card>
     </v-dialog>

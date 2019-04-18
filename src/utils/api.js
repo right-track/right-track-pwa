@@ -1,15 +1,5 @@
 const config = require('@/utils/config.js').api;
 
-
-/**
- * Make an OPTIONS request to the specified API Path
- * @param {string} path API Rquest Path
- * @param {callback} callback Callback function(err, response)
- */
-function options(path, callback) {
-    _request("OPTIONS", path, null, false, callback);
-}
-
 /**
  * Make a GET request to the specified API Path
  * @param  {string} path API Request Path
@@ -18,6 +8,16 @@ function options(path, callback) {
  */
 function get(path, binary, callback) {
     _request("GET", path, null, binary, callback);
+}
+
+/**
+ * Download a large binary file and monitor the progress
+ * @param  {string}   path     API Request Path
+ * @param  {Function} progress Progress callback function(percent)
+ * @param  {Function} callback Callback function(err, response)
+ */
+function download(path, progress, callback) {
+    _request("GET", path, null, true, callback, progress);
 }
 
 /**
@@ -48,8 +48,9 @@ function del(path, callback) {
  * @param  {Object} body POST request body (as JS Object)
  * @param  {boolean} [binary] Flag for binary data (images, etc)
  * @param  {Function} callback Callback function(err, response)
+ * @param  {Function} [progress] Progress callback function(percent)
  */
-function _request(method, path, body, binary, callback) {
+function _request(method, path, body, binary, callback, progress) {
     const user = require('@/utils/user.js');                                // TODO: Fix Circular Dependency
     console.log("--> API REQUEST [" + method + "] " + path);
 
@@ -67,6 +68,11 @@ function _request(method, path, body, binary, callback) {
     xhr.open(method, url, true);
     xhr.setRequestHeader("Authorization", "Token " + config.clientKey);
     xhr.responseType = binary ? "arraybuffer" : "text";
+
+    // Set Progress Listener
+    xhr.onprogress = function(event) {
+        if ( progress ) progress((event.loaded/event.total)*100);
+    }
 
     // Set Load Listener
     xhr.onload = function(e) {
@@ -153,8 +159,8 @@ function _request(method, path, body, binary, callback) {
 }
 
 module.exports = {
-    options: options,
     get: get,
     post: post,
-    del: del
+    del: del,
+    download: download
 }

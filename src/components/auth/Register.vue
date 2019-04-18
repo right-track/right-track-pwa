@@ -78,19 +78,18 @@
 
 
 <script>
-    const api = require("@/utils/api.js");
+    const user = require("@/utils/user.js");
 
     /**
      * Get the registration requirements and set the rules
      * @param  {Vue} vm Vue Instance
      */
     _getRegistrationRequirements = function(vm) {
-        console.log("Getting Registration Requirements...");
-        api.options("/users", function(err, response) {
-            console.log(err);
-            if ( !err ) {
-                console.log(response);
-            }
+        user.getRegistrationRequirements(function(requirements) {
+            vm.usernameReqs = requirements.usernameRequirements;
+            vm.passwordReqs = requirements.passwordRequirements;
+            vm.usernameHint = requirements.usernameHint;
+            vm.passwordHint = requirements.passwordHint;
         });
     }
 
@@ -109,6 +108,21 @@
                 emailHint: "Your email will only be used for account recovery purposes",
                 usernameHint: undefined,
                 passwordHint: undefined,
+                usernameReqs: {
+                    cannotContain: "",
+                    minLength: 1,
+                    maxLength: 9999
+                },
+                passwordReqs: {
+                    blockUsername: false,
+                    minLength: 1,
+                    maxLength: 9999,
+                    requireDigits: false,
+                    requireLetters: false,
+                    requireLowercase: false,
+                    requireSymbols: false,
+                    requireUppercase: false
+                },
                 validate: {
                     email: function(value) {
                         if ( !value ) {
@@ -159,7 +173,22 @@
              * Attempt to register the new user
              */
             register() {
-                console.log("TODO: Account Registration");
+                let vm = this;
+                user.register(vm.email, vm.username, vm.password, function(err) {
+                    if ( err ) {
+                        vm.$emit('showSnackbar', err.message);
+                    }
+                    else {
+                        vm.$emit('showSnackbar', "Registration Complete - Please log in");
+                        vm.$router.push({
+                            name: "login",
+                            query: {
+                                agency: vm.agencyId,
+                                src: vm.src
+                            }
+                        });
+                    }
+                });
             }
 
         },

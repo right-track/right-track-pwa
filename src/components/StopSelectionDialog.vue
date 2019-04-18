@@ -107,7 +107,7 @@
                 }
                 else if ( this.properties.type === "trip" && !this.properties.origin ) {
                     this.properties.origin = stop; 
-                    this.filterValue = undefined;
+                    this.filterValue = "";
                     this.filterStops = undefined;
                     this.$forceUpdate();
                 }

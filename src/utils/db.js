@@ -89,6 +89,40 @@ getDB = function(agencyCode, callback) {
 
 }
 
+
+/**
+ * Download and install the latest agency database
+ * @param  {string}   agency   Agency ID Code
+ * @param  {Function} progress Progress callback function(percent)
+ * @param  {Function} callback Callback function()
+ */
+function update(agency, progress, callback) {
+    
+    // Download
+    api.download("/updates/database/" + agency + "?download=latest", progress, function(err, data) {
+        if ( err ) {
+            return callback(err);
+        }
+
+        // Install
+        _saveDBData(agency, data, function() {
+
+            // Clear Cache
+            _clearCache();
+
+            // Prep
+            getDB(agency, function(err) {
+                if ( err ) {
+                    return callback(err);
+                }
+                return callback(null);
+            });
+
+        });
+    });
+}
+
+
 /**
  * Check if the Right Track Database for the specified agency 
  * is open and loaded in the brower cache
@@ -199,9 +233,17 @@ function _putCache(agency, database) {
     }
 }
 
+/**
+ * Clear the database in the cache
+ */
+function _clearCache() {
+    window.DB = undefined;
+}
+
 
 module.exports = {
     getDB: getDB,
     isReady: isReady,
-    getDBVersion: getDBVersion
+    getDBVersion: getDBVersion,
+    update: update
 }

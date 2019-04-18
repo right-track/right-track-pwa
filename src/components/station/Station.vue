@@ -99,9 +99,6 @@
                 _updateMoreMenu(vm);
                 _updateToolbarMenu(vm);
 
-                // Reset the Bottom Toolbar
-                vm.$emit('setBottomToolbar', {visible: true});
-
                 // Set auto-update timer
                 if ( TIMER_ID ) {
                     clearInterval(TIMER_ID);
@@ -131,6 +128,28 @@
             vm.feed = feed;
             vm.departures = feed.departures;
             vm.updating = false;
+
+            // Set Routes for Bottom Toolbar
+            let routes = [];
+            for ( let i = 0; i < feed.departures.length; i++ ) {
+                let route = feed.departures[i].trip.route;
+                if ( route && route.shortName && !routes.includes(route.shortName) ) {
+                    routes.push(route.shortName);
+                }
+            }
+
+            // Set messages for Bottom Toolbar
+            let updated = new Date(feed.updated).toLocaleTimeString();
+            let updatedDisplay = updated.split(':')[0] + ":" + updated.split(':')[1] + " " + updated.split(' ')[1];
+            let messages = [{
+                icon: "update",
+                title: "Last Updated",
+                subtitle: updatedDisplay
+            }];
+
+            // Update Bottom Toolbar
+            vm.$emit('setBottomToolbar', {visible: true, transitLines: routes, messages: messages});
+
         });
     }
 
@@ -213,6 +232,14 @@
 
 
     module.exports = {
+
+        // ==== COMPONENT PROPS ==== //
+        props: {
+            title: {
+                type: String,
+                default: "Test"
+            }
+        },
 
         // ==== COMPONENT DATA ==== //
         data: function() {

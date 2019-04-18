@@ -1,7 +1,6 @@
 TODO:
 
 API SERVER:
-    change OPTIONS /users to GET /users/requirements
     intercept all OPTIONS request and return CORS response
     add update notes to /updates/database/agency
 
@@ -20,10 +19,6 @@ APP:
 
 PAGES:
 
-    Register:
-        get registration requirements from server
-        add registration functionality
-
     Favorites:
         reorder favorites
         remove favorites
@@ -38,10 +33,6 @@ PAGES:
 
 
 UTILS:
-
-    favorites:
-        get:
-            task queue: only fetch fresh favorites once while existing request in progress
 
     api:
         callback doesn't seem to be getting called when request fails due to 

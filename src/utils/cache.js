@@ -78,22 +78,6 @@ getAgency = function(agency, callback) {
 
 
 /**
- * Get the specified agency database (as base64 encoded data)
- * - Cache Length: 7 days
- * @param  {string} agency Agency ID Code
- * @param  {Function} callback Callback function(err, data)
- */
-getAgencyDB = function(agency, callback) {
-    _getCacheElseFresh("/updates/database/" + agency + "?download=latest", 7*24*60*60, true, function(err, response) {
-        if ( err ) {
-            return callback(err);
-        }
-        return callback(null, response);
-    });
-}
-
-
-/**
  * Get the specified agency icon (as base64 encoded data)
  * - Cache Length: 7 days
  * @param  {string} agency Agency ID Code
@@ -111,6 +95,7 @@ getAgencyIcon = function(agency, callback) {
 
 /**
  * Get the Station Feed for the specified stop
+ * - Cache Length: 45 seconds
  * @param  {string}   agencyId Agency ID code
  * @param  {string}   stopId   Stop ID
  * @param  {Function} callback Callback function(err, feed)
@@ -138,6 +123,22 @@ getStationFeed = function(agencyId, stopId, callback) {
         }
 
         return callback(null, response.feed);
+    });
+}
+
+
+/**
+ * Get the Transit Feed for the specified Transit Agency
+ * - Cache Length: 5 minutes
+ * @param  {string}   transitAgencyId Transit Agency ID Code
+ * @param  {Function} callback        Callback function(err, feed, transitAgency)
+ */
+getTransitFeed = function(transitAgencyId, callback) {
+    _getCacheElseFresh("/transit/" + transitAgencyId, 300, function(err, response) {
+        if ( err ) {
+            return callback(err);
+        }
+        return callback(null, response.feed, response.transitAgency);
     });
 }
 
@@ -292,7 +293,7 @@ module.exports = {
     getServerInfo: getServerInfo,
     getAgencies: getAgencies,
     getAgency: getAgency,
-    getAgencyDB: getAgencyDB,
     getAgencyIcon: getAgencyIcon,
-    getStationFeed: getStationFeed
+    getStationFeed: getStationFeed,
+    getTransitFeed: getTransitFeed
 }

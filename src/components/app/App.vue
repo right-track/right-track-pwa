@@ -6,6 +6,7 @@
             <rt-drawer-menu 
                 :favorites="favorites.favorites" 
                 :update="update"
+                :transitAlertCount="transitAlertCount"
                 @showDialog="onShowDialog"
                 @startUpdate="onStartUpdate">
             </rt-drawer-menu>
@@ -16,9 +17,9 @@
         <v-toolbar id="app-toolbar" class="primary-bg" clipped-left fixed app>
             
             <!-- Menu Toggle -->
-            <v-toolbar-side-icon @click.stop="drawerVisible = !drawerVisible"></v-toolbar-side-icon>
+            <v-toolbar-side-icon @click.stop="toggleDrawer"></v-toolbar-side-icon>
             <v-fade-transition>
-                <span v-if="update.isAvailable && drawerVisible === false" class="toolbar-badge secondary-bg"></span>
+                <span v-if="update.isAvailable && !drawerVisible" class="toolbar-badge secondary-bg"></span>
             </v-fade-transition>
 
             <!-- Toolbar Title -->
@@ -73,6 +74,7 @@
                 
                 <!-- ROUTER VIEW CONTENT -->
                 <router-view 
+                    :updateInfo="update"
                     @setToolbarMenuItems="onSetToolbarMenuItems"
                     @setMoreMenuItems="onSetMoreMenuItems" 
                     @setTitle="onSetTitle" 
@@ -80,11 +82,13 @@
                     @setBottomToolbar="onSetBottomToolbar"
                     @updateFavorites="onUpdateFavorites"
                     @showDialog="onShowDialog" 
-                    @showSnackbar="onShowSnackbar">
+                    @showSnackbar="onShowSnackbar"
+                    @checkUpdate="onCheckUpdate"
+                    @startUpdate="onStartUpdate">
                 </router-view>
 
                 <!-- BOTTOM BAR -->
-                <rt-bottom-bar v-if="bottomBarEnabled"></rt-bottom-bar>
+                <rt-bottom-bar v-if="bottomBarEnabled" :transitAlertCount="transitAlertCount"></rt-bottom-bar>
 
                 <!-- APP CONFIRMATION DIALOG -->
                 <rt-confirmation-dialog :properties="dialog"></rt-confirmation-dialog>
@@ -99,7 +103,12 @@
         </v-content>
 
         <!-- STATUS BOTTOM TOOLBAR -->
-        <rt-bottom-toolbar :properties="bottomToolbar"></rt-bottom-toolbar>
+        <rt-bottom-toolbar 
+            :drawerVisible="drawerVisible"
+            :properties="bottomToolbar" 
+            :transitInfo="transitInfo" 
+            :transitFeed="transitFeed">
+        </rt-bottom-toolbar>
 
     </v-app>
 </template>
@@ -114,6 +123,8 @@
     const database = require("@/utils/db.js");
     const favorites = require("@/utils/favorites.js");
     const updates = require("@/utils/updates.js");
+    const store = require("@/utils/store.js");
+    const transit = require("@/utils/transit.js");
     
     const DrawerMenu = require("@/components/app/Menu.vue").default;
     const BottomBar = require("@/components/app/BottomBar.vue").default;
@@ -123,6 +134,12 @@
     const Snackbar = require("@/components/app/Snackbar.vue").default;
 
     const bottomBarPages = ['favorites', 'trips', 'stations', 'agencyAlerts'];
+
+    const APP_DRAWER_VISIBLE_KEY = "app-drawer-visible";
+    const APP_DRAWER_VISIBLE_CUTOFF = 960;
+
+    const TRANSIT_FEED_TIMER = undefined;
+    const TRANSIT_FEED_UPDATE_INTERVAL = 300;
 
 
 
@@ -185,6 +202,17 @@
             // Check for DB Update
             _dbUpdateCheck(vm);
 
+            // Update Transit Feed
+            _updateTransitFeed(vm);
+
+            // Set Transit Feed Update Timer
+            if ( TRANSIT_FEED_TIMER ) {
+                clearInterval(TRANSIT_FEED_TIMER);
+            }
+            setInterval(function() {
+                _updateTransitFeed(vm);
+            }, TRANSIT_FEED_UPDATE_INTERVAL*1000)
+
         });
 
         // Clear update info if no agency specified
@@ -241,6 +269,7 @@
                         vm.agencyName = agency.name;
                         vm.agencyTitle = agency.config.title;
                         vm.colors = agency.config.colors;
+                        vm.transitInfo = agency.config.transit;
                         _applyTheme(vm);
                         if ( callback ) return callback();
                     }
@@ -252,6 +281,7 @@
                 vm.agencyName = undefined;
                 vm.agencyTitle = undefined;
                 vm.colors = config.colors;
+                vm.transitInfo = undefined;
                 _applyTheme(vm);
                 if ( callback ) return callback();
             }
@@ -308,13 +338,44 @@
         }
     }
 
+    /**
+     * Update the Transit Feed for the agency
+     * @param  {Vue}      vm         Vue Instance
+     * @param  {boolean}  [force]    Force update of transit feed
+     */
+    function _updateTransitFeed(vm, force) {
+        console.log("APP: Update Transit Feed");
+        if ( vm.transitInfo ) {
+            transit.getFeed(vm.transitInfo.agency, function(err, feed) {
+                if ( err ) {
+                    if ( force ) vm.$emit("Could not update transit feed. Please try again later.");
+                }
+                else {
+                    vm.transitFeed = feed;
+                    for ( let i = 0; i < feed.divisions.length; i++ ) {
+                        if ( feed.divisions[i].code.toLowerCase() === vm.transitInfo.division.toLowerCase() ) {
+                            vm.transitAlertCount = feed.divisions[i].eventCount;
+                        }
+                    }
+                    console.log("ALERT COUNT: " + vm.transitAlertCount)
+                }
+            });
+        }
+    }
+
 
     /**
      * Check for agency database updates
-     * @param  {Vue}     vm      Vue Instance
-     * @param  {boolean} [force] When true, force an update check
+     * @param  {Vue}     vm         Vue Instance
+     * @param  {boolean} [force]    When true, force an update check
+     * @param {Function} [callback] Callback function()
      */
-    function _dbUpdateCheck(vm, force) {
+    function _dbUpdateCheck(vm, force, callback) {
+        if ( callback === undefined && typeof force === 'function' ) {
+            callback = force;
+            force = false;
+        }
+
         if ( vm.agencyId ) {
             updates.check(vm.agencyId, force, function(err, updateInfo) {
                 if ( updateInfo ) {
@@ -331,10 +392,56 @@
                     }
                 }
                 else {
+                    vm.update = {
+                        isAvailable: false,
+                        version: undefined
+                    }
                     if ( force ) vm.onShowSnackbar("There is no database update available at this time");
                 }
+                if ( callback ) return callback();
             });
         }
+    }
+
+
+    /**
+     * Download and Install the latest agency database
+     * @param  {Vue} vm Vue Instance
+     */
+    function _dbUpdate(vm) {
+
+        // Set Progress Dialog
+        vm.progress = {
+            active: true,
+            title: "Downloading Database...",
+            type: "linear",
+            progress: undefined
+        }
+
+        // Start Download and Install
+        database.update(vm.agencyId, function(progress) {
+                if ( progress > 95 ) {
+                    vm.progress.title = "Installing Database...";
+                    vm.progress.progress = undefined;
+                }
+                else {
+                    vm.progress.progress = parseFloat(progress);
+                }
+            }, 
+            function(err) {
+                if ( err ) { 
+                    vm.progress.active = false;
+                    vm.onShowSnackbar("ERROR: Could not install database. Please try again later.");
+                }
+                else {
+                    _dbUpdateCheck(vm, false, function() {
+                        vm.progress.active = false;
+                        location.reload();
+                    });
+                }
+            }
+        );
+
     }
 
 
@@ -359,6 +466,15 @@
 
                 // Current Agency Title
                 agencyTitle: undefined,
+
+                // Current Agency Transit Info
+                transitInfo: undefined,
+
+                // Current Agency Transit Feed
+                transitFeed: undefined,
+
+                // Current Agency Transit Alert Count
+                transitAlertCount: undefined,
 
                 // Toolbar Title
                 toolbarTitle: config.title,
@@ -412,7 +528,8 @@
                 progress: {
                     active: false,
                     title: undefined,
-                    type: undefined
+                    type: undefined,
+                    progress: undefined
                 },
 
                 // Snackbar Info
@@ -437,6 +554,17 @@
 
         // ==== COMPONENT METHODS ==== //
         methods: {
+
+            /**
+             * Toggle the display of the app drawer
+             * Save preference for larger screens
+             */
+            toggleDrawer() {
+                this.drawerVisible = !this.drawerVisible;
+                if ( window.innerWidth >= APP_DRAWER_VISIBLE_CUTOFF ) {
+                    store.put(APP_DRAWER_VISIBLE_KEY, this.drawerVisible);
+                }
+            },
 
             /**
              * Handle the click of the toolbar title
@@ -564,21 +692,24 @@
             },
 
             /**
-             * Start the database download / update process
-             * @param  {string} [agency] Agency ID Code
+             * Force a database update check
              */
-            onStartUpdate(agency) {
+            onCheckUpdate() {
+                _dbUpdateCheck(this, true);
+            },
+
+            /**
+             * Start the database download / update process
+             */
+            onStartUpdate() {
                 let vm = this;
-                if ( !agency ) {
-                    agency = vm.agencyId;
-                }
                 vm.onShowDialog(
                     "Database Update Available", 
                     "<p class='subheading'>Version <strong>" + vm.update.version + "</strong> of the schedule database is now available.  Download and install it now to get the most up to date trip schedules.</p>",
                     "Download & Install",
                     "Cancel",
                     function() {
-                        console.log("START UPDATE");
+                        _dbUpdate(vm);
                     }
                 );
             }
@@ -587,7 +718,19 @@
 
         // ==== COMPONTENT MOUNTED ==== //
         mounted: function() {
-            _pageUpdate(this);
+            let vm = this;
+
+            // Initial Page Update
+            _pageUpdate(vm);
+
+            // Get app drawer visiblity setting
+            store.get(APP_DRAWER_VISIBLE_KEY, function(err, visible) {
+                if ( window.innerWidth >= APP_DRAWER_VISIBLE_CUTOFF ) {
+                    if ( visible !== undefined ) {
+                        vm.drawerVisible = visible;
+                    }
+                }
+            });
         },
 
         // ==== COMPONENT WATCHERS ==== //
@@ -621,11 +764,11 @@
 <style scoped>
     .toolbar-badge {
         position: relative;
-        margin-right: -15px;
+        margin-right: -12px;
         top: -6px;
-        right: 22px;
-        width: 15px;
-        height: 15px;
+        right: 20px;
+        width: 12px;
+        height: 12px;
         border-radius: 15px;
     }
     .toolbar-title {

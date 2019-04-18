@@ -3,6 +3,9 @@ const cache = require("@/utils/cache.js");
 const store = require("@/utils/store.js");
 const api = require("@/utils/api.js");
 
+let GETTING_FAVS = false;
+let GETTING_FAVS_CALLBACKS = [];
+
 // Interval to check server favorites (ms)
 const CHECK_INTERVAL = 60 * 1000;
 
@@ -65,52 +68,60 @@ function get(agencyId, force, callback) {
                     // Get server favorites, if force or need to be updated
                     let delta = (new Date().getTime()) - lastCheck;
                     if ( force || delta > CHECK_INTERVAL ) {
-                        api.get("/favorites/" + agencyId + "/" + userInfo.id + "?t=" + new Date().getTime(), function(err, response) {
 
-                            // API ERROR: return error, if forced
-                            if ( err ) {
-                                console.error(err);
-                                if ( force ) return callback(err);
-                            }
+                        // Start Callback queue
+                        GETTING_FAVS_CALLBACKS.push(callback);
+                        if ( !GETTING_FAVS ) {
+                            GETTING_FAVS = true;
 
-                            // API SUCCESS: update favorites
-                            else {
+                            // Get favorites from server
+                            api.get("/favorites/" + agencyId + "/" + userInfo.id + "?t=" + new Date().getTime(), function(err, response) {
 
-                                // Save the Last Check
-                                _updateLastCheck(agencyId);
+                                // API ERROR: return error, if forced
+                                if ( err ) {
+                                    _finish(err, undefined, force);
+                                }
 
-                                // Compare last modified dates
-                                _getLastModified(agencyId, function(localLastMod) {
-                                    let serverLastMod = new Date(response.lastModified);
+                                // API SUCCESS: update favorites
+                                else {
 
-                                    // SERVER NEWER: Update local
-                                    if ( serverLastMod > localLastMod ) {
-                                        _saveLocalFavorites(agencyId, response);
-                                        return callback(null, _parseFavorites(response.favorites), true);
-                                    }
+                                    // Save the Last Check
+                                    _updateLastCheck(agencyId);
 
-                                    // LOCAL NEWER: Update Server
-                                    else if ( localLastMod > serverLastMod ) {
-                                        _saveServerFavorites(agencyId, local, function(err, updatedFavorites) {
-                                            if ( err ) {
-                                                console.error(err);
-                                                if ( force ) return callback(err);
-                                            }
-                                            else {
-                                                return callback(null, _parseFavorites(updatedFavorites), true);
-                                            }
-                                        });
-                                    }
+                                    // Compare last modified dates
+                                    _getLastModified(agencyId, function(localLastMod) {
+                                        let serverLastMod = new Date(response.lastModified);
 
-                                    else {
-                                        if ( force ) return callback(null, _parseFavorites(response.favorites), true);
-                                    }
+                                        // SERVER NEWER: Update local
+                                        if ( serverLastMod > localLastMod ) {
+                                            _saveLocalFavorites(agencyId, response);
+                                            _finish(null, _parseFavorites(response.favorites), true);
+                                        }
 
-                                });
+                                        // LOCAL NEWER: Update Server
+                                        else if ( localLastMod > serverLastMod ) {
+                                            _saveServerFavorites(agencyId, local, function(err, updatedFavorites) {
+                                                if ( err ) {
+                                                    _finish(err, undefined, force);
+                                                }
+                                                else {
+                                                    _finish(null, _parseFavorites(updatedFavorites), true);
+                                                }
+                                            });
+                                        }
 
-                            }
+                                        else {
+                                            _finish(null, _parseFavorites(response.favorites), true);
+                                        }
 
-                        });
+                                    });
+
+                                }
+
+                            });
+
+                        }
+
                     }
 
                 });
@@ -119,6 +130,26 @@ function get(agencyId, force, callback) {
         });
 
     });
+
+    /**
+     * Getting favorites has finished, return favorites to callbacks
+     * @param  {Error}    err    Error
+     * @param  {Array[]}  favs   Favorites
+     * @param  {boolean} [force] True if forced
+     */
+    function _finish(err, favs, force) {
+        for ( let i = 0; i < GETTING_FAVS_CALLBACKS.length; i++ ) {
+            let callback = GETTING_FAVS_CALLBACKS[i];
+            if ( err ) {
+                if ( force ) callback(err);
+            }
+            else {
+                callback(null, favs, true);
+            }
+        }
+        GETTING_FAVS_CALLBACKS = [];
+        GETTING_FAVS = false;
+    } 
 
 }
 

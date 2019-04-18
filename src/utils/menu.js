@@ -123,9 +123,8 @@ const MENU = function(vm) {
         },
         {
             key: 24,
-            type: "badge",
+            type: "alerts",
             title: "Alerts",
-            icon: "warning",
             page: "agencyAlerts",
             params: {
                 agency: vm.$route.params.agency

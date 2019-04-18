@@ -49,11 +49,19 @@
             <!-- Database Info -->
             <div v-if="databaseInfo" class="db-info-container">
                 <p class="font-weight-light">
-                    <strong>Database Version {{ databaseInfo.version }}</strong><br />
-                    Published: {{ databaseInfo.gtfs_publish_date }}<br />
-                    Compiled: {{ databaseInfo.compile_date }}
+                    <strong>Database Version</strong><br />{{ databaseInfo.version }}<br />
                 </p>
             </div>
+
+            <!-- Database Update -->
+            <v-fade-transition>
+                <div v-if="updateInfo.isAvailable" class="db-update-container">
+                    <v-btn @click="startDBUpdate" color="primary" depressed>
+                        <v-icon left dark>save_alt</v-icon>
+                        Database Update Available
+                    </v-btn>
+                </div>
+            </v-fade-transition>
 
         </div>
 
@@ -115,6 +123,14 @@
                 title: "Refresh Favorites",
                 function: function() {
                     vm.forceUpdate();
+                }
+            },
+            {
+                key: 2,
+                type: "item",
+                title: "Check for DB Update",
+                function: function() {
+                    vm.$emit('checkUpdate');
                 }
             }
         ]
@@ -188,6 +204,14 @@
 
 
     module.exports = {
+
+        // ==== COMPONENT PROPS ==== //
+        props: {
+            updateInfo: {
+                type: Object,
+                default: {}
+            }
+        },
 
         // ==== COMPONENT DATA ==== //
         data: function() {
@@ -300,6 +324,13 @@
                     vm.$emit('updateFavorites');
                 }
 
+            },
+
+            /**
+             * Start the update of the Agency database
+             */
+            startDBUpdate() {
+                this.$emit('startUpdate');
             }
 
         },
@@ -375,7 +406,7 @@
         max-width: 300px;
     }
 
-    .db-info-container {
+    .db-info-container, .db-update-container {
         width: 100%;
         margin: 20px 0;
         text-align: center;

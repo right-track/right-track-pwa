@@ -63,6 +63,15 @@ function check(agency, force, callback) {
             });
 
         }
+
+        // Return saved info
+        else {
+            isUpdateAvailable(agency, function(updateInfo) {
+                return callback(null, updateInfo);
+            });
+        }
+
+
     });
 }
 
@@ -71,15 +80,18 @@ function check(agency, force, callback) {
 /**
  * Check if there is an agency database update available
  * @param  {string}   agency   Agency ID Code
- * @param  {Function} callback Callback function(update)
+ * @param  {Function} callback Callback function(updateInfo)
  */
 function isUpdateAvailable(agency, callback) {
     db.getDBVersion(agency, function(stored) {
         _getDBVersionLatest(agency, function(latest) {
-            if ( !stored || !latest ) {
-                return callback(true);
+            if ( !stored || !latest || latest > stored ) {
+                return callback({
+                    isAvailable: true,
+                    version: latest
+                });
             }
-            return callback(latest > stored);
+            return callback(undefined);
         });
     });
 }

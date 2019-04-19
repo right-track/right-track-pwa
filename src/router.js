@@ -1,19 +1,19 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import Vue from "vue"
+import Router from "vue-router"
 
 // Page content
-import About from '@/components/About'
-import Alerts from '@/components/alerts/Alerts'
-import Register from '@/components/auth/Register'
-import Login from '@/components/auth/Login'
-import Logout from '@/components/auth/Logout'
-import Agencies from '@/components/agencies/Agencies'
-import Favorites from '@/components/favorites/Favorites'
-import Trips from '@/components/trips/Trips'
-import Trip from '@/components/trip/Trip'
-import Stations from '@/components/stations/Stations'
-import Station from '@/components/station/Station'
-import PageNotFound from '@/components/PageNotFound'
+import About from "@/components/About.vue"
+import Alerts from "@/components/alerts/Alerts.vue"
+import Register from "@/components/auth/Register.vue"
+import Login from "@/components/auth/Login.vue"
+import Logout from "@/components/auth/Logout.vue"
+import Agencies from "@/components/agencies/Agencies.vue"
+import Favorites from "@/components/favorites/Favorites.vue"
+import Trips from "@/components/trips/Trips.vue"
+import Trip from "@/components/trip/Trip.vue"
+import Stations from "@/components/stations/Stations.vue"
+import Station from "@/components/station/Station.vue"
+import PageNotFound from "@/components/PageNotFound.vue"
 
 
 // Init the Router
@@ -23,84 +23,84 @@ Vue.use(Router)
 // DEFINE APP ROUTES
 var routes = [
     {
-        path: '/',
-        name: 'agencies',
+        path: "/",
+        name: "agencies",
         component: Agencies
     },
     {
-        path: '/about',
-        name: 'about',
+        path: "/about",
+        name: "about",
         component: About
     },
     {
-        path: '/alerts',
-        name: 'alerts',
+        path: "/alerts",
+        name: "alerts",
         component: Alerts
     },
     {
-        path: '/:agency/alerts',
-        name: 'agencyAlerts',
+        path: "/:agency/alerts",
+        name: "agencyAlerts",
         component: Alerts
     },
     {
-        path: '/auth/register',
-        name: 'register',
+        path: "/auth/register",
+        name: "register",
         component: Register
     },
     {
-        path: '/auth/login',
-        name: 'login',
+        path: "/auth/login",
+        name: "login",
         component: Login
     },
     {
-        path: '/auth/logout',
-        name: 'logout',
+        path: "/auth/logout",
+        name: "logout",
         component: Logout
     },
     {
-        path: '/:agency/about',
-        name: 'agencyAbout',
+        path: "/:agency/about",
+        name: "agencyAbout",
         component: About
     },
     {
-        path: '/:agency/',
-        name: 'favorites',
+        path: "/:agency/",
+        name: "favorites",
         component: Favorites
     },
     {
-        path: '/:agency/trips',
-        name: 'trips',
+        path: "/:agency/trips",
+        name: "trips",
         component: Trips
     },
     {
-        path: '/:agency/trips/:origin/:destination',
-        name: 'trip',
+        path: "/:agency/trips/:origin/:destination",
+        name: "trip",
         component: Trip
     },
     {
-        path: '/:agency/trips/:origin/:destination/:date/:time',
-        name: 'tripDT',
+        path: "/:agency/trips/:origin/:destination/:date/:time",
+        name: "tripDT",
         component: Trip
     },
     {
-        path: '/:agency/stations',
-        name: 'stations',
+        path: "/:agency/stations",
+        name: "stations",
         component: Stations
     },
     {
-        path: '/:agency/stations/:stop',
-        name: 'station',
+        path: "/:agency/stations/:stop",
+        name: "station",
         component: Station
     },
     {
-        path: '**',
-        name: 'pageNotFound',
+        path: "**",
+        name: "pageNotFound",
         component: PageNotFound
     }
 ]
 
 
 export default new Router({
-    mode: 'history',
+    mode: "history",
     routes: routes
 });

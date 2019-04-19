@@ -17,6 +17,9 @@
                               :style="{'background-color': subtitle.backgroundColor ? subtitle.backgroundColor : 'transparent', 'color': subtitle.textColor ? subtitle.textColor + ' !important' : 'inherit'}">
                             {{ subtitle.text }}
                         </span>
+                        <span v-if="badge" class="badge">
+                            {{ badge }}
+                        </span>
                     </v-toolbar-title>
                 </v-slide-y-reverse-transition>
             </div>
@@ -37,8 +40,6 @@
      * @param  {Vue} vm Vue Instance
      */
     function _startTimer(vm) {
-        console.log("START TIMER");
-        console.log(JSON.stringify(vm.properties));
 
         // Clear exisiting timer
         if ( TIMER ) {
@@ -80,6 +81,7 @@
             vm.subtitle = {
                 text: message.subtitle
             }
+            vm.badge = undefined;
         }
 
         // Display Transit Line
@@ -107,15 +109,6 @@
                     }
                 }
             }
-
-            // Build Status
-            let status = "...";
-            if ( lineStatus ) {
-                status = lineStatus.status;
-                if ( lineStatus.events.length > 0 ) {
-                    status = status + " (" + lineStatus.events.length + ")";
-                }
-            }
             
             // Set title and subtitle
             vm.title = {
@@ -124,10 +117,11 @@
                 textColor: lineStatus.textColor
             }
             vm.subtitle = {
-                text: status,
+                text: lineStatus.status ? lineStatus.status : "...",
                 backgroundColor: lineStatus.events.length > 0 ? "#ff5252" : "#4caf50",
                 textColor: "#fff"
             }
+            vm.badge = lineStatus.events.length > 0 ? lineStatus.events.length : undefined;
 
         }
     }
@@ -168,6 +162,7 @@
                     backgroundColor: undefined,
                     textColor: undefined
                 },
+                badge: undefined,
                 isSmallScreen: window.innerWidth < SMALL_SCREEN_CUTOFF
             }
         },
@@ -219,5 +214,14 @@
         margin-left: 10px;
         padding: 2px 7px;
         border-radius: 10px;
+    }
+    .badge {
+        font-size: 14px;
+        font-weight: normal;
+        background-color: #ff5252;
+        color: #fff !important;
+        padding: 2px 5px;
+        border-radius: 10px;
+        margin-left: 10px;
     }
 </style>

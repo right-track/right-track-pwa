@@ -1,8 +1,6 @@
 <template>
-    <div class="trip-wrapper" @click="selectTrip">
-        <div v-if="trip.departs" class="trip-departs-time">
-            <p>Departs in xx minutes</p>
-        </div>
+    <div class="trip-wrapper" :class="{'highlight-trip-wrapper': trip.highlight}" @click="selectTrip">
+        <div class="trip-departs-time" v-html="getDeparts(trip)"></div>
         
         <div v-for="(segment, index) in trip.segments" :key="'trip-segment-' + index" class="trip-segment-wrapper">
             <div class="trip-segment-headsign">
@@ -54,6 +52,27 @@
     const TripDetails = require("@/components/trip/TripDetails.vue").default;
     const datetime = require("@/utils/datetime.js");
 
+    /**
+     * Find the matching status information for the specified trip segment 
+     * from the available list of status feeds
+     * @param  {Vue}    vm      Vue Instance
+     * @param  {Object} segment Trip Segment
+     * @return {Object}         Status Information
+     */
+    function _findStatusInfo(vm, segment) {
+        if ( !vm.statusFeeds ) return undefined;
+        for ( let i = 0; i < vm.statusFeeds.length; i++ ) {
+            if ( vm.statusFeeds[i].origin.id === segment.enter.stop.id ) {
+                for ( let j = 0; j < vm.statusFeeds[i].departures.length; j++ ) {
+                    if ( vm.statusFeeds[i].departures[j].trip.shortName === segment.trip.shortName ) {
+                        return vm.statusFeeds[i].departures[j].status;
+                    }
+                }
+            }
+        }
+    }
+
+
     module.exports = {
 
         // ==== COMPONENT PROPS ==== //
@@ -83,25 +102,45 @@
         methods: {
 
             /**
+             * Get the departs in time for the trip
+             * @param  {[type]} trip [description]
+             * @return {[type]}      [description]
+             */
+            getDeparts(trip) {
+                let rtn = "";
+                let mins = Math.round(trip.departs);
+                
+                // TODO: Adjust for delays
+
+                // Departing Now
+                if ( mins >= -1 && mins <= 1 ) {
+                    rtn = "<p>Departing Now!</p>";
+                }
+
+                // Departing within 2 hours
+                else if ( mins > 0 && mins <= 120 ) {
+                    rtn = "<p>Departs in " + datetime.minutesToString(mins) + "</p>";
+                }
+
+                return(rtn);
+            },
+
+            /**
              * Get the Segment's Departure Status
              * @param  {Object} segment Trip Segment
              * @return {string}         Departure Status
              */
             getStatus(segment) {
-                for ( let i = 0; i < this.statusFeeds.length; i++ ) {
-                    if ( this.statusFeeds[i].origin.id === segment.enter.stop.id ) {
-                        for ( let j = 0; j < this.statusFeeds[i].departures.length; j++ ) {
-                            if ( this.statusFeeds[i].departures[j].trip.shortName === segment.trip.shortName ) {
-                                let status = this.statusFeeds[i].departures[j].status.status;
-                                if ( status.toLowerCase() === "on time" || status.toLowerCase() === 'scheduled' ) {
-                                    return "<span style='background-color: #4caf50; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
-                                }
-                                else {
-                                    return "<span style='background-color: #ff5252; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
-                                }
-                            }
-                        }
-                    }
+                let statusInfo = _findStatusInfo(this, segment);
+                let status = statusInfo ? statusInfo.status : "";
+                if ( !status || status === "" ) {
+                    return "";
+                }
+                else if ( status.toLowerCase() === "on time" || status.toLowerCase() === 'scheduled' ) {
+                    return "<span style='background-color: #4caf50; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
+                }
+                else {
+                    return "<span style='background-color: #ff5252; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
                 }
             },
 
@@ -111,20 +150,13 @@
              * @return {string}         Departure Status
              */
             getTrack(segment) {
-                for ( let i = 0; i < this.statusFeeds.length; i++ ) {
-                    if ( this.statusFeeds[i].origin.id === segment.enter.stop.id ) {
-                        for ( let j = 0; j < this.statusFeeds[i].departures.length; j++ ) {
-                            if ( this.statusFeeds[i].departures[j].trip.shortName === segment.trip.shortName ) {
-                                let track = this.statusFeeds[i].departures[j].status.track;
-                                if ( track && track !== "" ) {
-                                    return "<span style='font-weight: 500'>Track " + track + "</span>";
-                                }
-                                else {
-                                    return track;
-                                }
-                            }
-                        }
-                    }
+                let statusInfo = _findStatusInfo(this, segment);
+                let track = statusInfo ? statusInfo.track : "";
+                if ( track && track !== "" ) {
+                    return "<span style='font-weight: 500'>Track " + track + "</span>";
+                }
+                else {
+                    return track;
                 }
             },
 
@@ -167,11 +199,14 @@
     .trip-wrapper {
         padding: 15px 0;
         background: linear-gradient(to bottom, #ffffffaa, #ecececaa);
-        border-top: 2px solid #ccc;
         cursor: pointer;
     }
     .trip-wrapper:hover {
         background-color: #ecececaa;
+    }
+
+    .highlight-trip-wrapper {
+        border: 3px solid var(--v-primary-base);
     }
 
     .trip-wrapper .v-icon {

@@ -145,6 +145,17 @@ function getDBVersion(agency, callback) {
 
 
 /**
+ * Set the version of the stored agency database
+ * @param {string}   agency   Agency ID Code
+ * @param {int}      version  DB Version
+ * @param {Function} callback Callback function(err)
+ */
+function setDBVersion(agency, version, callback) {
+    _saveDBVersionStored(agency, version, callback);
+}
+
+
+/**
  * Get Base64 encoded database data
  * - First, check for stored data
  * - Then, get fresh data from the api server
@@ -245,5 +256,6 @@ module.exports = {
     getDB: getDB,
     isReady: isReady,
     getDBVersion: getDBVersion,
+    setDBVersion: setDBVersion,
     update: update
 }

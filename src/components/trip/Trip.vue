@@ -35,6 +35,7 @@
 
 <script>
     const core = require("right-track-core");
+    const DateTime = core.utils.DateTime;
     const TripSearch = core.search.TripSearch;
     const cache = require("@/utils/cache.js");
     const DB = require("@/utils/db.js");
@@ -51,6 +52,11 @@
      * Status Timer ID
      */
     let STATUS_TIMER_ID = undefined;
+
+    /**
+     * Departs In / Highlight Timer ID
+     */
+    let TIMER_ID = undefined;
 
 
     /**
@@ -154,16 +160,16 @@
                     if ( !origin || !destination ) {
                         vm.results = [];
                         vm.$emit('showSnackbar', {
-                        duration: 0,
-                        message: 'Unknown Origin or Destination Stop.  Please select another Trip.',
-                        dismiss: 'Trips',
-                        onDismiss: function() {
-                            vm.$router.push({
-                                name: "trips",
-                                agency: vm.$router.currentRoute.params.agency
-                            });
-                        }
-                    });
+                            duration: 0,
+                            message: 'Unknown Origin or Destination Stop.  Please select another Trip.',
+                            dismiss: 'Trips',
+                            onDismiss: function() {
+                                vm.$router.push({
+                                    name: "trips",
+                                    agency: vm.$router.currentRoute.params.agency
+                                });
+                            }
+                        });
                     }
 
                     // Set the Stops
@@ -193,9 +199,13 @@
      * @param  {Vue} vm    Vue Instance
      */
     function _updateResults(vm) {
-        
+
+        // Set Departure
+        vm.isNextDeparture = !vm.$router.currentRoute.params.time || !vm.$router.currentRoute.params.date;
+        vm.departure =  vm.isNextDeparture ?  DateTime.now() : DateTime.create(vm.$router.currentRoute.params.time, vm.$router.currentRoute.params.date);
+                
         // Create TripSearch
-        let search = new TripSearch(vm.origin, vm.destination);
+        let search = new TripSearch(vm.origin, vm.destination, vm.departure);
 
         // Get Database
         DB.getDB(vm.agencyId, function(err, db) {
@@ -221,16 +231,16 @@
                     }
                 }
 
-                // Set messages for Bottom Bar
+                // Set messages for Status Bar
                 let messages = [{
                     icon: "train",
                     title: vm.origin.name + " to " + vm.destination.name,
                 }, {
                     icon: "calendar_today",
-                    title: "Next Departure"
+                    title: vm.isNextDeparture ? "Next Departure" : vm.departure.getTimeReadable() + " on " + vm.departure.toHTTPString().split(' ').slice(0, 4).join(' ')
                 }]
 
-                // Set Routes for Bottom Bar
+                // Set Routes for Status Bar
                 let routes = [];
                 for ( let i = 0; i < results.length; i++ ) {
                     for ( let j = 0; j < results[i].segments.length; j++ ) {
@@ -239,21 +249,61 @@
                         }
                     }
                 }
-                vm.$emit('setBottomToolbar', {visible: true, transitLines: routes, messages: messages});
+                vm.$emit('setStatusBar', {visible: true, transitLines: routes, messages: messages});
 
-                // Update Status Information
-                _updateStatus(vm);
+                // Get and update Status Info (if departure within 6 hours of now)
+                if ( Math.abs(Date.now() - vm.departure.toTimestamp()) < (6*60*60*1000) ) {
 
-                // Set Timer to Update Status Info
-                if ( STATUS_TIMER_ID ) {
-                    clearInterval(STATUS_TIMER_ID);
+                    // Update Status Information
+                    _updateStatus(vm);
+
+                    // Clear and set Timer
+                    if ( STATUS_TIMER_ID ) clearInterval(STATUS_TIMER_ID);
+                    STATUS_TIMER_ID = setInterval(function(){ _updateStatus(vm) }, 60000);
+
                 }
-                STATUS_TIMER_ID = setInterval(function(){ _updateStatus(vm) }, 60000);
+
+                // Set Highlight Results Timer
+                if ( TIMER_ID ) clearInterval(TIMER_ID);
+                if ( vm.isNextDeparture ) TIMER_ID = setInterval(function() { _highlightResults(vm) }, 1000);
+                _highlightResults(vm, true);
 
             });
         });
 
     } 
+
+    /**
+     * Set the Departs time of each upcoming departures and 
+     * highlight the next departure
+     * @param  {[type]} vm    [description]
+     * @param  {[type]} first [description]
+     * @return {[type]}       [description]
+     */
+    function _highlightResults(vm, first) {
+        if ( first || Date.now() % 60000 <= 1000 ) {
+            let now = DateTime.now();
+            if ( vm.isNextDeparture ) vm.departure = now;
+
+            // Parse each Trip Result
+            let found = false;
+            for ( let i = 0; i < vm.results.length; i++ ) {
+                let d = DateTime.create(vm.results[i].origin.departure.time, vm.results[i].origin.departure.date);
+                
+                // Highlight next departure
+                if ( !found && d.toTimestamp() >= vm.departure.toTimestamp() ) {
+                   vm.results[i].highlight = true;
+                   found = true;
+                }
+                else {
+                    vm.results[i].highlight = false;
+                }
+
+                // Calculate Departs In Time
+                vm.results[i].departs = vm.isNextDeparture ? (d.toTimestamp() - now.toTimestamp()) / 1000 / 60 : undefined;
+            }
+        }
+    }
 
     /**
      * Update the Status Information for the Origin and Transfer Stops
@@ -298,9 +348,10 @@
         data: function() {
             return {
                 agencyId: undefined,
-                db: undefined,
                 origin: {},
                 destination: {},
+                departure: undefined,
+                isNextDeparture: false,
                 results: undefined,
                 statusStopIds: [],
                 statusFeeds: [],
@@ -408,6 +459,10 @@
 <style scoped>
     .trip-result-card {
         margin: 10px 0 40px 0;
+    }
+    .trip-result-card:active {
+        box-shadow: none;
+        border: 1px solid #ddd;
     }
 
     .trip-results-none {

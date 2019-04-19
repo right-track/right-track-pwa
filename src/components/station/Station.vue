@@ -129,7 +129,7 @@
             vm.departures = feed.departures;
             vm.updating = false;
 
-            // Set Routes for Bottom Toolbar
+            // Set Routes for Status Bar
             let routes = [];
             for ( let i = 0; i < feed.departures.length; i++ ) {
                 let route = feed.departures[i].trip.route;
@@ -138,7 +138,7 @@
                 }
             }
 
-            // Set messages for Bottom Toolbar
+            // Set messages for Status Bar
             let updated = new Date(feed.updated).toLocaleTimeString();
             let updatedDisplay = updated.split(':')[0] + ":" + updated.split(':')[1] + " " + updated.split(' ')[1];
             let messages = [{
@@ -147,8 +147,8 @@
                 subtitle: updatedDisplay
             }];
 
-            // Update Bottom Toolbar
-            vm.$emit('setBottomToolbar', {visible: true, transitLines: routes, messages: messages});
+            // Update Status Bar
+            vm.$emit('setStatusBar', {visible: true, transitLines: routes, messages: messages});
 
         });
     }

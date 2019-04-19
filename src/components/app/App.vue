@@ -75,11 +75,13 @@
                 <!-- ROUTER VIEW CONTENT -->
                 <router-view 
                     :updateInfo="update"
+                    :transitInfo="transitInfo"
+                    :transitFeed="transitFeed"
                     @setToolbarMenuItems="onSetToolbarMenuItems"
                     @setMoreMenuItems="onSetMoreMenuItems" 
                     @setTitle="onSetTitle" 
                     @setProgress="onSetProgress"
-                    @setBottomToolbar="onSetBottomToolbar"
+                    @setStatusBar="onSetStatusBar"
                     @updateFavorites="onUpdateFavorites"
                     @showDialog="onShowDialog" 
                     @showSnackbar="onShowSnackbar"
@@ -102,13 +104,13 @@
             </v-container>
         </v-content>
 
-        <!-- STATUS BOTTOM TOOLBAR -->
-        <rt-bottom-toolbar 
+        <!-- STATUS BAR -->
+        <rt-status-bar
             :drawerVisible="drawerVisible"
-            :properties="bottomToolbar" 
+            :properties="statusBar" 
             :transitInfo="transitInfo" 
             :transitFeed="transitFeed">
-        </rt-bottom-toolbar>
+        </rt-status-bar>
 
     </v-app>
 </template>
@@ -128,7 +130,7 @@
     
     const DrawerMenu = require("@/components/app/Menu.vue").default;
     const BottomBar = require("@/components/app/BottomBar.vue").default;
-    const BottomToolbar = require("@/components/app/BottomToolbar.vue").default;
+    const StatusBar = require("@/components/app/StatusBar.vue").default;
     const ConfirmationDialog = require("@/components/app/ConfirmationDialog.vue").default;
     const ProgressDialog = require("@/components/app/ProgressDialog.vue").default;
     const Snackbar = require("@/components/app/Snackbar.vue").default;
@@ -184,8 +186,8 @@
         // Enable / Disbale Bottom Bar
         vm.bottomBarEnabled = bottomBarPages.includes(vm.$route.name);
 
-        // Reset Bottom Toolbar
-        vm.bottomToolbar = {};
+        // Reset Status Bar
+        vm.statusBar = {};
 
         // Update the Agency
         _updateAgency(vm, function() {
@@ -452,11 +454,12 @@
                     vm.onShowSnackbar("ERROR: Could not install database. Please try again later.");
                 }
                 else {
-                    updates.clearDBVersionLatest(vm.agencyId, function() {
-                        _dbUpdateCheck(vm, false, function() {
-                            vm.progress.active = false;
-                            location.reload();
-                        });
+                    database.setDBVersion(vm.agencyID, vm.update.version, function() {
+                        vm.update = {
+                            isAvailable: false
+                        }
+                        vm.progress.active = false;
+                        location.reload();
                     });
                 }
             }
@@ -530,8 +533,8 @@
                 // More Menu Items
                 moreMenu: [],
 
-                // BottomToolbar Properties
-                bottomToolbar: {},
+                // Status Bar Properties
+                statusBar: {},
 
                 // Confirmation Dialog Info
                 dialog: {
@@ -565,7 +568,7 @@
         components: {
             'rt-drawer-menu': DrawerMenu,
             'rt-bottom-bar': BottomBar,
-            'rt-bottom-toolbar': BottomToolbar,
+            'rt-status-bar': StatusBar,
             'rt-confirmation-dialog': ConfirmationDialog,
             'rt-progress-dialog': ProgressDialog,
             'rt-snackbar': Snackbar
@@ -651,13 +654,13 @@
             },
 
             /**
-             * Set the Bottom Toolbar Properties
-             * @param  {Object} properties Bottom Toolbar Properties
+             * Set the Status Bar Properties
+             * @param  {Object} properties Status Bar Properties
              */
-            onSetBottomToolbar(properties) {
+            onSetStatusBar(properties) {
                 let vm = this;
                 Vue.nextTick(function() {
-                    vm.bottomToolbar = properties;
+                    vm.statusBar = properties;
                 });
             },
 

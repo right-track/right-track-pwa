@@ -13,6 +13,7 @@
 
 <script>
     const config = require("@/utils/config.js");
+    
     module.exports = {
         data: function() {
             return {

@@ -391,7 +391,7 @@
         max-width: 300px;
     }
 
-    .db-info-container, .db-update-container {
+    .db-info-container {
         width: 100%;
         margin: 20px 0;
         text-align: center;

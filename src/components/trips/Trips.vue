@@ -46,23 +46,23 @@
                     <div class="date-container">
 
                         <!-- Date Picker Dialog -->
-                        <v-dialog ref="dateDialog" v-model="dateDialogVisible" 
-                                  :return-value.sync="departure.date"
+                        <v-dialog ref="dateDialog" v-model="dateDialogProps.visible" 
+                                  :return-value.sync="dateDialogProps.date"
                                   persistent lazy full-width width="290px">
                             
                             <!-- Date Picker Button -->
                             <template v-slot:activator="{ on }">
-                                <v-btn color="primary" @click="dateDialogVisible = true" depressed>
+                                <v-btn color="primary" @click="dateDialogProps.visible = true" depressed>
                                     <v-icon>calendar_today</v-icon>&nbsp;&nbsp;
-                                    <span>{{ departure.dateString }}</span>
+                                    <span>{{ departure.date }}</span>
                                     &nbsp;&nbsp;<v-icon>arrow_drop_down</v-icon>
                                 </v-btn>
                             </template>
                             
                             <!-- Date Picker -->
-                            <v-date-picker v-model="departure.date" scrollable>
+                            <v-date-picker v-model="dateDialogProps.date" scrollable>
                                 <v-spacer></v-spacer>
-                                <v-btn @click="dateDialogVisible = false" color="primary" flat>Cancel</v-btn>
+                                <v-btn @click="dateDialogProps.visible = false" color="primary" flat>Cancel</v-btn>
                                 <v-btn @click="updateDate" color="primary">OK</v-btn>
                             </v-date-picker>
 
@@ -73,23 +73,23 @@
                     <div class="time-container">
                         
                         <!-- Time Picker Dialog -->
-                        <v-dialog ref="timeDialog" v-model="timeDialogVisible" 
-                                  :return-value.sync="departure.time"
+                        <v-dialog ref="timeDialog" v-model="timeDialogProps.visible" 
+                                  :return-value.sync="timeDialogProps.time"
                                   persistent lazy full-width width="290px">
                             
                             <!-- Time Picker Button -->
                             <template v-slot:activator="{ on }">
-                                <v-btn color="primary" @click="timeDialogVisible = true" depressed>
+                                <v-btn color="primary" @click="timeDialogProps.visible = true" depressed>
                                     <v-icon>access_time</v-icon>&nbsp;&nbsp;
-                                    <span>{{ departure.timeString }}</span>
+                                    <span>{{ departure.time }}</span>
                                     &nbsp;&nbsp;<v-icon>arrow_drop_down</v-icon>
                                 </v-btn>
                             </template>
                             
                             <!-- Time Picker -->
-                            <v-time-picker v-model="departure.time" scrollable>
+                            <v-time-picker v-model="timeDialogProps.time" scrollable>
                                 <v-spacer></v-spacer>
-                                <v-btn @click="timeDialogVisible = false" color="primary" flat>Cancel</v-btn>
+                                <v-btn @click="timeDialogProps.visible = false" color="primary" flat>Cancel</v-btn>
                                 <v-btn @click="updateTime" color="primary">OK</v-btn>
                             </v-time-picker>
 
@@ -104,7 +104,7 @@
         </v-card>
 
         <div class="trips-button-container">
-            <v-btn color="primary" @click="showTripResults" :disabled="!origin || !destination">
+            <v-btn color="primary" @click="showTripResults" :disabled="!origin || !destination || origin === destination">
                 Search
             </v-btn>
         </div>
@@ -119,6 +119,7 @@
 
 <script>
     const core = require("right-track-core");
+    const DateTime = core.utils.DateTime;
     const DB = require("@/utils/db.js");
     const StopSelectionDialog = require("@/components/StopSelectionDialog.vue").default;
 
@@ -147,28 +148,28 @@
     }
 
     /**
-     * Set the initial date / time
-     * @param {Vue}  vm Vue Instance
-     * @param {Date} d  Initial Date/Time
+     * Set the Date and Time of the departure and Date/Time Pickers
+     * @param {Vue} vm     Vue Instance
+     * @param {int} [date] Initial Date (yyyymmdd)
+     * @param {int} [time] Initial Time (HHmm)
      */
-    function _setDateTime(vm, d) {
-        let yyyy = d.getFullYear();
-        let mm = d.getMonth() + 1;
-        if ( mm < 10 ) mm = "0" + mm;
-        let dd = d.getDate();
+    function _setDateTime(vm, date, time) {
+        console.log("SET DATE TIME: " + date + " / " + time);
 
-        let hr = d.getHours();
-        if ( hr < 10 ) hr = "0" + hr;
-        let mi = d.getMinutes();
-        if ( mi < 10 ) mi = "0" + mi;
-        
-        // Set the initial date and time
-        vm.departure.date = yyyy + "-" + mm + "-" + dd;
-        vm.departure.time = hr + ":" + mi;
+        vm.departure.datetime = !date || !time ? DateTime.now() : DateTime.create(time, date);
+        vm.departure.date = vm.departure.datetime.getDateReadable(true);
+        vm.departure.time = vm.departure.datetime.getTimeReadable();
 
-        // Set date and time buttons
-        vm.departure.dateString = vm.getDepartureDateString();
-        vm.departure.timeString = vm.getDepartureTimeString();
+        let d = vm.departure.datetime.date.toString();
+        let t = vm.departure.datetime.getTimeGTFS();
+        vm.dateDialogProps.date = d.substring(0, 4) + "-" + d.substring(4, 6) + "-" + d.substring(6, 8);
+        vm.timeDialogProps.time = t.substring(0, 5);
+
+        console.log(JSON.stringify(vm.departure.datetime));
+        console.log(vm.departure.date);
+        console.log(vm.departure.time);
+        console.log(vm.dateDialogProps.date);
+        console.log(vm.timeDialogProps.time);
     }
 
     module.exports = {
@@ -190,25 +191,30 @@
                 destination: undefined,
 
                 /**
-                 * Departure Information
+                 * Departure DateTime
                  * @type {Object}
                  */
                 departure: {
+                    datetime: undefined,
                     date: undefined,
-                    dateString: undefined,
-                    time: undefined,
-                    timeString: undefined
+                    time: undefined
                 },
 
                 /**
-                 * Date Dialog Visibility
+                 * Date Dialog Properties
                  */
-                dateDialogVisible: false,
+                dateDialogProps: {
+                    visible: false,
+                    date: undefined
+                },
 
                 /**
-                 * Time Dialog Visiblity
+                 * Time Dialog Properties
                  */
-                timeDialogVisible: false,
+                timeDialogProps: {
+                    visible: false,
+                    time: undefined
+                },
 
                 /**
                  * Station Dialog Properties
@@ -253,8 +259,10 @@
              * - update the formatted string
              */
             updateDate: function() {
-                this.$refs.dateDialog.save(this.departure.date);
-                this.departure.dateString = this.getDepartureDateString();
+                this.$refs.dateDialog.save(this.dateDialogProps.date);
+                let p = this.dateDialogProps.date.split("-");
+                let date = parseInt(p[0] + "" + p[1] + "" + p[2]);
+                _setDateTime(this, date, this.departure.datetime.time);
             },
 
             /**
@@ -263,57 +271,8 @@
              * - update the formatted string
              */
             updateTime: function() {
-                this.$refs.timeDialog.save(this.departure.time);
-                this.departure.timeString = this.getDepartureTimeString();
-            },
-
-            /**
-             * Get the Departure Date String
-             * @return {string} Formatted Departure Date
-             */
-            getDepartureDateString: function() {
-                const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                
-                let date = new Date(this.departure.date + " 12:00");
-                let dow = weekdays[date.getDay()];
-                let mon = months[date.getMonth()];
-                let day = date.getDate();
-
-                let rtn = dow + ", " + mon + " " + day + ", " + date.getFullYear();
-                return rtn;
-            },
-
-            /**
-             * Get the Departure Time String
-             * @return {string} Formatted Departure Time
-             */
-            getDepartureTimeString: function() {
-                let hr = parseInt(this.departure.time.split(':')[0]);
-                let mi = parseInt(this.departure.time.split(':')[1]);
-                let ap = undefined; 
-                if ( hr === 0 ) {
-                    hr = "12";
-                    ap = "AM";
-                }
-                else if ( hr < 12 ) {
-                    ap = "AM";
-                }
-                else if ( hr === 12 ) {
-                    ap = "PM";
-                }
-                else if ( hr > 12 ) {
-                    hr = hr - 12;
-                    ap = "PM";
-                }
-                if ( mi < 10 ) {
-                    mi = "0" + mi;
-                }
-                return hr + ":" + mi + " " + ap;
-            },
-
-            allowedMinutes: function(value) {
-                return v % 5 === 0;
+                this.$refs.timeDialog.save(this.timeDialogProps.time);
+                _setDateTime(this, this.departure.datetime.date, this.timeDialogProps.time);
             },
 
             /**
@@ -338,19 +297,11 @@
                 let originId = this.origin.id;
                 let destinationId = this.destination.id;
 
-                let t = this.departure.time.split(':');
-                let d = this.departure.date.split('-');
-                let departure = new Date(
-                    parseInt(d[0]),
-                    parseInt(d[1]) - 1,
-                    parseInt(d[2]),
-                    parseInt(t[0]),
-                    parseInt(t[1])
-                );
+                let departure = this.departure.datetime;
                 let now = new Date();
 
                 // Get trip results for current time
-                if ( Math.abs(now.getTime() - departure.getTime()) < 900000 ) {
+                if ( Math.abs(now.getTime() - departure.toTimestamp()) < 900000 ) {
                     this.$router.push({
                         name: "trip",
                         params: {
@@ -369,8 +320,8 @@
                             agency: agencyId,
                             origin: originId,
                             destination: destinationId,
-                            date: d[0] + "" + d[1] + "" + d[2],
-                            time: t[0] + "" + t[1]
+                            date: departure.date,
+                            time: departure.time
                         }
                     });
                 }
@@ -386,11 +337,10 @@
             _getStops(vm, function(stops) {
                 vm.stationDialogProps.stops = stops;
             });
-            _setDateTime(vm, new Date());
+            _setDateTime(vm);
         }
 
     }
-    
 </script>
 
 
@@ -471,5 +421,4 @@
         width: 75%;
         max-width: 300px;
     }
-
 </style>

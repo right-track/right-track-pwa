@@ -15,7 +15,6 @@
                 </v-list-tile>
             </v-list>
         </v-slide-y-transition>
-        <v-divider v-if="update.isAvailable"></v-divider>
         
         <!-- User Info -->
         <v-list v-if="auth.display" class="py-0" two-line>

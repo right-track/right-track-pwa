@@ -3,8 +3,12 @@
 
         <!-- List of Trip Results -->
         <template v-for="(trip, index) in results">
-            <v-card class="trip-result-card" :key="'trip-' + trip.segments[0].trip.id">
-                <rt-trip-result-item :trip="trip" :statusFeeds="statusFeeds"></rt-trip-result-item>
+            <v-card :id="'trip-result-card-' + index" class="trip-result-card" :key="'trip-' + index">
+                <rt-trip-result-item 
+                    :trip="trip" 
+                    :highlight="index === resultsHighlightIndex"
+                    :statusFeeds="statusFeeds">
+                </rt-trip-result-item>
             </v-card>
         </template>
         
@@ -220,96 +224,59 @@
             search.search(db, function(err, results) {
                 vm.results = results;
 
-                // Set Status Stops
-                vm.statusStopIds = [vm.origin.id];
-                for ( let i = 0; i < results.length; i++ ) {
-                    for ( let j = 0; j < results[i].transfers.length; j++ ) {
-                        let id = results[i].transfers[j].stop.id;
-                        if ( !vm.statusStopIds.includes(id) ) {
-                            vm.statusStopIds.push(id);
-                        }
-                    }
-                }
+                // Setup the Status Feeds
+                _setupStatusFeeds(vm);
 
-                // Set messages for Status Bar
-                let messages = [{
-                    icon: "train",
-                    title: vm.origin.name + " to " + vm.destination.name,
-                }, {
-                    icon: "calendar_today",
-                    title: vm.isNextDeparture ? "Next Departure" : vm.departure.getTimeReadable() + " on " + vm.departure.toHTTPString().split(' ').slice(0, 4).join(' ')
-                }]
+                // Update Status Bar
+                _updateStatusBar(vm);
 
-                // Set Routes for Status Bar
-                let routes = [];
-                for ( let i = 0; i < results.length; i++ ) {
-                    for ( let j = 0; j < results[i].segments.length; j++ ) {
-                        if ( !routes.includes(results[i].segments[j].trip.route.shortName) ) {
-                            routes.push(results[i].segments[j].trip.route.shortName);
-                        }
-                    }
-                }
-                vm.$emit('setStatusBar', {visible: true, transitLines: routes, messages: messages});
-
-                // Get and update Status Info (if departure within 6 hours of now)
-                if ( Math.abs(Date.now() - vm.departure.toTimestamp()) < (6*60*60*1000) ) {
-
-                    // Update Status Information
-                    _updateStatus(vm);
-
-                    // Clear and set Timer
-                    if ( STATUS_TIMER_ID ) clearInterval(STATUS_TIMER_ID);
-                    STATUS_TIMER_ID = setInterval(function(){ _updateStatus(vm) }, 60000);
-
-                }
-
-                // Set Highlight Results Timer
+                // Parse the Results
+                _parseResults(vm, true, true);
                 if ( TIMER_ID ) clearInterval(TIMER_ID);
-                if ( vm.isNextDeparture ) TIMER_ID = setInterval(function() { _highlightResults(vm) }, 1000);
-                _highlightResults(vm, true);
+                if ( vm.isNextDeparture ) TIMER_ID = setInterval(function() { _parseResults(vm) }, 1000);
 
             });
         });
 
-    } 
+    }
+
 
     /**
-     * Set the Departs time of each upcoming departures and 
-     * highlight the next departure
-     * @param  {[type]} vm    [description]
-     * @param  {[type]} first [description]
-     * @return {[type]}       [description]
+     * Set up the Status Feeds for the Origin and Transfer Stops
+     * @param  {Vue} vm Vue Instance
      */
-    function _highlightResults(vm, first) {
-        if ( first || Date.now() % 60000 <= 1000 ) {
-            let now = DateTime.now();
-            if ( vm.isNextDeparture ) vm.departure = now;
+    function _setupStatusFeeds(vm) {
 
-            // Parse each Trip Result
-            let found = false;
-            for ( let i = 0; i < vm.results.length; i++ ) {
-                let d = DateTime.create(vm.results[i].origin.departure.time, vm.results[i].origin.departure.date);
-                
-                // Highlight next departure
-                if ( !found && d.toTimestamp() >= vm.departure.toTimestamp() ) {
-                   vm.results[i].highlight = true;
-                   found = true;
+        // Set Status Stops
+        vm.statusStopIds = [vm.origin.id];
+        for ( let i = 0; i < vm.results.length; i++ ) {
+            for ( let j = 0; j < vm.results[i].transfers.length; j++ ) {
+                let id = vm.results[i].transfers[j].stop.id;
+                if ( !vm.statusStopIds.includes(id) ) {
+                    vm.statusStopIds.push(id);
                 }
-                else {
-                    vm.results[i].highlight = false;
-                }
-
-                // Calculate Departs In Time
-                vm.results[i].departs = vm.isNextDeparture ? (d.toTimestamp() - now.toTimestamp()) / 1000 / 60 : undefined;
             }
         }
+
+        // Get and update Status Info (if departure within 6 hours of now)
+        if ( Math.abs(Date.now() - vm.departure.toTimestamp()) < (6*60*60*1000) ) {
+
+            // Update Status Feeds
+            _updateStatusFeeds(vm);
+
+            // Clear and set Timer
+            if ( STATUS_TIMER_ID ) clearInterval(STATUS_TIMER_ID);
+            STATUS_TIMER_ID = setInterval(function(){ _updateStatusFeeds(vm) }, 60000);
+
+        }
+
     }
 
     /**
-     * Update the Status Information for the Origin and Transfer Stops
+     * Update the Status Feeds for the Origin and Transfer Stops
      * @param  {Vue} vm Vue Instance
      */
-    function _updateStatus(vm) {
+    function _updateStatusFeeds(vm) {
         vm.updatingStatus = true;
         let count = 0;
         let max = vm.statusStopIds.length;
@@ -317,7 +284,6 @@
         for ( let i = 0; i < vm.statusStopIds.length; i++ ) {
             cache.getStationFeed(vm.agencyId, vm.statusStopIds[i], function(err, feed) {
                 if ( !err ) {
-                    console.log("SETTING STATUS FEED: " + feed.origin.id);
                     let exists = false;
                     for ( let j = 0; j < vm.statusFeeds.length; j++ ) {
                         if ( vm.statusFeeds[j].origin.id === feed.origin.id ) {
@@ -337,6 +303,104 @@
             count++;
             if ( count >= max ) {
                 vm.updatingStatus = false;
+                _parseResults(vm, true);
+            }
+        }
+    }
+
+    /**
+     * Update the routes and messages for the Status Bar
+     * @param  {Vue} vm Vue Instance
+     */
+    function _updateStatusBar(vm) {
+
+        // Set messages for Status Bar
+        let messages = [
+            {
+                icon: "train",
+                title: vm.origin.name + " to " + vm.destination.name,
+            },
+            {
+                icon: "calendar_today",
+                title: vm.isNextDeparture ? "Next Departure" : vm.departure.getTimeReadable() + " on " + vm.departure.getDateReadable()
+            }
+        ]
+
+        // Set Routes for Status Bar
+        let routes = [];
+        for ( let i = 0; i < vm.results.length; i++ ) {
+            for ( let j = 0; j < vm.results[i].segments.length; j++ ) {
+                if ( !routes.includes(vm.results[i].segments[j].trip.route.shortName) ) {
+                    routes.push(vm.results[i].segments[j].trip.route.shortName);
+                }
+            }
+        }
+
+        // Update the Status Bar
+        vm.$emit('setStatusBar', {visible: true, transitLines: routes, messages: messages});
+
+    }
+
+
+    /**
+     * Parse the Trip Results (after initial search has completed, after 
+     * status feeds have updated and periodically every 1 minute)
+     * - Set the highlighted trip result index
+     * - Set the departs in time of each trip
+     * - Match status information to trip result segments
+     * @param  {Vue}     vm     Vue Instance
+     * @param  {boolean} force  When true, force an update
+     * @param  {boolean} scroll When true, will scroll to highlighted trip result
+     */
+    function _parseResults(vm, force, scroll) {
+        if ( force || Date.now() % 60000 <= 1000 ) {
+
+            // Update Next Departure date/time
+            let now = DateTime.now();
+            if ( vm.isNextDeparture ) vm.departure = now;
+
+            console.log("===> PARSING TRIP RESULTS [" + vm.departure.toString() + "]...");
+
+            // Set the Highlight Index
+            _setHighlightIndex(vm);
+
+            // Parse each Trip Result
+            for ( let i = 0; i < vm.results.length; i++ ) {
+                let d = DateTime.create(vm.results[i].origin.departure.time, vm.results[i].origin.departure.date);
+
+                // Calculate Departs In Time
+                let m = vm.isNextDeparture ? (d.toTimestamp() - now.toTimestamp()) / 1000 / 60 : undefined;
+                vm.$set(vm.results[i], "departs", m);
+            }
+
+            // console.log(vm.results[vm.resultsHighlightIndex].departs);
+
+            // Scroll to Highlighted Trip
+            if ( scroll ) {
+                vm.$nextTick(function() {
+                    let el = document.getElementById("trip-result-card-" + vm.resultsHighlightIndex);
+                    let pos = el.offsetTop - 100;
+                    window.scrollTo(0, pos);
+                });
+            }
+
+
+        }
+
+    }
+
+
+    /**
+     * Set the index of the Trip Result to Highlight
+     * @param {Vue} vm Vue Instance
+     */
+    function _setHighlightIndex(vm) {
+        let highlight = undefined;
+        for ( let i = 0; i < vm.results.length; i++ ) {
+            let d = DateTime.create(vm.results[i].origin.departure.time, vm.results[i].origin.departure.date);
+            if ( !highlight && d.toTimestamp() >= vm.departure.toTimestamp() ) {
+                vm.resultsHighlightIndex = i;
+                return;
             }
         }
     }
@@ -353,6 +417,7 @@
                 departure: undefined,
                 isNextDeparture: false,
                 results: undefined,
+                resultsHighlightIndex: undefined,
                 statusStopIds: [],
                 statusFeeds: [],
                 updatingStatus: false,
@@ -377,7 +442,7 @@
                 let vm = this;
                 vm.updatingStatus = true;
                 setTimeout(function() {
-                    _updateStatus(vm);
+                    _updateStatusFeeds(vm);
                 }, 500);
             },
 

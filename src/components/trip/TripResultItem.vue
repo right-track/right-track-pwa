@@ -1,6 +1,6 @@
 <template>
-    <div class="trip-wrapper" :class="{'highlight-trip-wrapper': trip.highlight}" @click="selectTrip">
-        <div class="trip-departs-time" v-html="getDeparts(trip)"></div>
+    <div class="trip-wrapper" :class="{'highlight-trip-wrapper': highlight}" @click="selectTrip">
+        <div class="trip-departs-time" v-html="departs"></div>
         
         <div v-for="(segment, index) in trip.segments" :key="'trip-segment-' + index" class="trip-segment-wrapper">
             <div class="trip-segment-headsign">
@@ -13,13 +13,17 @@
                 {{ formatTime(segment.enter.departureTime) }} <v-icon color="#111">arrow_forward</v-icon> {{ formatTime(segment.exit.arrivalTime) }}
             </div>
             <div class="trip-segment-status">
-                <span v-html="getStatus(segment)"></span>
+                <v-fade-transition>
+                    <div :key="'status-' + status[index]" v-html="status[index]"></div>
+                </v-fade-transition>
             </div>
             <div class="trip-segment-traveltime">
                 &nbsp;<v-icon color="#111">access_time</v-icon> {{ formatTravelTime(segment.travelTime) }}
             </div>
             <div class="trip-segment-track">
-                <span v-html="getTrack(segment)"></span>
+                <v-fade-transition>
+                    <div :key="'track-' + track[index]" v-html="track[index]"></div>
+                </v-fade-transition>
             </div>
 
             <v-expand-transition>
@@ -77,19 +81,18 @@
 
         // ==== COMPONENT PROPS ==== //
         props: {
-            trip: {
-                type: Object,
-                required: true
-            },
-            statusFeeds: {
-                type: Array
-            }
+            trip: Object,
+            highlight: Boolean,
+            statusFeeds: Array
         },
 
         // ==== COMPONENT DATA ==== //
         data: function() {
             return {
-                tripDetailsVisible: false
+                tripDetailsVisible: false,
+                departs: undefined,
+                status: [],
+                track: []
             }
         },
 
@@ -103,14 +106,16 @@
 
             /**
              * Get the departs in time for the trip
-             * @param  {[type]} trip [description]
-             * @return {[type]}      [description]
+             * @param  {int}    departs  Departs time (minutes)
+             * @return {string}          Formatted departs in string
              */
-            getDeparts(trip) {
-                let rtn = "";
-                let mins = Math.round(trip.departs);
+            getDeparts(departs) {
+                let rtn = undefined;
+                let mins = Math.ceil(departs);
                 
-                // TODO: Adjust for delays
+                // Get delay, if present
+                let status = _findStatusInfo(this, this.trip.segments[0]);
+                if ( status ) mins = mins + status.delay;
 
                 // Departing Now
                 if ( mins >= -1 && mins <= 1 ) {
@@ -119,7 +124,9 @@
 
                 // Departing within 2 hours
                 else if ( mins > 0 && mins <= 120 ) {
-                    rtn = "<p>Departs in " + datetime.minutesToString(mins) + "</p>";
+                    rtn = "<p>Departs in ";
+                    if ( status && status.delay > 0 ) rtn += " about ";
+                    rtn += datetime.minutesToString(mins) + "</p>";
                 }
 
                 return(rtn);
@@ -187,6 +194,35 @@
                 this.tripDetailsVisible = !this.tripDetailsVisible;
             }
             
+        },
+
+        // ==== COMPONENT MOUNTED ==== //
+        mounted() {
+            this.departs = this.getDeparts(this.trip.departs);
+            for ( let i = 0; i < this.trip.segments.length; i++ ) {
+                this.status[i] = this.getStatus(this.trip.segments[i]);
+                this.track[i] = this.getTrack(this.trip.segments[i]);
+            }
+        },
+
+        // ==== COMPONENT WATCHERS ==== //
+        watch: {
+
+            "trip.departs": function(departs) {
+                this.departs = this.getDeparts(departs);
+            },
+
+            statusFeeds: {
+                handler: function(feeds) {
+                    for ( let i = 0; i < this.trip.segments.length; i++ ) {
+                        this.status[i] = this.getStatus(this.trip.segments[i]);
+                        this.track[i] = this.getTrack(this.trip.segments[i]);
+                    }
+                    this.$forceUpdate();
+                },
+                deep: true
+            }
+
         }
 
     }

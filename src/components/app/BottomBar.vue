@@ -12,7 +12,7 @@
             <span>Stations</span>
             <v-icon>access_time</v-icon>
         </v-btn>
-        <v-btn value="agencyAlerts" @click="onBottomBarItemSelected('agencyAlerts')" flat>
+        <v-btn value="alerts" @click="onBottomBarItemSelected('alerts')" flat>
             <span>Alerts <template v-if="transitAlertCount && transitAlertCount > 0"> ({{ transitAlertCount }})</template></span>
             <v-icon v-if="transitAlertCount && transitAlertCount > 0">warning</v-icon>
             <v-icon v-else>check_circle</v-icon>

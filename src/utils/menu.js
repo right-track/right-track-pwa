@@ -125,7 +125,7 @@ const MENU = function(vm) {
             key: 24,
             type: "alerts",
             title: "Alerts",
-            page: "agencyAlerts",
+            page: "alerts",
             params: {
                 agency: vm.$route.params.agency
             }
@@ -181,10 +181,10 @@ const MENU = function(vm) {
  */
 function getMenuItems(vm) {
     let page = vm.$route.name;
-    if ( page === "agencies" || page == "about" || page == "alerts" || page == "pageNotFound" ) {
+    if ( page === "agencies" || page === "about" || (page === "alerts" && !vm.$router.currentRoute.params.agency) || page === "pageNotFound" ) {
         return HOME(vm);
     }
-    else if ( page === "login" || page == "register" ) {
+    else if ( page === "login" || page === "register" ) {
         return LOGIN(vm);
     }
     else if ( page === "logout" ) {

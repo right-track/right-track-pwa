@@ -33,16 +33,6 @@ var routes = [
         component: About
     },
     {
-        path: "/alerts",
-        name: "alerts",
-        component: Alerts
-    },
-    {
-        path: "/:agency/alerts",
-        name: "agencyAlerts",
-        component: Alerts
-    },
-    {
         path: "/auth/register",
         name: "register",
         component: Register
@@ -56,6 +46,11 @@ var routes = [
         path: "/auth/logout",
         name: "logout",
         component: Logout
+    },
+    {
+        path: "/:agency?/alerts/:transitAgency?/:transitDivision?/:transitLine?",
+        name: "alerts",
+        component: Alerts
     },
     {
         path: "/:agency/about",

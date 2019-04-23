@@ -1,11 +1,16 @@
 <template>
     <div>
-        <div class="agency-wrapper" v-for="agency in agencies" :key="agency.id" @click="selectAgency(agency.id)">
+        <p class="subheading font-weight-light pa-2">Select a Transit Agency for real-time transit alerts:</p>
+
+        <div class="agency-wrapper" v-for="agency in transitAgencies" :key="agency.id" @click="selectAgency(agency.id)">
             <div class="agency-icon">
                 <img :src="agency.icon" />
             </div>
             <div class="agency-name">
-                {{ agency.name }}
+                <strong>{{ agency.name }}</strong><br />
+                <p class="agency-description">
+                    {{ agency.description }}
+                </p>
             </div>
             <div class="agency-more">
                 <v-icon>chevron_right</v-icon>
@@ -16,30 +21,33 @@
 
 
 <script>
+    
     module.exports = {
 
-        // ==== COMPONENT PROPERTIES ==== //
+        // ==== COMPONENT PROPS ==== //
         props: {
-            agencies: {
-                type: Array,
-                required: true
-            }
+            transitAgencies: Array
         },
 
         // ==== COMPONENT METHODS ==== //
         methods: {
-
-            /**
-             * Handle a selected agency
-             * - Go to the agency favorites page
-             * @param  {string} id Agency ID
-             */
             selectAgency(id) {
-                this.$router.push({name: 'favorites', params: {agency: id}});
+                this.$router.push({
+                    name: "alerts",
+                    params: {
+                        agency: this.$router.currentRoute.params.agency,
+                        transitAgency: id
+                    }
+                });
             }
+        },
 
+        // ==== COMPONENT MOUNTED ==== //
+        mounted() {
+            this.$emit('setTitle', 'Transit Alerts');
+            this.$emit('setIcon', 'warning');
         }
-        
+
     }
 </script>
 
@@ -49,15 +57,14 @@
         display: grid;
         grid-template-columns: 1fr 30px;
         grid-template-areas: "icon more" "name more";
+        align-items: center;
         grid-gap: 10px;
         padding: 10px 0;
         border-bottom: 1px solid #eee;
         cursor: pointer;
+        padding-left: 10px;
     }
-    .agency-wrapper:last-child {
-        border: none;
-    }
-    .agency-wrapper:nth-child(even) {
+    .agency-wrapper:nth-child(odd) {
         background-color: #fafafa;
     }
     .agency-wrapper:hover {
@@ -69,7 +76,7 @@
         text-align: center;
     }
     .agency-icon img {
-        width: 60px;
+        width: 120px;
         padding: 10px;
         margin-left: auto;
         margin-right: auto;
@@ -82,6 +89,11 @@
         font-size: 20px;
         text-align: center;
     }
+    .agency-description {
+        font-size: 14px;
+        line-height: 20px;
+        color: #666;
+    }
 
     .agency-more {
         grid-area: more;
@@ -91,8 +103,9 @@
 
     @media (min-width: 600px) {
         .agency-wrapper {
-            grid-template-columns: 80px 1fr 30px;
+            grid-template-columns: 120px 1fr 30px;
             grid-template-areas: "icon name more";
+            padding-left: 0;
         }
         .agency-name {
             text-align: left;

@@ -288,7 +288,7 @@
                     for ( let j = 0; j < vm.statusFeeds.length; j++ ) {
                         if ( vm.statusFeeds[j].origin.id === feed.origin.id ) {
                             exists = true;
-                            vm.statusFeeds[j] = feed;
+                            vm.$set(vm.statusFeeds, j, feed);
                         }
                     }
                     if ( !exists ) {

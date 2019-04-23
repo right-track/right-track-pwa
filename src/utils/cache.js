@@ -37,7 +37,8 @@ getAgencies = function(callback) {
 
         // Add Icon URL
         for ( i in response.agencies ) {
-            response.agencies[i].icon = "";
+            let index = i;
+            response.agencies[index].icon = "";
         }
 
         return callback(null, response.agencies);
@@ -60,10 +61,11 @@ getAgency = function(agency, callback) {
 
         // Find Matching Agency
         for ( i in agencies ) {
-            if ( agencies[i].id.toLowerCase() === agency.toLowerCase() ) {
+            let index = i;
+            if ( agencies[index].id.toLowerCase() === agency.toLowerCase() ) {
                 
                 // Return matching RightTrackAgency
-                let config = agencies[i].config;
+                let config = agencies[index].config;
                 return callback(null, new RightTrackAgency(config));
 
             }
@@ -128,18 +130,128 @@ getStationFeed = function(agencyId, stopId, callback) {
 
 
 /**
+ * Get the list of supported Transit Agencies
+ * @param  {Function} callback Callback function(err, transitAgencies)
+ */
+getTransitAgencies = function(callback) {
+    let transitAgencies = [];
+    let count = 0;
+    let max = 0;
+
+    // Get Transit Agencies
+    _getCacheElseFresh("/transit", 7*24*60*60, function(err, response) {
+        if ( err ) {
+            return callback(err);
+        }
+
+        // Set Transit Agencies
+        transitAgencies = response.transitAgencies;
+        count = 0;
+        max = transitAgencies.length;
+
+        // Set Transit Agency Icons
+        for ( let i = 0; i < transitAgencies.length; i++ ) {
+            getTransitAgencyIcon(transitAgencies[i].id, function(err, response) {
+                transitAgencies[i].icon = response ? "data:image/png;base64, " + response : config.api.host + "/transit/" + transitAgencies[i].id + "/icon";
+                _finish();
+            });
+        }
+    });
+
+
+    /**
+     * Finish setting the transit agency icon
+     * - return to callback when all complete
+     * @return {[type]} [description]
+     */
+    function _finish() {
+        count++;
+        if ( count === max ) {
+            return callback(null, transitAgencies);
+        }
+    }
+}
+
+
+/**
+ * Get the specified transit agency icon (as base64 encoded data)
+ * - Cache Length: 7 days
+ * @param  {string}   transitAgency Transit Agency ID Code
+ * @param  {Function} callback      Callback function(err, icon)
+ */
+getTransitAgencyIcon = function(transitAgency, callback) {
+    _getCacheElseFresh("/transit/" + transitAgency + "/icon", 7*24*60*60, true, function(err, response) {
+        if ( err ) {
+            return callback(err);
+        }
+        return callback(null, response);
+    });
+}
+
+
+/**
+ * Get the icon for the specified transit division (as base64 encoded data)
+ * - Cache Length: 7 days
+ * @param  {string}   transitAgency   Transit Agency ID Code
+ * @param  {string}   transitDivision Transit Division Code
+ * @param  {Function} callback        Callback function(err, icon)
+ */
+getTransitDivisionIcon = function(transitAgency, transitDivision, callback) {
+    _getCacheElseFresh("/transit/" + transitAgency + "/" + transitDivision + "/icon", 7*24*60*60, true, function(err, response) {
+        if ( err ) {
+            return callback(err);
+        }
+        return callback(null, response);
+    });
+}
+
+
+/**
  * Get the Transit Feed for the specified Transit Agency
  * - Cache Length: 5 minutes
  * @param  {string}   transitAgencyId Transit Agency ID Code
  * @param  {Function} callback        Callback function(err, feed, transitAgency)
  */
 getTransitFeed = function(transitAgencyId, callback) {
+    let feed = undefined;
+    let transitAgency = undefined;
+    let count = 0;
+    let max = 0;
+
+    // Get the Transit Feed
     _getCacheElseFresh("/transit/" + transitAgencyId, 300, function(err, response) {
         if ( err ) {
             return callback(err);
         }
-        return callback(null, response.feed, response.transitAgency);
+
+        // Set Transit Feed and Transit Agency
+        feed = response.feed;
+        transitAgency = response.transitAgency;
+        count = 0;
+        max = feed.divisions.length;
+
+        // Set Transit Division Icons
+        for ( let i = 0; i < feed.divisions.length; i++ ) {
+
+            // Get Transit Division Icon
+            getTransitDivisionIcon(transitAgencyId, feed.divisions[i].code, function(err, response) {
+                feed.divisions[i].icon = response ? "data:image/png;base64, " + response : config.api.host + "/transit/" + transitAgencyId + "/" + feed.divisions[i].code + "/icon";
+                _finish();
+            });
+
+        }
     });
+
+    /**
+     * Finish setting the transit Division icon
+     * - return to callback when all transit division icons have been set
+     */
+    function _finish() {
+        count++;
+        if ( count === max ) {
+            return callback(null, feed, transitAgency);
+        }
+    }
 }
 
 
@@ -295,5 +407,8 @@ module.exports = {
     getAgency: getAgency,
     getAgencyIcon: getAgencyIcon,
     getStationFeed: getStationFeed,
+    getTransitAgencies: getTransitAgencies,
+    getTransitAgencyIcon: getTransitAgencyIcon,
+    getTransitDivisionIcon: getTransitDivisionIcon,
     getTransitFeed: getTransitFeed
 }

@@ -297,6 +297,7 @@ function _getCacheElseFresh(path, expiry, binary, callback) {
 
                     // Return with error
                     else {
+                        console.log("getCacheElseFresh ERROR: " + err);
                         return callback(err);
                     }
                     

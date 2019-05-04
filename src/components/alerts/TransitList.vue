@@ -1,6 +1,6 @@
 <template>
     <div>
-        <p class="subheading font-weight-light pa-2">Select a Transit Agency for real-time transit alerts:</p>
+        <p class="subheading font-weight-light">Select a Transit Agency for real-time transit alerts:</p>
 
         <div class="agency-wrapper" v-for="agency in transitAgencies" :key="agency.id" @click="selectAgency(agency.id)">
             <div class="agency-icon">
@@ -44,8 +44,8 @@
 
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
-            this.$emit('setTitle', 'Transit Alerts');
-            this.$emit('setIcon', 'warning');
+            this.$emit('setCardTitle', 'Transit Alerts');
+            this.$emit('setCardIcon', 'warning');
         }
 
     }
@@ -53,6 +53,10 @@
 
 
 <style scoped>
+    .subheading {
+        padding: 10px 20px;
+    }
+
     .agency-wrapper {
         display: grid;
         grid-template-columns: 1fr 30px;
@@ -62,7 +66,7 @@
         padding: 10px 0;
         border-bottom: 1px solid #eee;
         cursor: pointer;
-        padding-left: 10px;
+        padding: 0 15px;
     }
     .agency-wrapper:nth-child(odd) {
         background-color: #fafafa;
@@ -105,7 +109,6 @@
         .agency-wrapper {
             grid-template-columns: 120px 1fr 30px;
             grid-template-areas: "icon name more";
-            padding-left: 0;
         }
         .agency-name {
             text-align: left;

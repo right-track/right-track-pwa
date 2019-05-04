@@ -3,6 +3,7 @@
   font-family: 'Material Icons';
   font-style: normal;
   font-weight: 400;
+  font-display: block;
   src: url(/fonts/material_icons.woff2) format('woff2');
 }
 /* cyrillic-ext */

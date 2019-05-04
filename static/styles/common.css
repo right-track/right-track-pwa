@@ -53,7 +53,7 @@ div.v-list a:hover {
     .v-xsmall-show {
         display: none !important;
     }
-    .v-small-hide {
+    .v-xsmall-hide {
         display: block !important;
     }
 }

@@ -4,7 +4,7 @@
             <div class="nav-item">
                 <a @click="transitAgencyList">
                     <v-icon class="nav-icon">chevron_left</v-icon>
-                    <span class="nav-label">Transit Agencies</span>
+                    <span class="nav-label">Agencies</span>
                 </a>
                 <a @click="transitAgencyDivisions" v-if="transitAgency">
                     <v-icon class="nav-icon">chevron_left</v-icon>
@@ -13,10 +13,16 @@
             </div>
         </div>
 
-        <div v-if="feed && division" class="line-list">
-            <div class="line-wrapper" v-for="line in division.lines" :key="line.code" @click="selectLine(division.code)">
+        <div v-if="transitDivision" class="line-list">
+            <div class="line-wrapper" v-for="line in transitDivision.lines" :key="line.code" @click="selectLine(line.code)">
                 <div class="line-name">
-                    {{ line.name }}
+                    <span class="line-name-label" 
+                          :style="{'background-color': line.backgroundColor, 'color': line.textColor}">
+                        {{ line.name }}
+                    </span>
+                </div>
+                <div class="line-status v-small-hide" v-if="line.eventCount > 0">
+                    {{ line.status }}
                 </div>
                 <div class="line-badge">
                     <template v-if="line.eventCount === 0">
@@ -42,51 +48,17 @@
 <script>
 
     /**
-     * Handle an updated Transit Agency
+     * Handle an updated Transit Division
+     * - Update Title
+     * - Update Icon
      * @param  {Vue} vm Vue Instance
      */
-    function _transitAgencyUpdated(vm) {
-        if ( vm.transitAgency ) {
-            vm.$emit('setTitle', vm.transitAgency.name);
+    function _transitDivisionUpdated(vm) {
+        if ( vm.transitDivision ) {
+            vm.$emit('setCardTitle', vm.transitDivision.name);
+            vm.$emit('setCardIcon', vm.transitDivision.eventCount === 0 ? 'check_circle' : 'warning');
         }
     }
-
-
-    /**
-     * Handle an updated Transit Feed
-     * @param  {Vue} vm Vue Instance
-     */
-    function _transitFeedUpdated(vm) {
-        if ( vm.feed ) {
-            _setDivision(vm);
-        }
-    }
-
-
-    /**
-     * Set the selected Division
-     * - update title and icon
-     * @param {Vue} vm Vue Instance
-     */
-    function _setDivision(vm) {
-        if ( vm.feed ) {
-            for ( let i = 0; i < vm.feed.divisions.length; i++ ) {
-                if ( vm.feed.divisions[i].code === vm.$router.currentRoute.params.transitDivision ) {
-                    vm.division = vm.feed.divisions[i];
-                }
-            }
-        }
-        if ( vm.division ) {
-            vm.$emit('setTitle', vm.division.name);
-            if ( vm.division.eventCount === 0 ) {
-                vm.$emit('setIcon', 'check_circle');
-            }
-            else {
-                vm.$emit('setIcon', 'warning');
-            }
-        }
-    }
-
 
 
     module.exports = {
@@ -94,8 +66,15 @@
         // ==== COMPONENT PROPS ===== //
         props: {
             transitAgency: Object,
-            feed: Object,
-            division: Object
+            transitDivision: Object,
+            feed: Object
+        },
+
+        // ==== COMPONENT DATA ==== //
+        data: function() {
+            return {
+                division: undefined
+            }
         },
 
         // ==== COMPONENT METHODS ==== //
@@ -145,26 +124,16 @@
 
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
-            _transitAgencyUpdated(this);
-            _transitFeedUpdated(this);
+            _transitDivisionUpdated(this);
         },
 
         // ==== COMPONENT WATCHERS ==== //
         watch: {
-            transitAgency: {
+            transitDivision: {
                 handler: function() {
-                    _transitAgencyUpdated(this);
+                    _transitDivisionUpdated(this);
                 },
                 deep: true
-            },
-            feed: {
-                handler: function() {
-                    _transitFeedUpdated(this);
-                },
-                deep: true
-            },
-            $route: function(to, from) {
-                _setDivision(this);
             }
         }
 
@@ -207,7 +176,20 @@
         margin-top: auto;
         margin-bottom: auto;
         font-size: 20px;
-        text-align: center;
+        padding-left: 25px;
+    }
+    .line-name-label {
+        padding: 2px 7px;
+        border-radius: 10px;
+    }
+
+    .line-status {
+        grid-area: status;
+        color: #ff5252;
+        font-weight: 500;
+        text-align: right;
+        padding-left: 0;
+        padding-right: 10px;
     }
 
     .line-badge {
@@ -222,11 +204,8 @@
 
     @media (min-width: 600px) {
         .line-wrapper {
-            grid-template-columns: 1fr 40px 30px;
-            grid-template-areas: "name badge more";
-        }
-        .line-name {
-            text-align: left;
+            grid-template-columns: 2fr 1fr 40px 30px;
+            grid-template-areas: "name status badge more";
         }
     }
 

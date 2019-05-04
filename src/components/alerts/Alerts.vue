@@ -4,44 +4,57 @@
         <!-- ALERTS CARD -->
         <v-card>
             <v-card-title class="secondary-bg">
-                <span class="headline">
+                <span class="headline card-title">
                     <v-icon v-if="icon">{{ icon }}</v-icon>
                     <img class="icon-img" :src="img" v-if="img" />
                     &nbsp;&nbsp;{{ title }}
                 </span>
                 <v-spacer></v-spacer>
-                <span class="subheading" v-if="transitFeedUpdated">
+                <span class="subheading v-small-hide" v-if="transitFeedUpdated">
                     <v-icon style="font-size: 20px">update</v-icon>&nbsp;&nbsp;{{ transitFeedUpdated }}
                 </span>
             </v-card-title>
+            
             <rt-transit-list 
                 :transitAgencies="transitAgencies"
-                @setTitle="onSetTitle" 
-                @setIcon="onSetIcon" 
+                @setCardTitle="onSetCardTitle" 
+                @setCardIcon="onSetCardIcon" 
                 v-if="!transitAgencyId">
             </rt-transit-list>
             <rt-transit-agency 
                 :transitAgency="transitAgency"
                 :feed="transitFeed"
-                @setTitle="onSetTitle" 
-                @setIcon="onSetIcon" 
+                @setCardTitle="onSetCardTitle" 
+                @setCardIcon="onSetCardIcon" 
                 v-if="transitAgencyId && !transitDivisionCode && !transitLineCode">
             </rt-transit-agency>
             <rt-transit-division 
                 :transitAgency="transitAgency"
+                :transitDivision="transitDivision"
                 :feed="transitFeed"
-                @setTitle="onSetTitle" 
-                @setIcon="onSetIcon" 
+                @setCardTitle="onSetCardTitle" 
+                @setCardIcon="onSetCardIcon" 
                 v-if="transitAgencyId && transitDivisionCode && !transitLineCode">
             </rt-transit-division>
             <rt-transit-line 
                 :transitAgency="transitAgency"
+                :transitDivision="transitDivision"
+                :transitLine="transitLine"
                 :feed="transitFeed"
-                @setTitle="onSetTitle" 
-                @setIcon="onSetIcon" 
+                @setCardTitle="onSetCardTitle" 
+                @setCardIcon="onSetCardIcon" 
                 v-if="transitAgencyId && transitDivisionCode && transitLineCode">
             </rt-transit-line>
         </v-card>
+
+        <rt-transit-events
+            :transitAgency="transitAgency"
+            :transitDivision="transitDivision"
+            :transitLine="transitLine"
+            :transitEvents="transitEvents"
+            :feed="transitFeed"
+            v-if="transitAgencyId && transitDivisionCode && transitLineCode">
+        </rt-transit-events>
 
     </v-container>
 </template>
@@ -54,6 +67,7 @@
     const TransitAgency = require("@/components/alerts/TransitAgency.vue").default;
     const TransitDivision = require("@/components/alerts/TransitDivision.vue").default;
     const TransitLine = require("@/components/alerts/TransitLine.vue").default;
+    const TransitEvents = require("@/components/alerts/TransitEvents.vue").default;
 
 
     /**
@@ -96,6 +110,42 @@
             for ( let i = 0; i < vm.transitAgencies.length; i++ ) {
                 if ( vm.transitAgencies[i].id === vm.transitAgencyId ) {
                     vm.transitAgency = vm.transitAgencies[i];
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Set the current Transit Division
+     * @param {Vue} vm Vue Instance
+     */
+    function _setTransitDivision(vm) {
+        vm.transitDivision = undefined;
+        if ( vm.transitDivisionCode && vm.transitFeed ) {
+            for ( let i = 0; i < vm.transitFeed.divisions.length; i++ ) {
+                if ( vm.transitFeed.divisions[i].code === vm.transitDivisionCode ) {
+                    vm.transitDivision = vm.transitFeed.divisions[i];
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Set the current Transit Line
+     * @param {Vue} vm Vue Instance
+     */
+    function _setTransitLine(vm) {
+        vm.transitLine = undefined;
+        vm.transitEvents = undefined;
+        if ( vm.transitDivisionCode && vm.transitLineCode && vm.transitFeed ) {
+            for ( let i = 0; i < vm.transitFeed.divisions.length; i++ ) {
+                for ( let j = 0; j < vm.transitFeed.divisions[i].lines.length; j++ ) {
+                    if ( vm.transitFeed.divisions[i].lines[j].code === vm.transitLineCode ) {
+                        vm.transitLine = vm.transitFeed.divisions[i].lines[j];
+                        vm.transitEvents = vm.transitLine.events;
+                    }
                 }
             }
         }
@@ -156,6 +206,8 @@
                 else {
                     vm.transitFeed = feed;
                     vm.transitFeedUpdated = DateTime.createFromJSDate(new Date(feed.updated)).getTimeReadable();
+                    _setTransitDivision(vm);
+                    _setTransitLine(vm);
                 }
             });
         }
@@ -176,6 +228,8 @@
                 img: undefined,
                 transitAgencies: [],
                 transitAgency: undefined,
+                transitDivision: undefined,
+                transitLine: undefined,
                 transitFeed: undefined,
                 transitFeedUpdating: false,
                 transitFeedUpdated: undefined
@@ -187,15 +241,16 @@
             'rt-transit-list': TransitList,
             'rt-transit-agency': TransitAgency,
             'rt-transit-division': TransitDivision,
-            'rt-transit-line': TransitLine
+            'rt-transit-line': TransitLine,
+            'rt-transit-events': TransitEvents
         },
 
         // ==== COMPONENT METHODS ==== //
         methods: {
-            onSetTitle(title) {
+            onSetCardTitle(title) {
                 this.title = title;
             },
-            onSetIcon(icon, type) {
+            onSetCardIcon(icon, type) {
                 this.icon = icon;
             }
         },
@@ -218,6 +273,8 @@
             else {
                 if ( this.transitAgencyId ) {
                     _updateFeed(this);
+                    _setTransitDivision(this);
+                    _setTransitLine(this);
                 }
                 else {
                     this.transitFeed = undefined;
@@ -242,6 +299,14 @@
                 _setTransitAgency(this);
             },
 
+            transitDivisionCode: function() {
+                _setTransitDivision(this);
+            },
+
+            transitLineCode: function() {
+                _setTransitLine(this);
+            },
+
             transitFeedUpdating: function() {
                 this.$emit('setProgress', this.transitFeedUpdating);
             }
@@ -253,6 +318,15 @@
 
 
 <style scoped>
+    .container {
+        padding-bottom: 80px;
+    }
+    .card-title {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        display: inherit;
+    }
     .v-card-text {
         padding: 0;
     }

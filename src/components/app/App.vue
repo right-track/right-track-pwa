@@ -135,7 +135,7 @@
     const ProgressDialog = require("@/components/app/ProgressDialog.vue").default;
     const Snackbar = require("@/components/app/Snackbar.vue").default;
 
-    const bottomBarPages = ['favorites', 'trips', 'stations', 'agencyAlerts'];
+    const BOTTOM_BAR_PAGES = ['favorites', 'trips', 'stations', 'alerts'];
 
     const APP_DRAWER_VISIBLE_KEY = "app-drawer-visible";
     const APP_DRAWER_VISIBLE_CUTOFF = 960;
@@ -184,7 +184,7 @@
         _setTitle(vm);
 
         // Enable / Disbale Bottom Bar
-        vm.bottomBarEnabled = bottomBarPages.includes(vm.$route.name);
+        vm.bottomBarEnabled = _isBottomBarEnabled(vm);
 
         // Reset Status Bar
         vm.statusBar = {};
@@ -226,6 +226,20 @@
 
 
     /**
+     * Determine if the Bottom Bar should be enabled
+     * @param  {Vue}  vm   Vue Instance
+     * @return {Boolean}   True if the bottom bar should be enabled
+     */
+    function _isBottomBarEnabled(vm) {
+        console.log("ROUTE: " + vm.$route.name);
+        console.log("AGENCY: " + vm.agencyId);
+        let rtn = BOTTOM_BAR_PAGES.includes(vm.$route.name) && vm.agencyId !== undefined;
+        console.log("BBE: " + rtn);
+        return rtn;
+    }
+
+
+    /**
      * Set the Document and Toolbar Titles
      * @param {Vue}    vm    Vue Instance
      * @param {string} title Page Title
@@ -260,6 +274,7 @@
         // Agency has changed...
         if ( agencyId !== vm.agencyId ) {
             vm.agencyId = agencyId;
+            vm.bottomBarEnabled = _isBottomBarEnabled(vm);
 
             // Set Agency Properties
             if ( agencyId !== undefined ) {
@@ -303,6 +318,7 @@
         vm.$vuetify.theme.primaryText = colors.primaryText;
         vm.$vuetify.theme.secondary = colors.secondary;
         vm.$vuetify.theme.secondaryText = colors.secondaryText;
+        document.querySelector("meta[name=theme-color]").setAttribute("content", colors.primary);
     }
 
 
@@ -482,7 +498,7 @@
                 colors: config.colors,
 
                 // Current Agency ID
-                agencyId: null,
+                agencyId: undefined,
 
                 // Current Agency Name
                 agencyName: undefined,
@@ -519,7 +535,7 @@
                 },
 
                 // Bottom Bar visibility flag
-                bottomBarEnabled: bottomBarPages.includes(this.$router.currentRoute.name),
+                bottomBarEnabled: _isBottomBarEnabled(this),
 
                 // Toolbar Progress Properties
                 toolbarProgress: {

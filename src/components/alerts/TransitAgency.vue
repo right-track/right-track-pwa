@@ -4,7 +4,7 @@
             <div class="nav-item">
                 <a @click="transitAgencyList">
                     <v-icon class="nav-icon">chevron_left</v-icon>
-                    <span class="nav-label">Transit Agencies</span>
+                    <span class="nav-label">Agencies</span>
                 </a>
             </div>
         </div>
@@ -42,30 +42,26 @@
 
     /**
      * Handle an updated Transit Agency
+     * - Update Title
      * @param  {Vue} vm Vue Instance
      */
     function _transitAgencyUpdated(vm) {
         if ( vm.transitAgency ) {
-            vm.$emit('setTitle', vm.transitAgency.name);
+            vm.$emit('setCardTitle', vm.transitAgency.name);
         }
     }
 
 
     /**
      * Handle an updated Transit Feed
+     * - Update Icon
      * @param  {Vue} vm Vue Instance
      */
     function _transitFeedUpdated(vm) {
         if ( vm.feed ) {
-            if ( vm.feed.eventCount === 0 ) {
-                vm.$emit('setIcon', 'check_circle');
-            }
-            else {
-                vm.$emit('setIcon', 'warning');
-            }
+            vm.$emit('setCardIcon', vm.feed.eventCount === 0 ? 'check_circle' : 'warning');
         }
     }
-
 
 
     module.exports = {
@@ -204,6 +200,7 @@
 
     .badge-good * {
         color: #57AF3F !important;
+        font-size: 28px !important;
     }
     .badge-bad {
         display: inline-block;

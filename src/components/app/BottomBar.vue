@@ -45,7 +45,12 @@
         // ==== COMPONENT METHODS ==== //
         methods: {
             onBottomBarItemSelected(page) {
-                this.$router.push({name: page});
+                this.$router.push({
+                    name: page, 
+                    params: {
+                        agency: this.$router.currentRoute.params.agency
+                    }
+                });
             },
             onResize() {
                 if ( window.innerWidth < BREAK_POINT ) {

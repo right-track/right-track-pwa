@@ -74,6 +74,12 @@ function _request(method, path, body, binary, callback, progress) {
         if ( progress ) progress((event.loaded/event.total)*100);
     }
 
+    // Set Error Listener
+    xhr.onerror = function() {
+        console.log("XHR ERROR");
+        return callback(new Error("Could not make API request. Please try again later."));
+    }
+
     // Set Load Listener
     xhr.onload = function(e) {
         if ( xhr.response ) {

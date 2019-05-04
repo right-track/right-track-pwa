@@ -7,8 +7,6 @@ API SERVER:
     
 APP:
     add network offline indicator
-    update manifest theme color when agency changes
-            default color: black
 
 
 PAGES:
@@ -28,6 +26,4 @@ UTILS:
     api:
         callback doesn't seem to be getting called when request fails due to 
             no network availability
-            
-    throughout:
-        replace usage of JS Date with DateTime
+    

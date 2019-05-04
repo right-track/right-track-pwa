@@ -21,15 +21,15 @@
                      class="trip-details-stops-row">
                     
                     <!-- Arrival / Departure Time -->
-                    <div class="trip-details-stop-row-item trip-details-stops-row-time">
+                    <div class="trip-details-stops-row-item trip-details-stops-row-time">
                         <span v-if="stopTimeHasDepartureDelay(index)">
-                            <v-icon class="v-xsmall-hide" :color="getStopTimeRowTextColor(index)">access_time</v-icon>&nbsp;{{ getStopTimeArrival(index) }}&nbsp;<br />
+                            <v-icon class="v-xsmall-hide" style="float: left" :color="getStopTimeRowTextColor(index)">access_time</v-icon>&nbsp;{{ getStopTimeArrival(index) }}&nbsp;<br />
                         </span>
-                        <v-icon class="v-xsmall-hide" :color="getStopTimeRowTextColor(index)">access_time</v-icon>&nbsp;{{ getStopTimeDeparture(index) }}&nbsp;
+                        <v-icon class="v-xsmall-hide" style="float: left" :color="getStopTimeRowTextColor(index)">access_time</v-icon>&nbsp;{{ getStopTimeDeparture(index) }}&nbsp;
                     </div>
 
                     <!-- Stop Name -->
-                    <div class="trip-details-stop-row-item trip-details-stops-row-stop">
+                    <div class="trip-details-stops-row-item trip-details-stops-row-stop">
                         <div v-if="stopTimeHasDepartureDelay(index)" class="stop-container-both">
                             <div class="stop-icon-arrival">
                                 <v-icon class="v-xsmall-hide" :color="getStopTimeRowTextColor(index)">place</v-icon>
@@ -55,12 +55,12 @@
                     </div>
 
                     <!-- Travel Time to Stop -->
-                    <div class="trip-details-stop-row-item trip-details-stops-row-traveltime">
+                    <div class="trip-details-stops-row-item trip-details-stops-row-traveltime">
                         {{ stopTimesTravelTime[index] }}
                     </div>
 
                     <!-- Stop ADA -->
-                    <div class="trip-details-stop-row-item trip-details-stops-row-ada">
+                    <div class="trip-details-stops-row-item trip-details-stops-row-ada">
                         <v-icon :color="getStopTimeRowTextColor(index)" v-if="st.stop.wheelchairBoarding === 1">accessible</v-icon>
                     </div>
 
@@ -417,20 +417,20 @@
     .trip-details-stops-row:nth-child(even) {
         background-color: #eee;
     }
-    .trip-details-stop-row-item {
+    .trip-details-stops-row-item {
         margin-top: auto;
         margin-bottom: auto;
     }
-    .trip-details-stop-row-time {
+    .trip-details-stops-row-time {
         grid-area: time;
     }
-    .trip-details-stop-row-stop {
+    .trip-details-stops-row-stop {
         grid-area: stop;
     }
-    .trip-details-stop-row-traveltime {
+    .trip-details-stops-row-traveltime {
         grid-area: traveltime;
     }
-    .trip-details-stop-row-ada {
+    .trip-details-stops-row-ada {
         grid-area: ada;
     }
 

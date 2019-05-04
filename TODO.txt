@@ -3,6 +3,11 @@ TODO:
 API SERVER:
     intercept all OPTIONS request and return CORS response
     add update notes to /updates/database/agency
+    add user management endpoints
+
+BUGS:
+    After database download, update indicator does not clear
+    Alerts: selecting incorrect instance of line (NYSTA)
 
     
 APP:
@@ -10,6 +15,20 @@ APP:
 
 
 PAGES:
+    
+    About:
+        display installed and latest agency database versions
+        display supported Transit Agencies
+
+    Help/Feedback:
+        create page
+        feedback form
+        information on clearing app cache
+
+    Settings:
+        create page
+        trip search settings
+        user management
 
     Favorites:
         reorder favorites
@@ -26,4 +45,10 @@ UTILS:
     api:
         callback doesn't seem to be getting called when request fails due to 
             no network availability
+    
+
+
+API ACCESS:
+    
+    create proxy server to access the API server
     

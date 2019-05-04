@@ -179,6 +179,9 @@
         // Reset Menu Items
         vm.toolbarMenu = false;
         vm.moreMenu = false;
+        vm.toolbarProgress = {
+            isActive: false
+        }
 
         // Reset Title
         _setTitle(vm);
@@ -231,11 +234,7 @@
      * @return {Boolean}   True if the bottom bar should be enabled
      */
     function _isBottomBarEnabled(vm) {
-        console.log("ROUTE: " + vm.$route.name);
-        console.log("AGENCY: " + vm.agencyId);
-        let rtn = BOTTOM_BAR_PAGES.includes(vm.$route.name) && vm.agencyId !== undefined;
-        console.log("BBE: " + rtn);
-        return rtn;
+        return BOTTOM_BAR_PAGES.includes(vm.$route.name) && vm.agencyId !== undefined;
     }
 
 
@@ -304,6 +303,11 @@
             }
 
         }
+
+        // Agency not set
+        else if ( !agencyId ) {
+            _applyTheme(vm);   
+        }
         
     }
 
@@ -362,7 +366,6 @@
      * @param  {boolean}  [force]    Force update of transit feed
      */
     function _updateTransitFeed(vm, force) {
-        console.log("APP: Update Transit Feed");
         if ( vm.transitInfo ) {
             transit.getFeed(vm.transitInfo.agency, function(err, feed) {
                 if ( err ) {
@@ -375,7 +378,6 @@
                             vm.transitAlertCount = feed.divisions[i].eventCount;
                         }
                     }
-                    console.log("ALERT COUNT: " + vm.transitAlertCount)
                 }
             });
         }

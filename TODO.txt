@@ -9,17 +9,9 @@ BUGS:
     After database download, update indicator does not clear
     Alerts: selecting incorrect instance of line (NYSTA)
 
-    
-APP:
-    add network offline indicator
-
 
 PAGES:
     
-    About:
-        display installed and latest agency database versions
-        display supported Transit Agencies
-
     Help/Feedback:
         create page
         feedback form

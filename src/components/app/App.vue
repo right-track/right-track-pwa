@@ -65,11 +65,16 @@
                         :indeterminate="!toolbarProgress.progress">
                 </v-progress-linear>
             </v-fade-transition>
+
         </v-toolbar>
         
 
         <!-- APP CONTENT -->
         <v-content>
+
+            <!-- OFFLINE ALERT -->
+            <rt-offline-alert :visible="!networkOnline" :drawerVisible="drawerVisible"></rt-offline-alert>
+
             <v-container fluid>
                 
                 <!-- ROUTER VIEW CONTENT -->
@@ -134,6 +139,7 @@
     const ConfirmationDialog = require("@/components/app/ConfirmationDialog.vue").default;
     const ProgressDialog = require("@/components/app/ProgressDialog.vue").default;
     const Snackbar = require("@/components/app/Snackbar.vue").default;
+    const OfflineAlert = require("@/components/app/OfflineAlert.vue").default;
 
     const BOTTOM_BAR_PAGES = ['favorites', 'trips', 'stations', 'alerts'];
 
@@ -486,6 +492,16 @@
     }
 
 
+    /**
+     * Update the current network availability status
+     * @param  {Vue} vm Vue Instance
+     */
+    function _updateNetworkAvailabilityStatus(vm) {
+        vm.networkOnline = navigator.onLine;
+        console.log("====> NETWORK ONLINE? " + vm.networkOnline);
+    }
+
+
 
     module.exports = {
 
@@ -576,7 +592,10 @@
                 // Snackbar Info
                 snackbar: {
                     visible: false
-                }
+                },
+
+                // Network Availability Status
+                networkOnline: true
 
             }
         },
@@ -589,7 +608,8 @@
             'rt-status-bar': StatusBar,
             'rt-confirmation-dialog': ConfirmationDialog,
             'rt-progress-dialog': ProgressDialog,
-            'rt-snackbar': Snackbar
+            'rt-snackbar': Snackbar,
+            'rt-offline-alert': OfflineAlert
         },
 
 
@@ -772,6 +792,15 @@
                     }
                 }
             });
+
+            // Set Network Availability Listeners
+            _updateNetworkAvailabilityStatus(vm);
+            window.addEventListener('online',  function() {
+                _updateNetworkAvailabilityStatus(vm);
+            });
+            window.addEventListener('offline', function() {
+                _updateNetworkAvailabilityStatus(vm);
+            });
         },
 
         // ==== COMPONENT WATCHERS ==== //
@@ -803,6 +832,12 @@
 
 
 <style scoped>
+    .v-toolbar {
+        z-index: 100 !important;
+    }
+    .v-navigation-drawer {
+        z-index: 500 !important;
+    }
     .toolbar-badge {
         position: relative;
         margin-right: -12px;

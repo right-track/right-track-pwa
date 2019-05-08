@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <v-card>
         <p class="subheading font-weight-light">Select a Transit Agency for real-time transit alerts:</p>
 
         <div class="agency-wrapper" v-for="agency in transitAgencies" :key="agency.id" @click="selectAgency(agency.id)">
@@ -16,7 +16,7 @@
                 <v-icon>chevron_right</v-icon>
             </div>
         </div>
-    </div>
+    </v-card>
 </template>
 
 
@@ -46,6 +46,7 @@
         mounted() {
             this.$emit('setCardTitle', 'Transit Alerts');
             this.$emit('setCardIcon', 'warning');
+            this.$emit('setNavItems', []);
         }
 
     }

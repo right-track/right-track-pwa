@@ -1,36 +1,17 @@
 <template>
-    <div>
-        <div class="nav">
-            <div class="nav-item">
-                <a @click="transitAgencyList">
-                    <v-icon class="nav-icon">chevron_left</v-icon>
-                    <span class="nav-label">Agencies</span>
-                </a>
-                <a @click="transitAgencyDivisions" v-if="transitAgency">
-                    <v-icon class="nav-icon">chevron_left</v-icon>
-                    <span class="nav-label">{{ transitAgency.name }}</span>
-                </a>
-                <a @click="transitDivisionLines" v-if="transitDivision">
-                    <v-icon class="nav-icon">chevron_left</v-icon>
-                    <span class="nav-label">{{ transitDivision.name }}</span>
-                </a>
-            </div>
+    <v-card v-if="transitLine" class="event-list">
+        <div class="no-events" v-if="transitLine.eventCount === 0">
+            <span class="no-events-label">Good Service</span>
+            <v-icon class="no-events-icon">check_circle</v-icon>
+            <br />
         </div>
 
-        <div v-if="transitLine" class="event-list">
-            <div class="no-events" v-if="transitLine.eventCount === 0">
-                <span class="no-events-label">Good Service</span>
-                <v-icon class="no-events-icon">check_circle</v-icon>
-                <br />
-            </div>
-
-            <div class="events" v-else>
-                <span class="events-label">{{ transitLine.status }}</span>
-                <span class="events-badge">{{ transitLine.eventCount }}</span>
-                <br />
-            </div>
+        <div class="events" v-else>
+            <span class="events-label">{{ transitLine.status }}</span>
+            <span class="events-badge">{{ transitLine.eventCount }}</span>
+            <br />
         </div>
-    </div>
+    </v-card>
 </template>
 
 
@@ -46,6 +27,30 @@
         if ( vm.transitLine ) {
             vm.$emit('setCardTitle', vm.transitLine.name);
             vm.$emit('setCardIcon', vm.transitLine.eventCount === 0 ? 'check_circle' : 'warning');
+        }
+    }
+
+
+    /**
+     * Set the Nav Items
+     * @param {Vue} vm Vue Instance
+     */
+    function _setNavItems(vm) {
+        if ( vm.transitAgency && vm.transitDivision ) {
+            vm.$emit("setNavItems", [
+                {
+                    click: vm.transitAgencyList,
+                    label: "Agencies"
+                },
+                {
+                    click: vm.transitAgencyDivisions,
+                    label: vm.transitAgency.name
+                },
+                {
+                    click: vm.transitDivisionLines,
+                    label: vm.transitDivision.name
+                }
+            ]);
         }
     }
 
@@ -129,6 +134,7 @@
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
             _transitLineUpdated(this);
+            _setNavItems(this);
         },
 
         // ==== COMPONENT WATCHERS ==== //
@@ -136,6 +142,18 @@
             transitLine: {
                 handler: function() {
                     _transitLineUpdated(this);
+                },
+                deep: true
+            },
+            transitAgency: {
+                handler: function() {
+                    _setNavItems(this);
+                },
+                deep: true
+            },
+            transitDivision: {
+                handler: function() {
+                    _setNavItems(this);
                 },
                 deep: true
             }
@@ -147,17 +165,6 @@
 
 
 <style scoped>
-    .nav {
-        width: 100%;
-        background-color: #eee;
-        padding-left: 5px;
-        margin-bottom: 10px;
-        border-bottom: 1px solid #ccc;
-    }
-    .nav-icon {
-        font-size: 15px;
-    }
-
     .no-events, .events {
         padding: 10px;
     }

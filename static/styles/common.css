@@ -39,6 +39,31 @@ div.v-list a:hover {
     color: var(--v-primary-base) !important;
 }
 
+/**
+ * Transitions
+ */
+.fade-enter-active, .fade-leave-active {
+    transition-property: opacity;
+    transition-duration: 100ms;
+}
+.fade-enter-active {
+    transition-delay: 100ms;
+}
+.fade-enter, .fade-leave-active {
+    opacity: 0
+}
+
+.slide-fade-enter-active {
+    transition: all 250ms ease;
+}
+.slide-fade-leave-active {
+    transition: all 250ms ease;
+}
+.slide-fade-enter, .slide-fade-leave-to {
+    transform: translateY(-50px);
+    opacity: 0;
+}
+
 
 /* SHOW/HIDE ON XS & HIDE/SHOW ON SM/MD/L/XL */
 @media screen and (min-width: 0px) and (max-width: 599px) {

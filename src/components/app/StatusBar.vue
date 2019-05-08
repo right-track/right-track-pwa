@@ -8,16 +8,17 @@
 
             <div class="toolbar-container">
                 <v-slide-y-reverse-transition mode="out-in">
-                    <v-toolbar-title :key="title.text">
+                    <v-toolbar-title :key="title.text" @click="selectMessage(link)">
                         <span class="title" 
-                              :style="{'background-color': title.backgroundColor ? title.backgroundColor : 'transparent', 'color': title.textColor ? title.textColor + ' !important' : 'inherit'}">
+                              :style="{'background-color': title.backgroundColor ? title.backgroundColor : 'transparent', 'color': title.textColor ? title.textColor + ' !important' : 'inherit', 'cursor': link ? 'pointer' : 'auto'}">
                             <v-icon v-if="title.icon" style="font-size: 18px !important">{{ title.icon }}</v-icon> {{ title.text }}
                         </span>
                         <span class="subtitle"
-                              :style="{'background-color': subtitle.backgroundColor ? subtitle.backgroundColor : 'transparent', 'color': subtitle.textColor ? subtitle.textColor + ' !important' : 'inherit'}">
+                              :style="{'background-color': subtitle.backgroundColor ? subtitle.backgroundColor : 'transparent', 'color': subtitle.textColor ? subtitle.textColor + ' !important' : 'inherit', 'cursor': link ? 'pointer' : 'auto'}">
                             {{ subtitle.text }}
                         </span>
-                        <span v-if="badge" class="badge">
+                        <span v-if="badge" class="badge"
+                              :style="{'cursor': link ? 'pointer' : 'auto'}">
                             {{ badge }}
                         </span>
                     </v-toolbar-title>
@@ -29,8 +30,9 @@
 </template>
 
 <script>
-    const SMALL_SCREEN_CUTOFF = 960;
-    
+    const cache = require("@/utils/cache.js");
+
+    const SMALL_SCREEN_CUTOFF = 960;    
     const TIMER_INTERVAL = 7;
     let TIMER = undefined;
 
@@ -82,6 +84,7 @@
                 text: message.subtitle
             }
             vm.badge = undefined;
+            vm.link = undefined;
         }
 
         // Display Transit Line
@@ -110,7 +113,7 @@
                 }
             }
             
-            // Set title and subtitle
+            // Set title, subtitle, badge and link
             vm.title = {
                 text: line,
                 backgroundColor: lineStatus.backgroundColor,
@@ -122,7 +125,17 @@
                 textColor: "#fff"
             }
             vm.badge = lineStatus.events.length > 0 ? lineStatus.events.length : undefined;
-
+            vm.link = lineCode ? 
+                {
+                    name: "alerts",
+                    params: {
+                        agency: vm.$router.currentRoute.params.agency,
+                        transitAgency: vm.transitInfo.agency,
+                        transitDivision: vm.transitInfo.division,
+                        transitLine: lineCode
+                    } 
+                } :
+                undefined;
         }
     }
 
@@ -163,12 +176,18 @@
                     textColor: undefined
                 },
                 badge: undefined,
+                link: undefined,
                 isSmallScreen: window.innerWidth < SMALL_SCREEN_CUTOFF
             }
         },
 
         // ==== COMPONENT METHODS ==== //
         methods: {
+            selectMessage: function(link) {
+                if ( link ) {
+                    this.$router.push(link);
+                }
+            },
             onResize: function() {
                 this.isSmallScreen = window.innerWidth < SMALL_SCREEN_CUTOFF;
             }

@@ -1,40 +1,29 @@
 <template>
-    <div>
-        <div class="nav">
-            <div class="nav-item">
-                <a @click="transitAgencyList">
-                    <v-icon class="nav-icon">chevron_left</v-icon>
-                    <span class="nav-label">Agencies</span>
-                </a>
+    <v-card v-if="feed" class="division-list">
+        <div class="division-wrapper" v-for="division in feed.divisions" :key="division.code" @click="selectDivision(division.code)">
+            <div class="division-icon">
+                <img :src="division.icon" />
+            </div>
+            <div class="division-name">
+                {{ division.name }}
+            </div>
+            <div class="division-badge">
+                <template v-if="division.eventCount === 0">
+                    <span class="badge-good">
+                        <v-icon>check_circle</v-icon>
+                    </span>
+                </template>
+                <template v-else>
+                    <span class="badge-bad">
+                        {{ division.eventCount }}
+                    </span>
+                </template>
+            </div>
+            <div class="division-more">
+                <v-icon>chevron_right</v-icon>
             </div>
         </div>
-
-        <div v-if="feed" class="division-list">
-            <div class="division-wrapper" v-for="division in feed.divisions" :key="division.code" @click="selectDivision(division.code)">
-                <div class="division-icon">
-                    <img :src="division.icon" />
-                </div>
-                <div class="division-name">
-                    {{ division.name }}
-                </div>
-                <div class="division-badge">
-                    <template v-if="division.eventCount === 0">
-                        <span class="badge-good">
-                            <v-icon>check_circle</v-icon>
-                        </span>
-                    </template>
-                    <template v-else>
-                        <span class="badge-bad">
-                            {{ division.eventCount }}
-                        </span>
-                    </template>
-                </div>
-                <div class="division-more">
-                    <v-icon>chevron_right</v-icon>
-                </div>
-            </div>
-        </div>
-    </div>
+    </v-card>
 </template>
 
 
@@ -61,6 +50,20 @@
         if ( vm.feed ) {
             vm.$emit('setCardIcon', vm.feed.eventCount === 0 ? 'check_circle' : 'warning');
         }
+    }
+
+
+    /**
+     * Set the Nav Items
+     * @param {Vue} vm Vue Instance
+     */
+    function _setNavItems(vm) {
+        vm.$emit("setNavItems", [
+            {
+                click: vm.transitAgencyList,
+                label: "Agencies"
+            }
+        ]);
     }
 
 
@@ -105,8 +108,10 @@
 
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
-            _transitAgencyUpdated(this);
-            _transitFeedUpdated(this);
+            let vm = this;
+            _transitAgencyUpdated(vm);
+            _transitFeedUpdated(vm);
+            _setNavItems(vm);
         },
 
         // ==== COMPONENT WATCHERS ==== //
@@ -131,17 +136,6 @@
 
 
 <style scoped>
-    .nav {
-        width: 100%;
-        background-color: #eee;
-        padding-left: 5px;
-        margin-bottom: 10px;
-        border-bottom: 1px solid #ccc;
-    }
-    .nav-icon {
-        font-size: 15px;
-    }
-
     .division-wrapper {
         display: grid;
         grid-template-columns: 1fr 40px 30px;

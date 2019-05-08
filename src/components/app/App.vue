@@ -78,21 +78,23 @@
             <v-container fluid>
                 
                 <!-- ROUTER VIEW CONTENT -->
-                <router-view 
-                    :updateInfo="update"
-                    :transitInfo="transitInfo"
-                    :transitFeed="transitFeed"
-                    @setToolbarMenuItems="onSetToolbarMenuItems"
-                    @setMoreMenuItems="onSetMoreMenuItems" 
-                    @setTitle="onSetTitle" 
-                    @setProgress="onSetProgress"
-                    @setStatusBar="onSetStatusBar"
-                    @updateFavorites="onUpdateFavorites"
-                    @showDialog="onShowDialog" 
-                    @showSnackbar="onShowSnackbar"
-                    @checkUpdate="onCheckUpdate"
-                    @startUpdate="onStartUpdate">
-                </router-view>
+                <transition name="fade">
+                    <router-view 
+                        :updateInfo="update"
+                        :transitInfo="transitInfo"
+                        :transitFeed="transitFeed"
+                        @setToolbarMenuItems="onSetToolbarMenuItems"
+                        @setMoreMenuItems="onSetMoreMenuItems" 
+                        @setTitle="onSetTitle" 
+                        @setProgress="onSetProgress"
+                        @setStatusBar="onSetStatusBar"
+                        @updateFavorites="onUpdateFavorites"
+                        @showDialog="onShowDialog" 
+                        @showSnackbar="onShowSnackbar"
+                        @checkUpdate="onCheckUpdate"
+                        @startUpdate="onStartUpdate">
+                    </router-view>
+                </transition>
 
                 <!-- BOTTOM BAR -->
                 <rt-bottom-bar v-if="bottomBarEnabled" :transitAlertCount="transitAlertCount"></rt-bottom-bar>
@@ -498,7 +500,6 @@
      */
     function _updateNetworkAvailabilityStatus(vm) {
         vm.networkOnline = navigator.onLine;
-        console.log("====> NETWORK ONLINE? " + vm.networkOnline);
     }
 
 

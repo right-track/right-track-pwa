@@ -5,6 +5,43 @@ API SERVER:
     add update notes to /updates/database/agency
     add user management endpoints
 
+    CLIENT SESSIONS:
+         Add column to clients table: client_session_key = random string
+                                      used to initiate a client session
+
+         Create table: client_sessions
+            id: auto increment
+            pid: generated pid (random pid)
+            client_id: clients.id of client
+            user_id: users.id of user, if logged in
+            secret: client generated secret
+            user_agent: UA of client
+            expires: expiration date/time
+
+         Rename: sessions --> user_sessions?
+
+         Add endpoints:
+             GET /clients/{id}/sessionKey {public}
+                 get the clients.client_session_key value
+
+             POST /clients/{id}/session {public}
+                 BODY:
+                     - client_secret: {Client Secret}
+                     - client_hash: {Hash of: client_session_key|client_secret|ua|timestamp
+                     - timestamp: {HTTP Timestamp}
+                 generate a client session, return client session pid
+
+
+    WORKFLOW:
+        1) App/WebApp/etc:
+               Provide API Client ID (name/code of API Client)
+               Generate Client Secret (random string)
+        2) Get Client Session Key from API
+        3) Request Client Session from API
+        4) Use Client Session as Auth Token for API Requests
+               Authorization: Session {Client Session ID|Hash}
+
+
 BUGS:
     After database download, update indicator does not clear
     Alerts: selecting incorrect instance of line (NYSTA)

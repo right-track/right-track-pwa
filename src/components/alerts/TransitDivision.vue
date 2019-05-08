@@ -1,47 +1,32 @@
 <template>
-    <div>
-        <div class="nav">
-            <div class="nav-item">
-                <a @click="transitAgencyList">
-                    <v-icon class="nav-icon">chevron_left</v-icon>
-                    <span class="nav-label">Agencies</span>
-                </a>
-                <a @click="transitAgencyDivisions" v-if="transitAgency">
-                    <v-icon class="nav-icon">chevron_left</v-icon>
-                    <span class="nav-label">{{ transitAgency.name }}</span>
-                </a>
+    <v-card v-if="transitDivision" class="line-list">
+        <div class="line-wrapper" v-for="line in transitDivision.lines" :key="line.code" @click="selectLine(line.code)">
+            <div class="line-name">
+                <span class="line-name-label" 
+                      :style="{'background-color': line.backgroundColor, 'color': line.textColor}">
+                    {{ line.name }}
+                </span>
             </div>
-        </div>
-
-        <div v-if="transitDivision" class="line-list">
-            <div class="line-wrapper" v-for="line in transitDivision.lines" :key="line.code" @click="selectLine(line.code)">
-                <div class="line-name">
-                    <span class="line-name-label" 
-                          :style="{'background-color': line.backgroundColor, 'color': line.textColor}">
-                        {{ line.name }}
+            <div class="line-status v-small-hide" v-if="line.eventCount > 0">
+                {{ line.status }}
+            </div>
+            <div class="line-badge">
+                <template v-if="line.eventCount === 0">
+                    <span class="badge-good">
+                        <v-icon>check_circle</v-icon>
                     </span>
-                </div>
-                <div class="line-status v-small-hide" v-if="line.eventCount > 0">
-                    {{ line.status }}
-                </div>
-                <div class="line-badge">
-                    <template v-if="line.eventCount === 0">
-                        <span class="badge-good">
-                            <v-icon>check_circle</v-icon>
-                        </span>
-                    </template>
-                    <template v-else>
-                        <span class="badge-bad">
-                            {{ line.eventCount }}
-                        </span>
-                    </template>
-                </div>
-                <div class="line-more">
-                    <v-icon>chevron_right</v-icon>
-                </div>
+                </template>
+                <template v-else>
+                    <span class="badge-bad">
+                        {{ line.eventCount }}
+                    </span>
+                </template>
+            </div>
+            <div class="line-more">
+                <v-icon>chevron_right</v-icon>
             </div>
         </div>
-    </div>
+    </v-card>
 </template>
 
 
@@ -57,6 +42,25 @@
         if ( vm.transitDivision ) {
             vm.$emit('setCardTitle', vm.transitDivision.name);
             vm.$emit('setCardIcon', vm.transitDivision.eventCount === 0 ? 'check_circle' : 'warning');
+        }
+    }
+
+    /**
+     * Set the Nav Items
+     * @param {Vue} vm Vue Instance
+     */
+    function _setNavItems(vm) {
+        if ( vm.transitAgency ) {
+            vm.$emit("setNavItems", [
+                {
+                    click: vm.transitAgencyList,
+                    label: "Agencies"
+                },
+                {
+                    click: vm.transitAgencyDivisions,
+                    label: vm.transitAgency.name
+                }
+            ]);
         }
     }
 
@@ -124,7 +128,9 @@
 
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
-            _transitDivisionUpdated(this);
+            let vm = this;
+            _transitDivisionUpdated(vm);
+            _setNavItems(vm);
         },
 
         // ==== COMPONENT WATCHERS ==== //
@@ -132,6 +138,12 @@
             transitDivision: {
                 handler: function() {
                     _transitDivisionUpdated(this);
+                },
+                deep: true
+            },
+            transitAgency: {
+                handler: function() {
+                    _setNavItems(this);
                 },
                 deep: true
             }
@@ -143,17 +155,6 @@
 
 
 <style scoped>
-    .nav {
-        width: 100%;
-        background-color: #eee;
-        padding-left: 5px;
-        margin-bottom: 10px;
-        border-bottom: 1px solid #ccc;
-    }
-    .nav-icon {
-        font-size: 15px;
-    }
-
     .line-wrapper {
         display: grid;
         grid-template-columns: 1fr 40px 30px;

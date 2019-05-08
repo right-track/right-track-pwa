@@ -1,13 +1,13 @@
 <template>
     <v-slide-y-transition>
         <v-alert 
-            v-if="visible"
-            icon="cloud_off" 
-            value="true"
-            dismissible="true"
+            id="offline-alert"
             class="offline-alert"
-            v-resize="onResize"
-            :style="{'padding-left': drawerVisible && !isSmallScreen ? '275px' : '25px'}">
+            icon="cloud_off" 
+            :dismissible="true"
+            value="true"
+            v-if="visible"
+            v-resize="onResize">
             
             <span class="message">
                 <strong>Offline Mode</strong>&nbsp;&nbsp;For the most recent status information, make sure you have an active internet connection.
@@ -21,6 +21,26 @@
 <script>
     const SMALL_SCREEN_CUTOFF = 960;
 
+
+    /**
+     * Set the position of the Offline alert
+     * - based on height of toolbar and if the 
+     *   navigation drawer is always visible
+     * @param {[type]} vm [description]
+     */
+    function _setPosition(vm) {
+        if ( vm.visible ) {
+            let isSmallScreen = window.innerWidth < SMALL_SCREEN_CUTOFF;
+            let top = document.getElementById("app-toolbar").offsetHeight - 5;
+            let paddingLeft = vm.drawerVisible && !isSmallScreen ? 275 : 25;
+
+            let el = document.getElementById("offline-alert");
+            el.style.top = top + "px";
+            el.style["padding-left"] = paddingLeft + "px";
+        }
+    }
+
+
     module.exports = {
 
         // ==== COMPONENT PROPS ==== //
@@ -33,17 +53,18 @@
             }
         },
 
-        // ==== COMPONENT DATA ==== //
-        data: function() {
-            return {
-                isSmallScreen: window.innerWidth < SMALL_SCREEN_CUTOFF
-            }
+        // ==== COMPONENT MOUNTED ==== //
+        mounted() {
+            let vm = this;
+            vm.$nextTick(function() {
+                _setPosition(vm);
+            });
         },
 
         // ==== COMPONENT METHODS ==== //
         methods: {
             onResize: function() {
-                this.isSmallScreen = window.innerWidth < SMALL_SCREEN_CUTOFF;
+                _setPosition(this);
             }
         }
 
@@ -62,16 +83,6 @@
         padding-bottom: 2px;
         background-color: #b0bec5 !important;
         z-index: 1 !important;
-    }
-    @media screen and (min-width: 600px) and (max-width: 959px) {
-        .offline-alert {
-            top: 42px;
-        }
-    }
-    @media screen and (min-width: 960px) {
-        .offline-alert {
-            top: 60px;
-        }
     }
     .message {
         color: rgba(0, 0, 0, 0.5) !important;

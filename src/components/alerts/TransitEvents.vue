@@ -1,6 +1,5 @@
 <template>
     <div class="container" v-if="transitEvents && transitEvents.length > 0">
-        
         <v-card class="event-card" v-for="(event, index) in transitEvents" :key="index">
 
             <v-card-title class="secondary-bg">
@@ -12,8 +11,6 @@
             <v-card-text class="event-details" v-html="event.details"></v-card-text>
 
         </v-card>
-
-
     </div>
 </template>
 

@@ -2,7 +2,7 @@
     <v-container class="container">
 
         <!-- ALERTS CARD -->
-        <v-card>
+        <v-card id="header-card">
             <v-card-title class="secondary-bg">
                 <span class="headline card-title">
                     <v-icon v-if="icon">{{ icon }}</v-icon>
@@ -14,47 +14,43 @@
                     <v-icon style="font-size: 20px">update</v-icon>&nbsp;&nbsp;{{ transitFeedUpdated }}
                 </span>
             </v-card-title>
-            
-            <rt-transit-list 
+            <div class="nav">
+                <div v-for="(item, index) in nav" :key="'nav-item-' + index" class="nav-item">
+                    <a @click="item.click">
+                        <v-icon class="nav-icon">chevron_left</v-icon>
+                        <span class="nav-label">{{ item.label }}</span>
+                    </a>
+                </div>
+            </div>
+        </v-card>
+
+        <div id="header-card-bottom"></div>
+
+        <transition name="fade" mode="out-in">
+            <component 
+                :is="currentComponent"
                 :transitAgencies="transitAgencies"
-                @setCardTitle="onSetCardTitle" 
-                @setCardIcon="onSetCardIcon" 
-                v-if="!transitAgencyId">
-            </rt-transit-list>
-            <rt-transit-agency 
-                :transitAgency="transitAgency"
-                :feed="transitFeed"
-                @setCardTitle="onSetCardTitle" 
-                @setCardIcon="onSetCardIcon" 
-                v-if="transitAgencyId && !transitDivisionCode && !transitLineCode">
-            </rt-transit-agency>
-            <rt-transit-division 
-                :transitAgency="transitAgency"
-                :transitDivision="transitDivision"
-                :feed="transitFeed"
-                @setCardTitle="onSetCardTitle" 
-                @setCardIcon="onSetCardIcon" 
-                v-if="transitAgencyId && transitDivisionCode && !transitLineCode">
-            </rt-transit-division>
-            <rt-transit-line 
                 :transitAgency="transitAgency"
                 :transitDivision="transitDivision"
                 :transitLine="transitLine"
                 :feed="transitFeed"
+                :key="currentComponent"
                 @setCardTitle="onSetCardTitle" 
                 @setCardIcon="onSetCardIcon" 
-                v-if="transitAgencyId && transitDivisionCode && transitLineCode">
-            </rt-transit-line>
-        </v-card>
+                @setNavItems="onSetNavItems">
+            </component>
+        </transition>
 
-        <rt-transit-events
-            :transitAgency="transitAgency"
-            :transitDivision="transitDivision"
-            :transitLine="transitLine"
-            :transitEvents="transitEvents"
-            :feed="transitFeed"
-            v-if="transitAgencyId && transitDivisionCode && transitLineCode">
-        </rt-transit-events>
+        <transition name="slide-fade">
+            <rt-transit-events
+                :transitAgency="transitAgency"
+                :transitDivision="transitDivision"
+                :transitLine="transitLine"
+                :transitEvents="transitEvents"
+                :feed="transitFeed"
+                v-if="transitAgencyId && transitDivisionCode && transitLineCode">
+            </rt-transit-events>
+        </transition>
 
     </v-container>
 </template>
@@ -79,6 +75,22 @@
         vm.transitAgencyId = vm.$router.currentRoute.params.transitAgency;
         vm.transitDivisionCode = vm.$router.currentRoute.params.transitDivision;
         vm.transitLineCode = vm.$router.currentRoute.params.transitLine;
+
+        if ( !vm.transitAgencyId ) {
+            vm.currentComponent = "rt-transit-list";
+        }
+        else if ( vm.transitAgencyId && !vm.transitDivisionCode && !vm.transitLineCode ) {
+            vm.currentComponent = "rt-transit-agency";
+        }
+        else if ( vm.transitAgencyId && vm.transitDivisionCode && !vm.transitLineCode ) {
+            vm.currentComponent = "rt-transit-division";
+        }
+        else if ( vm.transitAgencyId && vm.transitDivisionCode && vm.transitLineCode ) {
+            vm.currentComponent = "rt-transit-line";
+        }
+        else {
+            vm.currentComponent = undefined;
+        }
     }
 
 
@@ -87,7 +99,6 @@
      * @param  {Vue} vm Vue Instance
      */
     function _getTransitAgencies(vm) {
-        console.log("==> GET TRANSIT AGENCIES");
         cache.getTransitAgencies(function(err, transitAgencies) {
             if ( err ) {
                 vm.$emit('showSnackbar', 'Could not load transit agencies. Please try again later.');
@@ -223,10 +234,12 @@
                 transitAgencyId: undefined,
                 transitDivisionCode: undefined,
                 transitLineCode: undefined,
+                transitAgencies: [],
                 title: undefined,
                 icon: undefined,
                 img: undefined,
-                transitAgencies: [],
+                nav: [],
+                currentComponent: undefined,
                 transitAgency: undefined,
                 transitDivision: undefined,
                 transitLine: undefined,
@@ -252,6 +265,9 @@
             },
             onSetCardIcon(icon, type) {
                 this.icon = icon;
+            },
+            onSetNavItems(items) {
+                this.nav = items;
             }
         },
 
@@ -321,13 +337,39 @@
     .container {
         padding-bottom: 80px;
     }
-    .card-title {
+
+    #header-card {
+        z-index: 10;
+        margin-bottom: -11px;
+    }
+    #header-card .card-title {
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
         display: inherit;
     }
-    .v-card-text {
-        padding: 0;
+
+    #header-card-bottom {
+        height: 4px;
+        background-color: var(--v-primary-base);
+        z-index: 11;
+    }
+
+    .rt-transit-events {
+        z-index: 9;
+    }
+    
+    .nav {
+        width: 100%;
+        background-color: #eee;
+        padding-left: 5px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #ccc;
+    }
+    .nav-item {
+        display: inline;
+    }
+    .nav-icon {
+        font-size: 15px;
     }
 </style>

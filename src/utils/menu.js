@@ -150,14 +150,20 @@ const MENU = function(vm) {
             type: "item",
             title: "Help & Feedback",
             icon: "help",
-            page: "help"
+            page: "help",
+            params: {
+                agency: vm.$route.params.agency
+            }
         },
         {
             key: 29,
             type: "item",
             title: "Settings",
             icon: "settings",
-            page: "settings"
+            page: "settings",
+            params: {
+                agency: vm.$route.params.agency
+            }
         },
         {
             key: 30,

@@ -3,6 +3,8 @@ import Router from "vue-router"
 
 // Page content
 import About from "@/components/About.vue"
+import Help from "@/components/Help.vue"
+import Settings from "@/components/Settings.vue"
 import Alerts from "@/components/alerts/Alerts.vue"
 import Register from "@/components/auth/Register.vue"
 import Login from "@/components/auth/Login.vue"
@@ -58,6 +60,16 @@ var routes = [
         component: About
     },
     {
+        path: "/:agency/help",
+        name: "help",
+        component: Help
+    },
+    {
+        path: "/:agency/settings",
+        name: "settings",
+        component: Settings
+    },
+    {
         path: "/:agency/",
         name: "favorites",
         component: Favorites
@@ -97,5 +109,8 @@ var routes = [
 
 export default new Router({
     mode: "history",
-    routes: routes
+    routes: routes,
+    scrollBehavior (to, from, savedPosition) {
+        return savedPosition ? savedPosition : {x: 0, y: 0};
+    }
 });

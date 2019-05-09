@@ -3,9 +3,8 @@
 
         <!-- ABOUT CARD -->
         <v-card>
-            <v-card-title class="secondary-bg">
-                <v-icon large left>info</v-icon> 
-                <h2>About</h2>
+            <v-card-title class="headline secondary-bg">
+                <v-icon>info</v-icon>&nbsp;&nbsp;About
             </v-card-title>
 
             <v-card-text>
@@ -186,9 +185,6 @@
 
 
 <style scoped>
-    h2 {
-        margin-bottom: 5px;
-    }
     ul {
         margin-bottom: 10px;
     }

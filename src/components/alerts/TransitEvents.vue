@@ -1,5 +1,5 @@
 <template>
-    <div class="container" v-if="transitEvents && transitEvents.length > 0">
+    <div v-if="transitEvents && transitEvents.length > 0">
         <v-card class="event-card" v-for="(event, index) in transitEvents" :key="index">
 
             <v-card-title class="secondary-bg">

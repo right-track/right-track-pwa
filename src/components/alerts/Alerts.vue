@@ -1,13 +1,17 @@
 <template>
-    <v-container class="container">
+    <v-container id="container" class="container">
 
-        <!-- ALERTS CARD -->
+        <!-- Alerts Header -->
         <v-card id="header-card">
             <v-card-title class="secondary-bg">
                 <span class="headline card-title">
-                    <v-icon v-if="icon">{{ icon }}</v-icon>
-                    <img class="icon-img" :src="img" v-if="img" />
-                    &nbsp;&nbsp;{{ title }}
+                    <v-fade-transition hide-on-leave>
+                        <v-icon v-if="icon" :key="icon">{{ icon }}</v-icon>
+                    </v-fade-transition>
+                    &nbsp;&nbsp;
+                    <v-fade-transition hide-on-leave>        
+                        <span :key="title">{{ title }}</span>
+                    </v-fade-transition>
                 </span>
                 <v-spacer></v-spacer>
                 <span class="subheading v-small-hide" v-if="transitFeedUpdated">
@@ -24,10 +28,11 @@
             </div>
         </v-card>
 
-        <div id="header-card-bottom"></div>
 
+        <!-- Current Component -->
         <transition name="fade" mode="out-in">
             <component 
+                id="current-component"
                 :is="currentComponent"
                 :transitAgencies="transitAgencies"
                 :transitAgency="transitAgency"
@@ -41,15 +46,20 @@
             </component>
         </transition>
 
+
+        <!-- Events List -->
         <transition name="slide-fade">
-            <rt-transit-events
-                :transitAgency="transitAgency"
-                :transitDivision="transitDivision"
-                :transitLine="transitLine"
-                :transitEvents="transitEvents"
-                :feed="transitFeed"
-                v-if="transitAgencyId && transitDivisionCode && transitLineCode">
-            </rt-transit-events>
+            <div id="rt-transit-events-wrapper"
+                 v-if="transitAgencyId && transitDivisionCode && transitLineCode">
+                <rt-transit-events
+                    id="rt-transit-events"
+                    :transitAgency="transitAgency"
+                    :transitDivision="transitDivision"
+                    :transitLine="transitLine"
+                    :transitEvents="transitEvents"
+                    :feed="transitFeed">
+                </rt-transit-events>
+            </div>
         </transition>
 
     </v-container>
@@ -150,16 +160,37 @@
     function _setTransitLine(vm) {
         vm.transitLine = undefined;
         vm.transitEvents = undefined;
+        _setHeight(vm);
         if ( vm.transitDivisionCode && vm.transitLineCode && vm.transitFeed ) {
             for ( let i = 0; i < vm.transitFeed.divisions.length; i++ ) {
                 for ( let j = 0; j < vm.transitFeed.divisions[i].lines.length; j++ ) {
                     if ( vm.transitFeed.divisions[i].lines[j].code === vm.transitLineCode ) {
                         vm.transitLine = vm.transitFeed.divisions[i].lines[j];
                         vm.transitEvents = vm.transitLine.events;
+                        _setHeight(vm);
                     }
                 }
             }
         }
+    }
+
+
+    /**
+     * Set the height of the page container
+     * - based on height of events list, if present
+     * @param {Vue} vm Vue Instance
+     */
+    function _setHeight(vm) {
+        vm.$nextTick(function() {
+            let cont = document.getElementById("container");
+            let height = "auto";
+            if ( vm.transitLineCode ) {
+                let events = document.getElementById("rt-transit-events");
+                height = events.offsetHeight + 300 + "px";
+            }
+            console.log("SETTING HEIGHT: " + height);
+            cont.style.height = height;
+        });
     }
 
 
@@ -304,6 +335,7 @@
         watch: {
             $route: function(to, from) {
                 _setParams(this);
+                _setHeight(this);
                 if ( !this.transitAgencyId ) {
                     this.transitFeed = undefined;
                     this.transitFeedUpdated = undefined;
@@ -339,9 +371,9 @@
     }
 
     #header-card {
-        z-index: 10;
-        margin-bottom: -11px;
+        z-index: 2;
     }
+
     #header-card .card-title {
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -349,21 +381,28 @@
         display: inherit;
     }
 
-    #header-card-bottom {
-        height: 4px;
-        background-color: var(--v-primary-base);
-        z-index: 11;
-    }
-
-    .rt-transit-events {
-        z-index: 9;
+    #current-component {
+        z-index: 3;
     }
     
+    #rt-transit-events-wrapper {
+        position: absolute;
+        top: 200px;
+        left: 0;
+        width: 100%;
+        padding: 0 40px;
+        z-index: 1;
+    }
+    #rt-transit-events {
+        max-width: 600px;
+        margin: 0 auto;
+        height: auto;
+    }
+
     .nav {
         width: 100%;
         background-color: #eee;
         padding-left: 5px;
-        margin-bottom: 10px;
         border-bottom: 1px solid #ccc;
     }
     .nav-item {

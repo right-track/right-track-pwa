@@ -9,8 +9,7 @@
 
             <v-card-text>
 
-                <p>App Settings Here</p>
-                <p>User Settings Here</p>
+                <p class="subheading">Coming Soon...</p>
 
             </v-card-text>
         </v-card>

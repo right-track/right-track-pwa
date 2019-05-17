@@ -130,7 +130,7 @@
      */
     function _getStops(vm, callback) {
         let agencyID = vm.$route.params.agency;
-        let db = DB.getDB(agencyID, function(err, db) {
+        DB.getDB(agencyID, function(err, db) {
             if ( err ) {
                 console.error(err);
                 this.$emit('showSnackbar', 'Could not get stops.  Please try again later.');
@@ -147,6 +147,70 @@
         });
     }
 
+
+    /**
+     * Get the Stop for the specified agency and ID
+     * @param  {string}   agency   Agency ID Code
+     * @param  {string}   id       Stop ID
+     * @param  {Function} callback Callback function(err, stop)
+     */
+    function _getStop(agency, id, callback) {
+        DB.getDB(agency, function(err, db) {
+            if ( err ) {
+                return callback(err);
+            }
+            core.query.stops.getStop(db, id, function(err, stop) {
+                if ( err ) {
+                    return callback(err);
+                }
+                return callback(null, stop);
+            });
+        });
+    }
+
+
+    /**
+     * Set the default stop and date/time values
+     * - Based on the query params
+     * @param {Vue} vm Vue Instance
+     */
+    function _setParams(vm) {
+
+        // Get Query Params
+        let agency = vm.$route.params.agency;
+        let origin = vm.$route.query.origin;
+        let destination = vm.$route.query.destination;
+        let date = vm.$route.query.date;
+        let time = vm.$route.query.time;
+
+        // Set Origin
+        if ( origin ) {
+            _getStop(agency, origin, function(err, stop) {
+                if ( !err ) {
+                    vm.origin = stop;
+                }
+            });
+        }
+
+        // Set Destination
+        if ( destination ) {
+            _getStop(agency, destination, function(err, stop) {
+                if ( !err ) {
+                    vm.destination = stop;
+                }
+            });
+        }
+
+        // Set Default Date and Time
+        date = date ? date : DateTime.now().getDateInt();
+        time = time ? time : DateTime.now().getTimeGTFS();
+
+        // Set the Date and Time
+        _setDateTime(vm, date, time);
+
+    }
+
+
     /**
      * Set the Date and Time of the departure and Date/Time Pickers
      * @param {Vue} vm     Vue Instance
@@ -154,8 +218,6 @@
      * @param {int} [time] Initial Time (HHmm)
      */
     function _setDateTime(vm, date, time) {
-        console.log("SET DATE TIME: " + date + " / " + time);
-
         vm.departure.datetime = !date || !time ? DateTime.now() : DateTime.create(time, date);
         vm.departure.date = vm.departure.datetime.getDateReadable(true);
         vm.departure.time = vm.departure.datetime.getTimeReadable();
@@ -164,12 +226,6 @@
         let t = vm.departure.datetime.getTimeGTFS();
         vm.dateDialogProps.date = d.substring(0, 4) + "-" + d.substring(4, 6) + "-" + d.substring(6, 8);
         vm.timeDialogProps.time = t.substring(0, 5);
-
-        console.log(JSON.stringify(vm.departure.datetime));
-        console.log(vm.departure.date);
-        console.log(vm.departure.time);
-        console.log(vm.dateDialogProps.date);
-        console.log(vm.timeDialogProps.time);
     }
 
     module.exports = {
@@ -320,13 +376,11 @@
                             agency: agencyId,
                             origin: originId,
                             destination: destinationId,
-                            date: departure.date,
-                            time: departure.time
+                            date: departure.getDateInt(),
+                            time: departure.getTimeInt()
                         }
                     });
-                }
-                
-
+                } 
             }
 
         },
@@ -334,10 +388,10 @@
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
             let vm = this;
+            _setParams(vm);
             _getStops(vm, function(stops) {
                 vm.stationDialogProps.stops = stops;
             });
-            _setDateTime(vm);
         }
 
     }

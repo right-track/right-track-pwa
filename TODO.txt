@@ -1,83 +1,97 @@
 TODO:
 
+Find a general profile photo
+    GitHub, Slack x3, Cornell Email, Gravatar, Google
+
+DB BUILDER:
+
+    MNR:
+    SLE missing trip information, agency information
+    MNR peak time from GTFS file
+    reduce database file size by removing old schedules
+        service ids to remove:
+            SELECT service_id FROM gtfs_calendar_dates WHERE service_id IN(SELECT service_id FROM gtfs_calendar_dates WHERE date < 20190517) AND service_id NOT IN (SELECT service_id FROM gtfs_calendar_dates WHERE date >= 20190517) AND exception_type = 1;
+
+    LIRR: 
+    create trip_short_name
+    use old IDs for stop URLs
+
+
+
 API SERVER:
-    intercept all OPTIONS request and return CORS response
-    add update notes to /updates/database/agency
+    add feedback endpoints
     add user management endpoints
+    database download: download files as zip or sqlite db
 
     CLIENT SESSIONS:
-         Add column to clients table: client_session_key = random string
-                                      used to initiate a client session
+         Add column to clients table: 
+            client_session_key = random string
+                used to initiate a client session
+            allow_sessions = boolean
+                used to allow API access through client sessions
 
          Create table: client_sessions
             id: auto increment
             pid: generated pid (random pid)
+            user_session_id: session.id of user session, if logged in
             client_id: clients.id of client
-            user_id: users.id of user, if logged in
-            secret: client generated secret
-            user_agent: UA of client
+            client_secret: client generated secret
+            client_user_agent: UA of client
             expires: expiration date/time
 
          Rename: sessions --> user_sessions?
 
          Add endpoints:
-             GET /clients/{id}/sessionKey {public}
-                 get the clients.client_session_key value
+            GET /clients/{id}/sessionKey {public}
+                get the clients.client_session_key value
 
-             POST /clients/{id}/session {public}
-                 BODY:
-                     - client_secret: {Client Secret}
-                     - client_hash: {Hash of: client_session_key|client_secret|ua|timestamp
-                     - timestamp: {HTTP Timestamp}
-                 generate a client session, return client session pid
+            POST /clients/{id}/session {public}
+                X-Session-Token: {User Session PID}, if logged in
+                BODY:
+                    - client_secret: {Client Secret}
+                Generate a client session, return client session pid
 
 
     WORKFLOW:
         1) App/WebApp/etc:
-               Provide API Client ID (name/code of API Client)
-               Generate Client Secret (random string)
+                Provide API Client ID (name/code of API Client)
+                Generate Client Secret (random string)
         2) Get Client Session Key from API
+                Store Client Session Key in browser cache
         3) Request Client Session from API
-        4) Use Client Session as Auth Token for API Requests
-               Authorization: Session {Client Session ID|Hash}
+                Store Client Session ID in browser cache
+        4) Generate a HASH to use as an Auth Token
+                Hash(Client Session Key|Client Session ID|Client Secret|API Path|User Session PID|Timestamp)
+        5) Use Client Session as Auth Token for API Requests
+                Authorization: Session {Hash}
+                X-Authorization-Timestamp: {HTTP Timestamp}
+                X-Session-Token: {User Session PID}, if logged in
 
 
 BUGS:
-    After database download, update indicator does not clear
     Alerts: selecting incorrect instance of line (NYSTA)
 
 
 PAGES:
     
     Help/Feedback:
-        create page
         feedback form
-        information on clearing app cache
 
     Settings:
-        create page
         trip search settings
         user management
 
     Favorites:
         reorder favorites
         remove favorites
+        context menus
 
     Trip:
-        More Menu
-            - origin, destination, layover Stop information (website, map, station page)
         display estimated departure and arrival times for delayed segments
+
+    Trip Details:
+        Display pickup / drop off type
 
 
 UTILS:
-
-    api:
-        callback doesn't seem to be getting called when request fails due to 
-            no network availability
-    
-
-
-API ACCESS:
-    
-    create proxy server to access the API server
     

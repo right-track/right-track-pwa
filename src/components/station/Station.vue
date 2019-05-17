@@ -225,6 +225,22 @@
                 function: function() {
                     window.location = "https://www.google.com/maps/search/?api=1&query=" + vm.stop.lat + "," + vm.stop.lon;
                 }
+            },
+            {
+                key: 3,
+                type: "item",
+                title: "Start Trip Search",
+                function: function() {
+                    vm.$router.push({
+                        name: 'trips',
+                        params: {
+                            agency: vm.$router.currentRoute.params.agency,
+                        },
+                        query: {
+                            origin: vm.stop.id,
+                        }
+                    });
+                }
             }
         ];
         vm.$emit('setMoreMenuItems', moreMenuItems);

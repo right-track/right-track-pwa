@@ -63,6 +63,28 @@
     let TIMER_ID = undefined;
 
 
+
+    /**
+     * Get the Stop for the specified agency and id
+     * @param  {string}   agency   Agency ID code
+     * @param  {string}   id       Stop Id
+     * @param  {Function} callback Callback function(err, stop)
+     */
+    function _getStop(agency, id, callback) {
+        DB.getDB(agency, function(err, db) {
+            if ( err ) {
+                return callback(err);
+            }
+            core.query.stops.getStop(db, id, function(err, stop) {
+                if ( err ) {
+                    return callback(err);
+                }
+                return callback(null, stop);
+            });
+        });
+    }
+
+
     /**
      * Update the Toolbar Menu Items
      * @param  {Vue} vm    Vue Instance
@@ -87,9 +109,8 @@
      * @param  {Vue} vm    Vue Instance
      */
     function _updateMoreMenu(vm) {
-        let moreMenuItems = [
+        let baseItems = [
             {
-                key: 1,
                 type: "item",
                 title: "Refresh Status",
                 function: function() {
@@ -97,24 +118,179 @@
                 }
             },
             {
-                key: 2,
                 type: "item",
                 title: "Reverse Trip",
                 function: function() {
-                    console.log("Reverse Trip");
+                    if ( vm.isNextDeparture ) {
+                        vm.$router.push({
+                            name: 'trip',
+                            params: {
+                                agency: vm.$router.currentRoute.params.agency,
+                                origin: vm.destination.id,
+                                destination: vm.origin.id
+                            }
+                        });
+                    }
+                    else {
+                        vm.$router.push({
+                            name: 'tripDT',
+                            params: {
+                                agency: vm.$router.currentRoute.params.agency,
+                                origin: vm.destination.id,
+                                destination: vm.origin.id,
+                                date: vm.departure.getDateInt(),
+                                time: vm.departure.getTimeInt()
+                            }
+                        });
+                    }
                 }
             },
             {
-                key: 3,
                 type: "item",
                 title: "Change Date/Time",
                 function: function() {
-                    console.log("Change Date/Time");
+                    vm.$router.push({
+                        name: 'trips',
+                        params: {
+                            agency: vm.$router.currentRoute.params.agency
+                        },
+                        query: {
+                            origin: vm.origin.id,
+                            destination: vm.destination.id,
+                            date: vm.departure.getDateInt(),
+                            time: vm.departure.getTimeInt()
+                        }
+                    });
                 }
             }
         ]
-        vm.$emit('setMoreMenuItems', moreMenuItems);
+
+        // Build Origin and Destination Items
+        let originItems = _buildStopMenuItems(vm, vm.origin);
+        let destinationItems = _buildStopMenuItems(vm, vm.destination);
+
+        // Build Transfer Items, if provided
+        let transferItems = [];
+        let count = 0;
+        let max = 0;
+        if ( vm.statusStopIds && vm.statusStopIds.length > 0 ) {
+            
+            // Get Transfer Stops
+            let transfers = [];
+            for ( let i = 0; i < vm.statusStopIds.length; i++ ) {
+                if ( vm.statusStopIds[i] !== vm.origin.id ) {
+                    transfers.push(vm.statusStopIds[i]);
+                }
+            }
+            
+            // Build Transfer Stop Items
+            if ( transfers.length > 0 ) {
+                count = 0;
+                max = transfers.length;
+                for ( let i = 0; i < transfers.length; i++ ) {
+                    _getStop(vm.$router.currentRoute.params.agency, transfers[i], function(err, stop) {
+                        _finishTransfer(stop);
+                    });
+                }
+            }
+            else {
+                _finish();
+            }
+
+        }
+        else {
+            _finish();
+        }
+
+
+        /**
+         * Finish building the Transfer Stop Items
+         * @param  {Stop} stop Transfer Stop
+         */
+        function _finishTransfer(stop) {
+            count++;
+            let _transferItems = _buildStopMenuItems(vm, stop);
+            transferItems = transferItems.concat(_transferItems);
+            if ( count >= max ) {
+                _finish();
+            }
+        }
+
+        /**
+         * Finish setting up the menu items
+         */
+        function _finish() {
+            let menuItems = _buildMenuItems(baseItems, originItems, transferItems, destinationItems);
+            console.log(JSON.stringify(menuItems));
+            vm.$emit('setMoreMenuItems', menuItems)
+        }
     }
+
+    /**
+     * Build Menu Items for the specified Stop
+     * @param  {Vue} vm    Vue Instance
+     * @param  {Stop} stop Stop
+     * @return {Array}     Array of Menu Items
+     */
+    function _buildStopMenuItems(vm, stop) {
+        let items = [];
+        if ( stop ) {
+            items.push({type: "divider", title: stop.name});
+            if ( stop.statusId && stop.statusId !== "-1" ) {
+                items.push({
+                    type: "item",
+                    title: "View Station Table",
+                    function: function() {
+                        vm.$router.push({
+                            name: 'station',
+                            params: {
+                                agency: vm.$router.currentRoute.params.agency,
+                                stop: stop.id
+                            }
+                        });
+                    }
+                });
+            }
+            items.push({
+                type: "item",
+                title: "Station Information",
+                function: function() {
+                    window.location = stop.url;
+                }
+            });
+            items.push({
+                type: "item",
+                title: "Station Map",
+                function: function() {
+                    window.location = "https://www.google.com/maps/search/?api=1&query=" + stop.lat + "," + stop.lon;
+                }
+            });
+        }
+        return items;
+    }
+
+    /**
+     * Combine the specified menu items (assign keys)
+     * @param {Array} ... Array(s) of menu items
+     * @return {Array}    Combined array of menu items with keys
+     */
+    function _buildMenuItems() {
+        let menuItems = [];
+        let index = 1;
+        for ( let i = 0; i < arguments.length; i++ ) {
+            let items = arguments[i];
+            if ( items ) {
+                for ( let j = 0; j < items.length; j++ ) {
+                    items[j].key = index;
+                    index++;
+                }
+                menuItems = menuItems.concat(items);
+            }
+        }
+        return menuItems;
+    }
+
+
 
     /**
      * Check if the current Trip is a saved favorite
@@ -152,48 +328,40 @@
         vm.agencyId = agencyId;
         vm.$emit('setAgencyId', vm.agencyId); 
 
-        // Get Database
-        DB.getDB(vm.agencyId, function(err, db) {
-            if ( err ) {
-                console.log(err);
-            }
+        // Get Origin and Destination
+        _getStop(agencyId, originId, function(err, origin) {
+            _getStop(agencyId, destinationId, function(err, destination) {
+                if ( !origin || !destination ) {
+                    vm.results = [];
+                    vm.$emit('showSnackbar', {
+                        duration: 0,
+                        message: 'Unknown Origin or Destination Stop.  Please select another Trip.',
+                        dismiss: 'Trips',
+                        onDismiss: function() {
+                            vm.$router.push({
+                                name: "trips",
+                                agency: vm.$router.currentRoute.params.agency
+                            });
+                        }
+                    });
+                }
 
-            // Get Origin and Destination
-            core.query.stops.getStop(db, originId, function(err, origin) {
-                core.query.stops.getStop(db, destinationId, function(err, destination) {
-                    if ( !origin || !destination ) {
-                        vm.results = [];
-                        vm.$emit('showSnackbar', {
-                            duration: 0,
-                            message: 'Unknown Origin or Destination Stop.  Please select another Trip.',
-                            dismiss: 'Trips',
-                            onDismiss: function() {
-                                vm.$router.push({
-                                    name: "trips",
-                                    agency: vm.$router.currentRoute.params.agency
-                                });
-                            }
-                        });
-                    }
+                // Set the Stops
+                vm.origin = origin;
+                vm.destination = destination;
 
-                    // Set the Stops
-                    vm.origin = origin;
-                    vm.destination = destination;
+                // Update the Title
+                vm.$emit('setTitle', vm.origin.name + " to " + vm.destination.name);
 
-                    // Update the Title
-                    vm.$emit('setTitle', vm.origin.name + " to " + vm.destination.name);
+                // Update the Favorite
+                _updateFavorites(vm);
 
-                    // Update the Favorite
-                    _updateFavorites(vm);
+                // Update the Menu Items
+                _updateToolbarMenu(vm);
+                _updateMoreMenu(vm);
 
-                    // Update the Menu Items
-                    _updateToolbarMenu(vm);
-                    _updateMoreMenu(vm);
-
-                    // Update the Results
-                    _updateResults(vm);
-
-                });
+                // Update the Results
+                _updateResults(vm);
             });
         });
     }
@@ -258,6 +426,9 @@
             }
         }
 
+        // Update the More Menu Items
+        _updateMoreMenu(vm);
+
         // Get and update Status Info (if departure within 6 hours of now)
         if ( Math.abs(Date.now() - vm.departure.toTimestamp()) < (6*60*60*1000) ) {
 
@@ -303,7 +474,9 @@
             count++;
             if ( count >= max ) {
                 vm.updatingStatus = false;
-                _parseResults(vm, true);
+                vm.$nextTick(function() {
+                    _parseResults(vm, true);
+                });
             }
         }
     }
@@ -359,11 +532,6 @@
             let now = DateTime.now();
             if ( vm.isNextDeparture ) vm.departure = now;
 
-            console.log("===> PARSING TRIP RESULTS [" + vm.departure.toString() + "]...");
-
-            // Set the Highlight Index
-            _setHighlightIndex(vm);
-
             // Parse each Trip Result
             for ( let i = 0; i < vm.results.length; i++ ) {
                 let d = DateTime.create(vm.results[i].origin.departure.time, vm.results[i].origin.departure.date);
@@ -373,7 +541,8 @@
                 vm.$set(vm.results[i], "departs", m);
             }
 
-            // console.log(vm.results[vm.resultsHighlightIndex].departs);
+            // Set the Highlight Index
+            _setHighlightIndex(vm);
 
             // Scroll to Highlighted Trip
             if ( scroll ) {

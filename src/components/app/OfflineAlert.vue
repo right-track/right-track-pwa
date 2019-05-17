@@ -82,7 +82,7 @@
         padding-top: 2px;
         padding-bottom: 2px;
         background-color: #b0bec5 !important;
-        z-index: 1 !important;
+        z-index: 4 !important;
     }
     .message {
         color: rgba(0, 0, 0, 0.5) !important;

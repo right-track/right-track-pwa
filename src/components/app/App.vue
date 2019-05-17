@@ -39,18 +39,24 @@
             </template>
 
             <!-- MORE MENU ITEMS -->
-            <v-menu v-if="moreMenu  && moreMenu.length > 0" bottom left>
+            <v-menu v-if="moreMenu  && moreMenu.length > 0" allow-overflow absolute top right>
                 <template v-slot:activator="{ on }">
                     <v-btn dark icon v-on="on">
                         <v-icon>more_vert</v-icon>
                     </v-btn>
                 </template>
-                <v-list>
+                <v-list id="more-menu-list">
                     <div v-for="item in moreMenu" :key="item.key">
+                        
+                        <!-- Menu Divider -->
                         <v-divider v-if="item.type==='divider'"></v-divider>
+                        <v-subheader v-if="item.type==='divider' && item.title">{{ item.title }}</v-subheader>
+
+                        <!-- Menu Item -->
                         <v-list-tile v-if="item.type==='item'" @click="item.function">
                             <v-list-tile-title>{{ item.title }}</v-list-tile-title>
                         </v-list-tile>
+
                     </div>
                 </v-list>
             </v-menu>
@@ -412,7 +418,8 @@
                 if ( updateInfo ) {
                     vm.update = {
                         isAvailable: updateInfo.isAvailable,
-                        version: updateInfo.version
+                        version: updateInfo.version,
+                        notes: updateInfo.notes
                     }
                     if ( force ) {
                         vm.onShowSnackbar({
@@ -427,7 +434,8 @@
                 else {
                     vm.update = {
                         isAvailable: false,
-                        version: undefined
+                        version: undefined,
+                        notes: undefined
                     }
                     if ( force ) vm.onShowSnackbar("There is no database update available at this time");
                 }
@@ -442,7 +450,8 @@
         else {
             vm.update = {
                 isAvailable: false,
-                version: undefined
+                version: undefined,
+                notes: undefined
             }
             if ( callback ) return callback();
         }
@@ -480,13 +489,8 @@
                     vm.onShowSnackbar("ERROR: Could not install database. Please try again later.");
                 }
                 else {
-                    database.setDBVersion(vm.agencyID, vm.update.version, function() {
-                        vm.update = {
-                            isAvailable: false
-                        }
-                        vm.progress.active = false;
-                        location.reload();
-                    });
+                    vm.progress.active = false;
+                    location.reload();
                 }
             }
         );
@@ -767,7 +771,7 @@
                 let vm = this;
                 vm.onShowDialog(
                     "Database Update Available", 
-                    "<p class='subheading'>Version <strong>" + vm.update.version + "</strong> of the schedule database is now available.  Download and install it now to get the most up to date trip schedules.</p>",
+                    "<p class='subheading'>Version <strong>" + vm.update.version + "</strong> of the schedule database is now available. Download and install it now to get the most up to date trip schedules.</p><p style='background-color: #eee; padding: 5px; font-family: monospace'>" + vm.update.notes + "</p>",
                     "Download & Install",
                     "Cancel",
                     function() {
@@ -837,7 +841,7 @@
         z-index: 100 !important;
     }
     .v-navigation-drawer {
-        z-index: 500 !important;
+        z-index: 200 !important;
     }
     .toolbar-badge {
         position: relative;
@@ -859,5 +863,9 @@
         bottom: 0; 
         left: 0; 
         margin: -5px 0 0 0
+    }
+    #more-menu-list {
+        max-height: calc(100vh - 50px);
+        overflow-y: auto;
     }
 </style>

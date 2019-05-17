@@ -42,7 +42,8 @@ function check(agency, force, callback) {
 
                 // Save the latest db version
                 let latestVersion = resp.version;
-                _saveDBVersionLatest(agency, latestVersion);
+                let latestNotes = resp.notes;
+                _saveDBVersionLatest(agency, latestVersion, latestNotes);
 
                 // Get the stored DB version
                 db.getDBVersion(agency, function(storedVersion) {
@@ -51,7 +52,8 @@ function check(agency, force, callback) {
                     if ( latestVersion > storedVersion ) {
                         return callback(null, {
                             isAvailable: true,
-                            version: latestVersion
+                            version: latestVersion,
+                            notes: latestNotes
                         });
                     }
                     else {
@@ -84,11 +86,14 @@ function check(agency, force, callback) {
  */
 function isUpdateAvailable(agency, callback) {
     db.getDBVersion(agency, function(stored) {
-        _getDBVersionLatest(agency, function(latest) {
-            if ( !stored || !latest || latest > stored ) {
+        _getDBVersionLatest(agency, function(cached) {
+            let latest = cached.version;
+            let notes = cached.notes;
+            if ( latest > stored ) {
                 return callback({
                     isAvailable: true,
-                    version: latest
+                    version: latest,
+                    notes: notes
                 });
             }
             return callback(undefined);
@@ -126,7 +131,7 @@ function _saveDBUpdateLastChecked(agency, callback) {
 /**
  * Get the (stored) version of the latest agency database
  * @param  {string}   agency   Agency ID Code
- * @param  {Function} callback Callback function(err, version)
+ * @param  {Function} callback Callback function(err, {version: version, notes: notes})
  */
 function _getDBVersionLatest(agency, callback) {
     store.get("db-version-latest-" + agency, function(err, value) {
@@ -141,10 +146,11 @@ function _getDBVersionLatest(agency, callback) {
  * Save the version of the latest agency database
  * @param  {string}   agency     Agency ID Code
  * @param  {int}      version    Agency DB Version
+ * @param  {string}   notes      Agency DB Notes
  * @param  {Function} [callback] Callback function(err)
  */
-function _saveDBVersionLatest(agency, version, callback) {
-    store.put("db-version-latest-" + agency, version, callback);
+function _saveDBVersionLatest(agency, version, notes, callback) {
+    store.put("db-version-latest-" + agency, {version: version, notes: notes}, callback);
 }
 
 

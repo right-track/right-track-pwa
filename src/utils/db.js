@@ -20,7 +20,7 @@ getDB = function(agencyCode, callback) {
     
     // If not already prepping the database, start now
     if ( !PREPPING_DB ) {
-        PREPPING_DB = true; 
+        PREPPING_DB = true;
         
         // Check cache for database
         let cacheDB = _getCache(agencyCode);
@@ -28,48 +28,32 @@ getDB = function(agencyCode, callback) {
             return _finish(null, cacheDB);
         }
 
-        // Get Right Track Agency
-        cache.getAgency(agencyCode, function(err, agency) {
-            if ( err ) {
-                return _finish(err);
-            }
+        // Get Database Data
+        _getDBData(agencyCode, function(data) {
 
-            // Set Agency Config
-            let agencyConfig = agency.getConfig();
+            // Use Cached Data...
+            if ( data ) {
 
-            // Get Database Data
-            _getDBData(agencyCode, function(err, data) {
-                if ( err ) {
-                    return _finish(err);
-                }
-
-                // Convert Base64 to Binary Int Array
-                let raw = window.atob(data);
-                let rawLength = raw.length;
-                let array = new Uint8Array(new ArrayBuffer(rawLength));
-                for( let i = 0; i < rawLength; i++ ) {
-                    array[i] = raw.charCodeAt(i);
-                }
-
-                // Build the Right Track Database
-                let db = new RightTrackDB(agencyConfig, array);
-
-                // Save the db version
-                core.query.about.getAbout(db, function(err, about) {
-                    if ( about ) {
-                        _saveDBVersionStored(agencyCode, about.version);
+                // Build the Right Track DB
+                _base64toDB(agencyCode, data, function(err, db) {
+                    if ( err ) {
+                        return _finish(err);
                     }
-
-                    // Save the DB in cache
-                    _putCache(agencyCode, db);
 
                     // Return the Right Track Database
                     return _finish(null, db);
 
                 });
 
-                
-            });
+            }
+
+            // Update Data...
+            else {
+                update(agencyCode, function(err, db) {
+                    return _finish(null, db);
+                });
+            }
+            
         });
 
     }
@@ -80,6 +64,7 @@ getDB = function(agencyCode, callback) {
      * @param  {Database} db  Database to return
      */
     function _finish(err, db) {
+        _putCache(agencyCode, db);
         for ( let i = 0; i < PREPPING_DB_CALLBACKS.length; i++ ) {
             PREPPING_DB_CALLBACKS[i](err, db);
         }
@@ -92,11 +77,17 @@ getDB = function(agencyCode, callback) {
 
 /**
  * Download and install the latest agency database
- * @param  {string}   agency   Agency ID Code
- * @param  {Function} progress Progress callback function(percent)
- * @param  {Function} callback Callback function()
+ * @param  {string}   agency     Agency ID Code
+ * @param  {Function} [progress] Progress callback function(percent)
+ * @param  {Function} callback   Callback function(err, db)
  */
 function update(agency, progress, callback) {
+
+    // Parse Arguments
+    if ( callback === undefined && typeof progress === 'function' ) {
+        callback = progress;
+        progress = function() {};
+    }
     
     // Download
     api.download("/updates/database/" + agency + "?download=latest", progress, function(err, data) {
@@ -104,21 +95,89 @@ function update(agency, progress, callback) {
             return callback(err);
         }
 
-        // Install
+        // Install / Save DB Data
         _saveDBData(agency, data, function() {
 
-            // Clear Cache
+            // Clear Cached Database
             _clearCache();
 
-            // Prep
-            getDB(agency, function(err) {
+            // Build Right Track DB
+            _base64toDB(agency, data, function(err, db) {
                 if ( err ) {
                     return callback(err);
                 }
-                return callback(null);
+
+                // Save the current database version
+                _saveDatabaseVersion(agency, db, function(err) {
+                    if ( err ) {
+                        return callback(err);
+                    }
+
+                    // RETURN THE DATABASE
+                    return callback(null, db);
+
+                });
+
             });
 
         });
+    });
+}
+
+
+/**
+ * Convert Base64 String to Right Track Database
+ * @param  {string}   agency   Agency ID Code
+ * @param  {string}   data     Base64 Encoded Binary Data of the DB
+ * @param  {function} callback Callback function(err, db)
+ */
+function _base64toDB(agency, data, callback) {
+
+    // Get the Agency Config
+    cache.getAgency(agency, function(err, rta) {
+        if ( err ) {
+            return callback(err);
+        }
+        let config = rta.getConfig();
+
+        // Convert Base64 to Binary Int Array
+        let raw = window.atob(data);
+        let rawLength = raw.length;
+        let array = new Uint8Array(new ArrayBuffer(rawLength));
+        for( let i = 0; i < rawLength; i++ ) {
+            array[i] = raw.charCodeAt(i);
+        }
+
+        // Build the Right Track Database
+        let db = new RightTrackDB(config, array);
+
+        // Return the Database
+        return callback(null, db);
+
+    });
+    
+}
+
+
+/**
+ * Set the stored DB Version to that of the provided DB
+ * @param  {string}     agency  Agency ID Code
+ * @param  {RightTrackDB}   db  Current Database
+ * @param  {Function} callback  Callback function(err)
+ */
+function _saveDatabaseVersion(agency, db, callback) {
+    core.query.about.getAbout(db, function(err, about) {
+        if ( err ) {
+            return callback(err)
+        }
+        else if ( !about ) {
+            return callback(new Error("Could not get database version"));
+        }
+        else {
+            _saveDBVersionStored(agency, about.version, function() {
+                return callback();
+            });
+        }
     });
 }
 
@@ -160,28 +219,12 @@ function setDBVersion(agency, version, callback) {
  * - First, check for stored data
  * - Then, get fresh data from the api server
  * @param  {string}   agency   Agency ID Code
- * @param  {Function} callback Callback function(err, data)
+ * @param  {Function} callback Callback function(data)
  */
 function _getDBData(agency, callback) {
-
-    // Get Stored Data
     store.get("db-data-" + agency, function(err, data) {
-        if ( !err && data ) {
-            return callback(null, data);
-        }
-
-        // Get Fresh Data
-        api.get("/updates/database/" + agency + "?download=latest", true, function(err, data) {
-            if ( err ) {
-                return callback(err);
-            }
-            _saveDBData(agency, data, function() {
-                return callback(null, data);
-            });
-        });
-
+        return callback(data);
     });
-
 }
 
 /**

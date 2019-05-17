@@ -76,7 +76,7 @@ function _request(method, path, body, binary, callback, progress) {
 
     // Set Error Listener
     xhr.onerror = function() {
-        console.log("XHR ERROR");
+        console.log("XHR ERROR [" + method + " " + path + "]");
         return callback(new Error("Could not make API request. Please try again later."));
     }
 

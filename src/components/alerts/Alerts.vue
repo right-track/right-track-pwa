@@ -186,9 +186,10 @@
             let height = "auto";
             if ( vm.transitLineCode ) {
                 let events = document.getElementById("rt-transit-events");
-                height = events.offsetHeight + 300 + "px";
+                if ( events ) {
+                    height = events.offsetHeight + 300 + "px";
+                }
             }
-            console.log("SETTING HEIGHT: " + height);
             cont.style.height = height;
         });
     }

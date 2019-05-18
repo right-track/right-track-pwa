@@ -250,26 +250,33 @@
             body += "<p><strong>Description:</strong><br />" + vm.otherDescription + "</p>";
         }
 
-        // Set Metadata
-        let metadata = {
-            agency: agency,
-            site: {
-                version: vm.site.version,
-                hash: vm.site.hash,
-                host: window.location.hostname
-            },
-            ua: navigator.userAgent
-        }
+        // Get Database Version
+        DB.getDBVersion(agency, function(version) {
 
-        // Send the Feedback
-        api.post("/feedback", {
-            replyTo: replyTo,
-            subject: subject,
-            body: body,
-            metadata: metadata
-        }, function(err) {
-            return callback(err);
+            // Set Metadata
+            let metadata = {
+                agency: agency,
+                database: version,
+                site: {
+                    version: vm.site.version,
+                    hash: vm.site.hash,
+                    host: window.location.hostname
+                },
+                ua: navigator.userAgent
+            }
+
+            // Send the Feedback
+            api.post("/feedback", {
+                replyTo: replyTo,
+                subject: subject,
+                body: body,
+                metadata: metadata
+            }, function(err) {
+                return callback(err);
+            });
+
         });
+
     }
 
 

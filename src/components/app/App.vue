@@ -54,6 +54,7 @@
 
                         <!-- Menu Item -->
                         <v-list-tile v-if="item.type==='item'" @click="item.function">
+                            <v-icon v-if="item.icon" class="more-menu-list-icon">{{ item.icon }}</v-icon>
                             <v-list-tile-title>{{ item.title }}</v-list-tile-title>
                         </v-list-tile>
 
@@ -867,5 +868,10 @@
     #more-menu-list {
         max-height: calc(100vh - 50px);
         overflow-y: auto;
+    }
+    .more-menu-list-icon {
+        font-size: 18px;
+        margin-left: -5px;
+        margin-right: 5px;
     }
 </style>

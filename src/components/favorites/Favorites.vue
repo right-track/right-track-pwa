@@ -111,6 +111,7 @@
             {
                 key: 1,
                 type: "item",
+                icon: "refresh",
                 title: "Refresh Favorites",
                 function: function() {
                     vm.forceUpdate();
@@ -119,6 +120,7 @@
             {
                 key: 2,
                 type: "item",
+                icon: "save_alt",
                 title: "Check for DB Update",
                 function: function() {
                     vm.$emit('checkUpdate');

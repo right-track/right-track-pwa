@@ -213,6 +213,7 @@
             {
                 key: 1,
                 type: "item",
+                icon: "info",
                 title: "Station Information",
                 function: function() {
                     window.location = vm.stop.url;
@@ -221,6 +222,7 @@
             {
                 key: 2,
                 type: "item",
+                icon: "place",
                 title: "Station Map",
                 function: function() {
                     window.location = "https://www.google.com/maps/search/?api=1&query=" + vm.stop.lat + "," + vm.stop.lon;
@@ -229,6 +231,7 @@
             {
                 key: 3,
                 type: "item",
+                icon: "train",
                 title: "Start Trip Search",
                 function: function() {
                     vm.$router.push({

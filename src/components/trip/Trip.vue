@@ -112,6 +112,7 @@
         let baseItems = [
             {
                 type: "item",
+                icon: "refresh",
                 title: "Refresh Status",
                 function: function() {
                     vm.refresh();
@@ -119,6 +120,7 @@
             },
             {
                 type: "item",
+                icon: "loop",
                 title: "Reverse Trip",
                 function: function() {
                     if ( vm.isNextDeparture ) {
@@ -147,6 +149,7 @@
             },
             {
                 type: "item",
+                icon: "date_range",
                 title: "Change Date/Time",
                 function: function() {
                     vm.$router.push({
@@ -221,7 +224,6 @@
          */
         function _finish() {
             let menuItems = _buildMenuItems(baseItems, originItems, transferItems, destinationItems);
-            console.log(JSON.stringify(menuItems));
             vm.$emit('setMoreMenuItems', menuItems)
         }
     }
@@ -239,6 +241,7 @@
             if ( stop.statusId && stop.statusId !== "-1" ) {
                 items.push({
                     type: "item",
+                    icon: "access_time",
                     title: "View Station Table",
                     function: function() {
                         vm.$router.push({
@@ -253,6 +256,7 @@
             }
             items.push({
                 type: "item",
+                icon: "info",
                 title: "Station Information",
                 function: function() {
                     window.location = stop.url;
@@ -260,6 +264,7 @@
             });
             items.push({
                 type: "item",
+                icon: "place",
                 title: "Station Map",
                 function: function() {
                     window.location = "https://www.google.com/maps/search/?api=1&query=" + stop.lat + "," + stop.lon;

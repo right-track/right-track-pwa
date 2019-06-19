@@ -163,11 +163,13 @@
         _setHeight(vm);
         if ( vm.transitDivisionCode && vm.transitLineCode && vm.transitFeed ) {
             for ( let i = 0; i < vm.transitFeed.divisions.length; i++ ) {
-                for ( let j = 0; j < vm.transitFeed.divisions[i].lines.length; j++ ) {
-                    if ( vm.transitFeed.divisions[i].lines[j].code === vm.transitLineCode ) {
-                        vm.transitLine = vm.transitFeed.divisions[i].lines[j];
-                        vm.transitEvents = vm.transitLine.events;
-                        _setHeight(vm);
+                if ( vm.transitFeed.divisions[i].code === vm.transitDivisionCode ) {
+                    for ( let j = 0; j < vm.transitFeed.divisions[i].lines.length; j++ ) {
+                        if ( vm.transitFeed.divisions[i].lines[j].code === vm.transitLineCode ) {
+                            vm.transitLine = vm.transitFeed.divisions[i].lines[j];
+                            vm.transitEvents = vm.transitLine.events;
+                            _setHeight(vm);
+                        }
                     }
                 }
             }

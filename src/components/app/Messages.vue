@@ -24,7 +24,8 @@
      * @param  {Vue} vm Vue Instance
      */
     function _setMessages(vm) {
-        messages.getMessages(function(err, messages) {
+        let agencyId = vm.$route.query.agency ? vm.$route.query.agency : vm.$route.params.agency;
+        messages.getMessages(agencyId, function(err, messages) {
             vm.messages = messages;
         });
     }

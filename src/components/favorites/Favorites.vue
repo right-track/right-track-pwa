@@ -1,5 +1,8 @@
 <template>
     <v-container class="container">
+
+        <!-- Messages -->
+        <rt-messages></rt-messages>
         
         <!-- Favorites Empty State -->
         <div v-show="showEmptyState" class="empty-state">
@@ -103,6 +106,7 @@
     const DB = require("@/utils/db.js");
     const FavoritesList = require("@/components/favorites/FavoritesList.vue").default;
     const StopSelectionDialog = require("@/components/StopSelectionDialog.vue").default;
+    const Messages = require("@/components/app/Messages.vue").default;
 
 
     // MORE MENU ITEMS
@@ -221,7 +225,8 @@
         // ==== ADDITIONAL COMPONENTS ==== //
         components: {
             'rt-favorites-list': FavoritesList,
-            'rt-stop-selection-dialog': StopSelectionDialog
+            'rt-stop-selection-dialog': StopSelectionDialog,
+            'rt-messages': Messages
         },
 
         // ==== COMPONENT FUNCTIONS ==== //

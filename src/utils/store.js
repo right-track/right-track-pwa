@@ -43,7 +43,8 @@ function _open(callback) {
 function put(key, value, callback) {
     _open(function(err, db) {
         if ( err ) {
-            return callback(err);
+            if ( callback ) return callback(err);
+            return;
         }
         
         // Get DB Transaction

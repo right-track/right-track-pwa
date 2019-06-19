@@ -2,18 +2,7 @@
     <v-container class="container">
 
         <!-- SERVER MESSAGES -->
-        <template v-for="message in messages">
-            <v-alert :key="message.id" :value="true" dismissible
-                    color="warning" transition="scale-transition"
-                    @input="dismiss">
-                <h2>{{message.title}}</h2>
-                <span v-html="message.body"></span>
-                <v-btn v-if="message.linkTitle && message.linkUrl" :href="message.linkUrl" block>
-                    {{message.linkTitle}}
-                </v-btn>
-            </v-alert>
-            <br />
-        </template>
+        <rt-messages></rt-messages>
 
         <!-- AGENCY SELECTION CARD -->
         <v-card>
@@ -34,9 +23,9 @@
 <script>
     const config = require("@/utils/config.js");
     const cache = require("@/utils/cache.js");
-    const messages = require("@/utils/messages.js");
     const AgencyList = require("@/components/agencies/AgencyList.vue").default;
     const Info = require("@/components/agencies/Info.vue").default;
+    const Messages = require("@/components/app/Messages.vue").default;
 
 
 
@@ -70,17 +59,7 @@
         });
 
     }
-    
 
-    /**
-     * Display any non-dismissed Messages from the API Server
-     * @param  {Vue} vm Vue Instance
-     */
-    function _setMessages(vm) {
-        messages.getMessages(function(err, messages) {
-            vm.messages = messages;
-        });
-    }
     
     
     module.exports = {
@@ -93,10 +72,7 @@
                 title: config.title,
 
                 // List of supported agencies
-                agencies: [],
-
-                // List of Server Messages
-                messages: []
+                agencies: []
 
             }
         },
@@ -104,15 +80,8 @@
         // ==== ADDITIONAL COMPONENTS ==== //
         components: {
             'rt-agency-list': AgencyList,
-            'rt-info': Info
-        },
-
-        // ==== COMPONENT METHODS ==== //
-        methods: {
-            dismiss: function(v) {
-                console.log("DISMISS");
-                console.log(v);
-            }
+            'rt-info': Info,
+            'rt-messages': Messages
         },
 
         // ==== COMPONENT MOUNTED ==== //
@@ -127,9 +96,6 @@
             // Set More Menu Items
             this.$emit('setMoreMenuItems', []);
 
-            // Set the Messages
-            _setMessages(this);
-
         }
 
     }
@@ -137,9 +103,6 @@
 
 
 <style scoped>
-    .v-alert {
-        width: 85%;
-    }
     .v-card {
         padding: 20px 25px 25px 25px;
     }

@@ -256,6 +256,35 @@ getTransitFeed = function(transitAgencyId, callback) {
 
 
 /**
+ * Get the API Server Messages for the client, optionally filtered by 
+ * the agency
+ * - Cache Length: 5 minutes
+ * @param  {string}   [agency]  Agency ID Code
+ * @param  {Function} callback  Callback function(err, messages)
+ */
+getMessages = function(agency, callback) {
+    if ( callback === undefined && typeof(agency) === 'function' ) {
+        callback = agency;
+        agency = undefined;
+    }
+
+    // Set Messages Path
+    let path = "/updates/messages?client=" + config.api.clientId;
+    if ( agency ) {
+        path += "&agency=" + agency;
+    }
+
+    // Get Messages
+    _getCacheElseFresh(path, 300, function(err, response) {
+        if ( err ) {
+            return callback(err);
+        }
+        return callback(null, response.messages);
+    });
+}
+
+
+/**
  * Get API data (cache first, then network)
  * - return cached data, if present
  * - return network data, when no cached data is present
@@ -411,5 +440,6 @@ module.exports = {
     getTransitAgencies: getTransitAgencies,
     getTransitAgencyIcon: getTransitAgencyIcon,
     getTransitDivisionIcon: getTransitDivisionIcon,
-    getTransitFeed: getTransitFeed
+    getTransitFeed: getTransitFeed,
+    getMessages: getMessages
 }

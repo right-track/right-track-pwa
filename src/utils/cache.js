@@ -97,13 +97,13 @@ getAgencyIcon = function(agency, callback) {
 
 /**
  * Get the Station Feed for the specified stop
- * - Cache Length: 45 seconds
+ * - Cache Length: 45 seconds / max 2 hours
  * @param  {string}   agencyId Agency ID code
  * @param  {string}   stopId   Stop ID
  * @param  {Function} callback Callback function(err, feed)
  */
 getStationFeed = function(agencyId, stopId, callback) {
-    _getCacheElseFresh("/stops/" + agencyId + "/" + stopId + "/feed", 45, function(err, response) {
+    _getCacheElseFresh("/stops/" + agencyId + "/" + stopId + "/feed", 45, 2*60*60, function(err, response) {
         if ( err ) {
             return callback(err);
         }
@@ -208,7 +208,7 @@ getTransitDivisionIcon = function(transitAgency, transitDivision, callback) {
 
 /**
  * Get the Transit Feed for the specified Transit Agency
- * - Cache Length: 5 minutes
+ * - Cache Length: 5 minutes / max 2 hours
  * @param  {string}   transitAgencyId Transit Agency ID Code
  * @param  {Function} callback        Callback function(err, feed, transitAgency)
  */
@@ -219,7 +219,7 @@ getTransitFeed = function(transitAgencyId, callback) {
     let max = 0;
 
     // Get the Transit Feed
-    _getCacheElseFresh("/transit/" + transitAgencyId, 300, function(err, response) {
+    _getCacheElseFresh("/transit/" + transitAgencyId, 300, 2*60*60, function(err, response) {
         if ( err ) {
             return callback(err);
         }
@@ -291,19 +291,34 @@ getMessages = function(agency, callback) {
  * - fallback to cached data, if network error
  * @param  {string} path API Path
  * @param  {number} expiry Length of time to keep cached data (seconds)
+ * @param  {number} [max] Maximum length of time use cached data (seconds)
  * @param  {boolean} [binary] Flag for binary data (images, etc)
  * @param  {Function} callback Callback function(err, data)
  */
-function _getCacheElseFresh(path, expiry, binary, callback) {
+function _getCacheElseFresh(path, expiry, max, binary, callback) {
 
-    // Parse arguments
-    if ( callback === undefined && binary instanceof Function ) {
+    // path, expiry, callback
+    if ( callback === undefined && binary === undefined && max instanceof Function ) {
+        callback = max;
+        max = undefined;
+        binary = false;
+    }
+
+    // path, expiry, binary, callback
+    if ( callback === undefined && binary instanceof Function && typeof max === 'boolean' ) {
+        callback = binary;
+        binary = max;
+        max = undefined;
+    }
+
+    // path, expiry, max, callback
+    if ( callback === undefined && binary instanceof Function && !isNaN(max) ) {
         callback = binary;
         binary = false;
     }
 
     // Check for cached data
-    _getCache(path, expiry, function(cached, expired) {
+    _getCache(path, expiry, max, function(cached, expired) {
 
         // Use cached data...
         if ( cached && !expired ) {
@@ -360,9 +375,10 @@ function _getCacheElseFresh(path, expiry, binary, callback) {
  * - returns null, if no cached data present
  * @param  {string} path API Path
  * @param  {number} expiry Length of time to keep cached data (seconds)
+ * @param  {number} max Maximum length of time to use cached data (seconds)
  * @param  {Function} callback Callback function(cached, expired)
  */
-function _getCache(path, expiry, callback) {
+function _getCache(path, expiry, max, callback) {
     let key = path.includes("http") ? path : config.api.host + path;
     key = key.replace(/\?*&*t=[0-9]+$/g, "");
 
@@ -376,9 +392,19 @@ function _getCache(path, expiry, callback) {
             if ( response ) {
                 response.text().then(function(cacheText) {
                     let cached = JSON.parse(cacheText);
-                    let cutoff = cached.saved + (expiry * 1000);
-                    let expired = Date.now() > cutoff;
-                    return callback(cached.response, expired);
+                    let cutoff_max = cached.saved + (max * 1000);
+                    
+                    // Cached data is past max age, ignore cache
+                    if ( Date.now() > cutoff_max ) {
+                        return callback(null);
+                    }
+
+                    // Return cached data, flag if expired
+                    else {
+                        let cutoff = cached.saved + (expiry * 1000);
+                        let expired = Date.now() > cutoff;
+                        return callback(cached.response, expired);
+                    }
                 });
             }
 

@@ -46,7 +46,12 @@
                 <v-card-title class="headline secondary-bg">
                     <v-icon>star</v-icon>&nbsp;&nbsp;Favorites
                 </v-card-title>
-                <rt-favorites-list :favorites="favorites" :removeMode="removeMode"></rt-favorites-list>
+                <rt-favorites-list 
+                    :favorites="favorites" 
+                    :removeMode="removeMode" :removeSelected="removeSelected"
+                    :reorderMode="reorderMode"
+                    @updateRemoveSelected="onUpdateRemoveSelected">
+                </rt-favorites-list>
             </v-card>
 
             <!-- Database Info -->
@@ -80,7 +85,7 @@
             <v-btn @click="selectStation" class="primary-fg" small fab>
                 <v-icon>access_time</v-icon>
             </v-btn>
-            <v-btn class="primary-fg" small fab>
+            <v-btn @click="reorderFavorites" class="primary-fg" small fab>
                 <v-icon>shuffle</v-icon>
             </v-btn>
             <v-btn @click="removeFavorites" class="primary-fg" small fab>
@@ -203,16 +208,61 @@
 
 
     /**
-     * Select and remove favorites
+     * Start the remove favorites process
      * @param  {Vue} vm Vue Instance
      */
-    function _removeFavorites(vm) {
+    function _startRemoveFavorites(vm) {
         vm.removeMode = true;
         vm.$emit('showSnackbar', {
             visible: true,
             message: 'Select favorites to remove', 
             duration: 0,
-            dismiss: 'Remove'
+            dismiss: 'Remove',
+            onDismiss: function() {
+                _removeFavorites(vm);
+            }
+        });
+    }
+
+    /**
+     * Remove the selected favorites and update User's
+     * saved favorites
+     * @param  {Vue} vm Vue Instance
+     */
+    function _removeFavorites(vm) {
+        let favs = [];
+        for ( let i = 0; i < vm.favorites.length; i++ ) {
+            if ( !vm.removeSelected.includes(i) ) {
+                favs.push(vm.favorites[i]);
+            }
+        }
+        vm.removeMode = false;
+        vm.removeSelected = [];
+        vm.favorites = favs;
+        favorites.update(vm.agencyId, vm.favorites, function(err, favorites) {
+            if ( err && favs.length > 0 ) {
+                vm.$emit('showSnackbar', 'Could not update favorites.  Please try again later.');
+            }
+            else {
+                vm.$emit('showSnackbar', 'Favorites removed');
+            }
+        })
+    }
+
+    /**
+     * Start the reorder favorites process
+     * @param  {Vue} vm Vue Instance
+     */
+    function _startReorderFavorites(vm) {
+        vm.reorderMode = true;
+        vm.$emit('showSnackbar', {
+            visible: true,
+            message: 'Reorder favorites using arrows', 
+            duration: 0,
+            dismiss: 'Done',
+            onDismiss: function() {
+                _reorderFavorites(vm);
+            }
         });
     }
 
@@ -235,7 +285,8 @@
                     stops: undefined
                 },
                 removeMode: false,
-                removeSelected: []
+                removeSelected: [],
+                reorderMode: false
             }
         },
 
@@ -339,7 +390,22 @@
              * Start the Favorite removal process
              */
             removeFavorites() {
-                _removeFavorites(this);
+                _startRemoveFavorites(this);
+            },
+
+            /**
+             * Update the favorites selected for removal
+             * @param  {int[]} removeSelected  indices of favorites selected for removal
+             */
+            onUpdateRemoveSelected(removeSelected) {
+                this.removeSelected = removeSelected;
+            },
+
+            /**
+             * Start the Favorites reorder process
+             */
+            reorderFavorites() {
+                _startReorderFavorites(this);
             },
 
             /**

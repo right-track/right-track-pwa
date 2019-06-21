@@ -9,6 +9,7 @@
                 
                 <v-list-tile-avatar>
                     <v-icon v-if="removeMode && removeSelected.includes(index)">delete</v-icon>
+                    <v-icon v-else-if="reorderMode">arrow_upward</v-icon>
                     <v-icon v-else>{{ fav.icon }}</v-icon>
                 </v-list-tile-avatar>
                 
@@ -42,13 +43,14 @@
             removeMode: {
                 type: Boolean,
                 required: false
-            }
-        },
-
-        // ==== COMPONENT DATA ==== //
-        data: function() {
-            return {
-                removeSelected: []
+            },
+            removeSelected: {
+                type: Array,
+                required: false
+            },
+            reorderMode: {
+                type: Boolean,
+                required: false
             }
         },
 
@@ -72,6 +74,7 @@
                         let i = vm.removeSelected.indexOf(index);
                         if (i !== -1) vm.removeSelected.splice(i, 1);
                     }
+                    vm.$emit('updateRemoveSelected', vm.removeSelected);
                 }
 
                 // STANDARD MODE

@@ -298,11 +298,27 @@ function removeTrip(agencyId, origin, destination, callback) {
 
 
 /**
+ * Replace the User's favorites for the specified agency
+ * @param  {String}   agencyId  Agency ID code
+ * @param  {Array}    favorites List of favorites to replace
+ * @param  {Function} callback  Callback function(err, favorites)
+ */
+function update(agencyId, favorites, callback) {
+    _update(agencyId, favorites, callback);
+}
+
+
+/**
  * Clear all locally cached favorites
  */
 function clear() {
     store.delFavorites();
 }
+
+
+
+
+// ==== UTILITY FUNCTIONS ==== //
 
 
 /**
@@ -460,5 +476,6 @@ module.exports = {
     addTrip: addTrip,
     removeStation: removeStation,
     removeTrip: removeTrip,
-    clear: clear
+    clear: clear,
+    update: update
 }

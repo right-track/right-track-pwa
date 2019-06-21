@@ -9,7 +9,8 @@
                 
                 <v-list-tile-avatar>
                     <v-icon v-if="removeMode && removeSelected.includes(index)">delete</v-icon>
-                    <v-icon v-else-if="reorderMode">arrow_upward</v-icon>
+                    <v-icon v-else-if="reorderMode && index === 0"></v-icon>
+                    <v-icon v-else-if="reorderMode" @click="reorderUp(index)">arrow_upward</v-icon>
                     <v-icon v-else>{{ fav.icon }}</v-icon>
                 </v-list-tile-avatar>
                 
@@ -20,7 +21,10 @@
                 </v-list-tile-content>
 
                 <v-list-tile-action>
-                    <v-icon v-if="!removeMode">chevron_right</v-icon>
+                    <v-icon v-if="removeMode"></v-icon>
+                    <v-icon v-else-if="reorderMode && index === favorites.length-1"></v-icon>
+                    <v-icon v-else-if="reorderMode" @click="reorderDown(index)">arrow_downward</v-icon>
+                    <v-icon v-else>chevron_right</v-icon>
                 </v-list-tile-action>
 
             </v-list-tile>
@@ -32,6 +36,12 @@
 
 
 <script>
+
+    function _move(arr, old_index, new_index) {
+        arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+        return arr;
+    };
+
     module.exports = {
 
         // ==== COMPONENT PROPERTIES ==== //
@@ -78,7 +88,7 @@
                 }
 
                 // STANDARD MODE
-                else {
+                else if ( !vm.reorderMode ) {
 
                     // Station
                     if ( favorite.type === 1 ) {
@@ -104,6 +114,24 @@
                     }
 
                 }
+            },
+
+            /**
+             * Handle a move up request
+             * @param  {int}    index Selected favorite index
+             */
+            reorderUp(index) {
+                _move(this.favorites, index, index-1);
+                this.$emit('updateFavorites', this.favorites);
+            },
+
+            /**
+             * Handle a move down request
+             * @param  {int}    index Selected favorite index
+             */
+            reorderDown(index) {
+                _move(this.favorites, index, index+1);
+                this.$emit('updateFavorites', this.favorites);
             }
 
         }

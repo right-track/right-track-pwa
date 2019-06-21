@@ -50,7 +50,8 @@
                     :favorites="favorites" 
                     :removeMode="removeMode" :removeSelected="removeSelected"
                     :reorderMode="reorderMode"
-                    @updateRemoveSelected="onUpdateRemoveSelected">
+                    @updateRemoveSelected="onUpdateRemoveSelected"
+                    @updateFavorites="onUpdateFavorites">
                 </rt-favorites-list>
             </v-card>
 
@@ -246,7 +247,7 @@
             else {
                 vm.$emit('showSnackbar', 'Favorites removed');
             }
-        })
+        });
     }
 
     /**
@@ -262,6 +263,23 @@
             dismiss: 'Done',
             onDismiss: function() {
                 _reorderFavorites(vm);
+            }
+        });
+    }
+
+    /**
+     * Update the order of the User's Favorites
+     * @param  {Vue} vm Vue Instance
+     */
+    function _reorderFavorites(vm) {
+        vm.reorderMode = false;
+        console.log("THANK YOU, MARISSA");
+        favorites.update(vm.agencyId, vm.favorites, function(err, favorites) {
+            if ( err ) {
+                vm.$emit('showSnackbar', 'Could not update favorites.  Please try again later.');
+            }
+            else {
+                vm.$emit('showSnackbar', 'Favorites updated');
             }
         });
     }
@@ -406,6 +424,13 @@
              */
             reorderFavorites() {
                 _startReorderFavorites(this);
+            },
+
+            /**
+             * Update the favorites after a reorder
+             */
+            onUpdateFavorites(favorites) {
+                this.favorites = favorites;
             },
 
             /**

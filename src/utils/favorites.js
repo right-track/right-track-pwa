@@ -331,6 +331,11 @@ function clear() {
  */
 function _update(agencyId, favorites, callback) {
 
+    // UPDATE SEQUENCES
+    for ( let i = 0; i < favorites.length; i++ ) {
+        favorites[i].sequence = i+1;
+    }
+
     // UPDATE LOCAL FAVORITES
     let local = {
         agency: agencyId,

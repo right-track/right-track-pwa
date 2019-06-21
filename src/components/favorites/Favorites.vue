@@ -46,7 +46,7 @@
                 <v-card-title class="headline secondary-bg">
                     <v-icon>star</v-icon>&nbsp;&nbsp;Favorites
                 </v-card-title>
-                <rt-favorites-list :favorites="favorites"></rt-favorites-list>
+                <rt-favorites-list :favorites="favorites" :removeMode="removeMode"></rt-favorites-list>
             </v-card>
 
             <!-- Database Info -->
@@ -83,7 +83,7 @@
             <v-btn class="primary-fg" small fab>
                 <v-icon>shuffle</v-icon>
             </v-btn>
-            <v-btn color="error" small fab>
+            <v-btn @click="removeFavorites" class="primary-fg" small fab>
                 <v-icon>delete</v-icon>
             </v-btn>
 
@@ -202,6 +202,21 @@
     }
 
 
+    /**
+     * Select and remove favorites
+     * @param  {Vue} vm Vue Instance
+     */
+    function _removeFavorites(vm) {
+        vm.removeMode = true;
+        vm.$emit('showSnackbar', {
+            visible: true,
+            message: 'Select favorites to remove', 
+            duration: 0,
+            dismiss: 'Remove'
+        });
+    }
+
+
     module.exports = {
 
         // ==== COMPONENT DATA ==== //
@@ -218,7 +233,9 @@
                     visible: false,
                     type: undefined,
                     stops: undefined
-                }
+                },
+                removeMode: false,
+                removeSelected: []
             }
         },
 
@@ -319,6 +336,13 @@
             },
 
             /**
+             * Start the Favorite removal process
+             */
+            removeFavorites() {
+                _removeFavorites(this);
+            },
+
+            /**
              * Start the update of the Agency database
              */
             startDBUpdate() {
@@ -349,6 +373,17 @@
                 vm.selectDialogProps.stops = stops;
             });
 
+        },
+
+        // ===== ROUTE LEAVE GUARD ==== //
+        beforeRouteLeave(to, from , next) {
+            if ( this.removeMode ) {
+                this.$emit('showSnackbar', {duration: 1});
+                next();
+            }
+            else {
+                next();
+            }
         }
 
     }

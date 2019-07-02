@@ -185,7 +185,12 @@
 
 
 <style scoped>
+    h2 {
+        border-bottom: 1px solid #eee;
+        margin-bottom: 10px;
+    }
     ul {
         margin-bottom: 10px;
     }
+
 </style>

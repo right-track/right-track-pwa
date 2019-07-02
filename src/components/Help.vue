@@ -369,9 +369,13 @@
 
 
 <style scoped>
+    h2 {
+        border-bottom: 1px solid #eee;
+        margin-bottom: 10px;
+    }
     p.question {
         font-weight: 700;
-        font-size: 110%;
+        font-size: 16px;
         margin: 15px 0 5px 0;
     }
     ol > li {

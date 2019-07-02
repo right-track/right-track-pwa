@@ -354,8 +354,14 @@
                 title: "Preparing Database...",
                 type: "spinner"
             }
-            database.getDB(vm.agencyId, function() {
+            database.getDB(vm.agencyId, function(err, db, update) {
                 vm.progress.active = false;
+                if ( err ) {
+                    vm.onShowSnackbar("Error: Could not prep DB");
+                }
+                if ( update ) {
+                    _dbUpdate(vm);
+                }
             });
         }
     }

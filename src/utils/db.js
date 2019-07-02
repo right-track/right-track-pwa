@@ -11,7 +11,7 @@ let PREPPING_DB_CALLBACKS = [];
 /**
  * Get the RightTrackDB for the specified agency
  * @param  {string} agencyCode Agency ID Code
- * @param  {Function} callback Callback function(err, database)
+ * @param  {Function} callback Callback function(err, database, update)
  */
 getDB = function(agencyCode, callback) {
 
@@ -47,11 +47,9 @@ getDB = function(agencyCode, callback) {
 
             }
 
-            // Update Data...
+            // No DB... Need to Update...
             else {
-                update(agencyCode, function(err, db) {
-                    return _finish(null, db);
-                });
+                return _finish(null, {get: function() {}, select: function() {}}, true);
             }
             
         });
@@ -62,11 +60,14 @@ getDB = function(agencyCode, callback) {
      * Prepping has finished, return db to callbacks
      * @param  {Error}    err Database Prep Error
      * @param  {Database} db  Database to return
+     * @param  {boolean} [update] Database Update required
      */
-    function _finish(err, db) {
-        _putCache(agencyCode, db);
+    function _finish(err, db, update) {
+        if ( !update ) {
+            _putCache(agencyCode, db);
+        }
         for ( let i = 0; i < PREPPING_DB_CALLBACKS.length; i++ ) {
-            PREPPING_DB_CALLBACKS[i](err, db);
+            PREPPING_DB_CALLBACKS[i](err, db, update);
         }
         PREPPING_DB_CALLBACKS = [];
         PREPPING_DB = false;

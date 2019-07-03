@@ -119,15 +119,16 @@
         console.log("Updating Feed...");
         vm.updating = true;
         cache.getStationFeed(vm.agencyId, vm.stop.id, function(err, feed) {
+            vm.updating = false;
             if ( err ) {
                 console.error(err);
                 vm.$emit('showSnackbar', 'Could not update Station Feed.  Please try again later.');
-                vm.updating = false;
+                vm.feed = undefined;
+                vm.departures = [];
                 return;
             }
             vm.feed = feed;
             vm.departures = feed.departures;
-            vm.updating = false;
 
             // Set Routes for Status Bar
             let routes = [];

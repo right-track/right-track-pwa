@@ -399,6 +399,7 @@
 
     .trip-details-info {
         grid-area: info;
+        font-size: 14px;
     }
 
     .trip-details-stops {
@@ -420,6 +421,7 @@
     .trip-details-stops-row-item {
         margin-top: auto;
         margin-bottom: auto;
+        font-size: 14px;
     }
     .trip-details-stops-row-time {
         grid-area: time;

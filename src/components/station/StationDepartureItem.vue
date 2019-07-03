@@ -122,6 +122,7 @@
     .departure-item {
         margin: auto 0;
         font-weight: bold;
+        font-size: 14px;
     }
 
     .departure-time {

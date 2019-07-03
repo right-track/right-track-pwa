@@ -24,8 +24,8 @@
                     <v-icon v-if="!auth.isLoggedIn">person_outline</v-icon>
                 </v-list-tile-action>
                 <v-list-tile-content>
-                    <v-list-tile-title v-if="auth.isLoggedIn">{{ auth.user.username }}</v-list-tile-title>
-                    <v-list-tile-sub-title v-if="auth.isLoggedIn">{{ auth.user.email }}</v-list-tile-sub-title>
+                    <v-list-tile-title v-if="auth.isLoggedIn">Log Out</v-list-tile-title>
+                    <v-list-tile-sub-title v-if="auth.isLoggedIn">{{ auth.user.username }}</v-list-tile-sub-title>
                     <v-list-tile-title v-if="!auth.isLoggedIn">Log In</v-list-tile-title>
                     <v-list-tile-sub-title v-if="!auth.isLoggedIn">Right Track Account</v-list-tile-sub-title>
                 </v-list-tile-content>

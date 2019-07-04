@@ -224,22 +224,22 @@
          */
         function _finish() {
             let menuItems = _buildMenuItems(baseItems, originItems, transferItems, destinationItems);
-            vm.$emit('setMoreMenuItems', menuItems)
+            vm.$emit('setMoreMenuItems', menuItems);
         }
     }
 
     /**
      * Build Menu Items for the specified Stop
-     * @param  {Vue} vm    Vue Instance
-     * @param  {Stop} stop Stop
-     * @return {Array}     Array of Menu Items
+     * @param  {Vue}   vm    Vue Instance
+     * @param  {Stop}  stop  Stop
+     * @return {Object}      Submenu Menu Item
      */
     function _buildStopMenuItems(vm, stop) {
-        let items = [];
         if ( stop ) {
-            items.push({type: "divider", title: stop.name});
+            let submenu = [];
             if ( stop.statusId && stop.statusId !== "-1" ) {
-                items.push({
+                submenu.push({
+                    key: 1,
                     type: "item",
                     icon: "access_time",
                     title: "View Station Table",
@@ -254,7 +254,8 @@
                     }
                 });
             }
-            items.push({
+            submenu.push({
+                key: 2,
                 type: "item",
                 icon: "info",
                 title: "Station Information",
@@ -262,7 +263,8 @@
                     window.location = stop.url;
                 }
             });
-            items.push({
+            submenu.push({
+                key: 3,
                 type: "item",
                 icon: "place",
                 title: "Station Map",
@@ -270,8 +272,15 @@
                     window.location = "https://www.google.com/maps/search/?api=1&query=" + stop.lat + "," + stop.lon;
                 }
             });
+            return {
+                type: "menu",
+                title: stop.name,
+                items: submenu
+            }
         }
-        return items;
+        else {
+            return undefined;
+        }
     }
 
     /**

@@ -58,6 +58,22 @@
                             <v-list-tile-title>{{ item.title }}</v-list-tile-title>
                         </v-list-tile>
 
+                        <!-- Sub Menu -->
+                        <template v-if="item.type==='menu'">
+                            <v-menu style="width: 100%" open-delay="500" open-on-hover offset-x left>
+                                <v-list-tile style="width: 100%" slot="activator" @click="">
+                                    <v-icon class="more-menu-list-icon">arrow_left</v-icon>
+                                    <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+                                </v-list-tile>
+                                <v-list>
+                                    <v-list-tile v-for="subitem in item.items" :key="subitem.key" @click="subitem.function">
+                                        <v-icon v-if="subitem.icon" class="more-menu-list-icon">{{ subitem.icon }}</v-icon>
+                                        <v-list-tile-title>{{ subitem.title }}</v-list-tile-title>
+                                    </v-list-tile>
+                                </v-list>
+                            </v-menu>
+                        </template>
+
                     </div>
                 </v-list>
             </v-menu>

@@ -365,13 +365,7 @@
      */
     function _prepDatabase(vm) {
         if ( vm.agencyId && !database.isReady(vm.agencyId) ) {
-            vm.progress = {
-                active: true,
-                title: "Preparing Database...",
-                type: "spinner"
-            }
             database.getDB(vm.agencyId, function(err, db, update) {
-                vm.progress.active = false;
                 if ( err ) {
                     vm.onShowSnackbar("Error: Could not prep DB");
                 }

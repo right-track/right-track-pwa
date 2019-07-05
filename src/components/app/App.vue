@@ -497,12 +497,16 @@
 
         // Start Download and Install
         database.update(vm.agencyId, 
-            function(progress) {
-                if ( progress > 95 ) {
+            function(progress, loaded, total) {
+                if ( progress >= 97 ) {
                     vm.progress.title = "Installing Database...";
                     vm.progress.progress = undefined;
+                    vm.progress.loaded = undefined;
+                    vm.progress.total = undefined;
                 }
                 else {
+                    if ( loaded ) vm.progress.loaded = (loaded / 1000000).toFixed(2);
+                    if ( total ) vm.progress.total = (total / 1000000).toFixed(2);
                     vm.progress.progress = parseFloat(progress);
                 }
             }, 

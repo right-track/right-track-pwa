@@ -1,5 +1,6 @@
 const core = require("right-track-core");
 const RightTrackDB = require("right-track-db-sqljs")("/js/worker.sql.js");
+const JSZip = require("jszip");
 const api = require("@/utils/api.js");
 const cache = require("@/utils/cache.js");
 const store = require("@/utils/store.js");
@@ -35,7 +36,7 @@ getDB = function(agencyCode, callback) {
             if ( data ) {
 
                 // Build the Right Track DB
-                _base64toDB(agencyCode, data, function(err, db) {
+                _uInt8ArraytoDB(agencyCode, data, function(err, db) {
                     if ( err ) {
                         return _finish(err);
                     }
@@ -91,48 +92,55 @@ function update(agency, progress, callback) {
     }
     
     // Download
-    api.download("/updates/database/" + agency + "?download=latest", progress, function(err, data) {
+    api.download("/updates/database/" + agency + "?download=latest&zip", progress, function(err, zipped) {
         if ( err ) {
             return callback(err);
         }
 
-        // Install / Save DB Data
-        _saveDBData(agency, data, function() {
+        // Unzip Data
+        JSZip.loadAsync(zipped).then(function(zip) {
+            zip.file("database.db").async("uint8array").then(function(unzipped) {
+                
+                // Install / Save DB Data
+                _saveDBData(agency, unzipped, function() {
 
-            // Clear Cached Database
-            _clearCache();
+                    // Clear Cached Database
+                    _clearCache();
 
-            // Build Right Track DB
-            _base64toDB(agency, data, function(err, db) {
-                if ( err ) {
-                    return callback(err);
-                }
+                    // Build Right Track DB
+                    _uInt8ArraytoDB(agency, unzipped, function(err, db) {
+                        if ( err ) {
+                            return callback(err);
+                        }
 
-                // Save the current database version
-                _saveDatabaseVersion(agency, db, function(err) {
-                    if ( err ) {
-                        return callback(err);
-                    }
+                        // Save the current database version
+                        _saveDatabaseVersion(agency, db, function(err) {
+                            if ( err ) {
+                                return callback(err);
+                            }
 
-                    // RETURN THE DATABASE
-                    return callback(null, db);
+                            // RETURN THE DATABASE
+                            return callback(null, db);
+
+                        });
+
+                    });
 
                 });
-
             });
-
         });
     });
 }
 
 
+
 /**
- * Convert Base64 String to Right Track Database
+ * Convert uInt8Array to Right Track Database
  * @param  {string}   agency   Agency ID Code
- * @param  {string}   data     Base64 Encoded Binary Data of the DB
+ * @param  {int[]}    data     uInt8Array encoded data of the DB
  * @param  {function} callback Callback function(err, db)
  */
-function _base64toDB(agency, data, callback) {
+function _uInt8ArraytoDB(agency, data, callback) {
 
     // Get the Agency Config
     cache.getAgency(agency, function(err, rta) {
@@ -141,20 +149,11 @@ function _base64toDB(agency, data, callback) {
         }
         let config = rta.getConfig();
 
-        // Convert Base64 to Binary Int Array
-        let raw = window.atob(data);
-        let rawLength = raw.length;
-        let array = new Uint8Array(new ArrayBuffer(rawLength));
-        for( let i = 0; i < rawLength; i++ ) {
-            array[i] = raw.charCodeAt(i);
-        }
-
         // Build the Right Track Database
-        let db = new RightTrackDB(config, array);
+        let db = new RightTrackDB(config, data);
 
         // Return the Database
         return callback(null, db);
-
     });
     
 }

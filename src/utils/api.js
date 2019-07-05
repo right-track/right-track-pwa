@@ -7,7 +7,11 @@ const config = require('@/utils/config.js').api;
  * @param  {Function} callback Callback function(err, response)
  */
 function get(path, binary, callback) {
-    _request("GET", path, null, binary, callback);
+    if ( callback === undefined && typeof binary === 'function' ) {
+        callback = binary;
+        binary = false;
+    }
+    _request("GET", path, null, binary, true, callback);
 }
 
 /**
@@ -17,7 +21,7 @@ function get(path, binary, callback) {
  * @param  {Function} callback Callback function(err, response)
  */
 function download(path, progress, callback) {
-    _request("GET", path, null, true, callback, progress);
+    _request("GET", path, null, true, false, callback, progress);
 }
 
 /**
@@ -28,7 +32,7 @@ function download(path, progress, callback) {
  * @param  {Function} callback Callback function(err, response)
  */
 function post(path, body, callback) {
-    _request("POST", path, body, false, callback);
+    _request("POST", path, body, false, false, callback);
 }
 
 /**
@@ -37,7 +41,7 @@ function post(path, body, callback) {
  * @param  {Function} callback Callback function(err, response)
  */
 function del(path, callback) {
-    _request("DELETE", path, null, false, callback);
+    _request("DELETE", path, null, false, false, callback);
 }
 
 
@@ -46,19 +50,14 @@ function del(path, callback) {
  * @param  {string} method HTTP Method
  * @param  {string} path API Request Path
  * @param  {Object} body POST request body (as JS Object)
- * @param  {boolean} [binary] Flag for binary data (images, etc)
+ * @param  {boolean} binary Flag for binary data (images, etc)
+ * @param  {boolean} parseBinary Flag to parse binary data to base64
  * @param  {Function} callback Callback function(err, response)
- * @param  {Function} [progress] Progress callback function(percent)
+ * @param  {Function} [progress] Progress callback function(percent, loaded, total)
  */
-function _request(method, path, body, binary, callback, progress) {
+function _request(method, path, body, binary, parseBinary, callback, progress) {
     const user = require('@/utils/user.js');                                // TODO: Fix Circular Dependency
     console.log("--> API REQUEST [" + method + "] " + path);
-
-    // Parse arguments
-    if ( callback === undefined && binary instanceof Function ) {
-        callback = binary;
-        binary = false;
-    }
     
     // Set URL to Config API Host
     let url = path.includes("http") ? path : config.host + path;
@@ -71,7 +70,7 @@ function _request(method, path, body, binary, callback, progress) {
 
     // Set Progress Listener
     xhr.onprogress = function(event) {
-        if ( progress ) progress((event.loaded/event.total)*100);
+        if ( progress ) progress((event.loaded/event.total)*100, event.loaded, event.total);
     }
 
     // Set Error Listener
@@ -119,15 +118,20 @@ function _request(method, path, body, binary, callback, progress) {
             // PARSE BINARY RESPONSE
             else {
                 if ( xhr.status === 200 ) {
-                    var uInt8Array = new Uint8Array(xhr.response);
-                    var i = uInt8Array.length;
-                    var binaryString = new Array(i);
-                    while (i--) {
-                      binaryString[i] = String.fromCharCode(uInt8Array[i]);
+                    if ( parseBinary ) {
+                        var uInt8Array = new Uint8Array(xhr.response);
+                        var i = uInt8Array.length;
+                        var binaryString = new Array(i);
+                        while (i--) {
+                          binaryString[i] = String.fromCharCode(uInt8Array[i]);
+                        }
+                        var data = binaryString.join('');
+                        var base64 = window.btoa(data);
+                        return callback(null, base64);
                     }
-                    var data = binaryString.join('');
-                    var base64 = window.btoa(data);
-                    return callback(null, base64);
+                    else {
+                        return callback(null, xhr.response);
+                    }
                 }
                 else {
                     return callback(new Error("[" + xhr.status + "] Invalid API Response"));

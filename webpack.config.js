@@ -81,11 +81,9 @@ module.exports = (env, argv) => ({
       to: path.resolve(__dirname, 'dist'),
       toType: 'dir'
     }]),
-    new WorkboxPlugin.GenerateSW({
-      swDest: 'sw.js',
-      include: [/\.html$/, /\.js$/, /\.css$/, /\.woff2$/],
-      clientsClaim: true,
-      skipWaiting: true
+    new WorkboxPlugin.InjectManifest({
+      swSrc: './src/sw.js',
+      swDest: 'sw.js'
     }),
     new webpack.DefinePlugin({
       __VERSION__: JSON.stringify(gitVersion),

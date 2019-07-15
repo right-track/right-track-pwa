@@ -166,6 +166,8 @@
     const Snackbar = require("@/components/app/Snackbar.vue").default;
     const OfflineAlert = require("@/components/app/OfflineAlert.vue").default;
 
+    const MANIFEST = require("@/manifest.json");
+
     const BOTTOM_BAR_PAGES = ['favorites', 'trips', 'stations', 'alerts'];
 
     const APP_DRAWER_VISIBLE_KEY = "app-drawer-visible";
@@ -318,6 +320,7 @@
                         vm.colors = agency.config.colors;
                         vm.transitInfo = agency.config.transit;
                         _applyTheme(vm);
+                        _updateManifest(vm, agency);
                         if ( callback ) return callback();
                     }
                 });
@@ -330,6 +333,7 @@
                 vm.colors = config.colors;
                 vm.transitInfo = undefined;
                 _applyTheme(vm);
+                _updateManifest(vm);
                 if ( callback ) return callback();
             }
 
@@ -338,6 +342,7 @@
         // Agency not set
         else if ( !agencyId ) {
             _applyTheme(vm);
+            _updateManifest(vm);
         }
         
     }
@@ -355,6 +360,53 @@
         vm.$vuetify.theme.secondaryText = colors.secondaryText;
         document.querySelector("meta[name=theme-color]").setAttribute("content", colors.primary);
     }
+
+
+    /**
+     * Update PWA Manifest
+     * @param  {Vue}    vm     Vue Instance
+     * @param  {Object} agency Agency Information
+     */
+    function _updateManifest(vm, agency) {
+        let manifest = JSON.parse(JSON.stringify(MANIFEST));
+        
+        // Build Agency Manifest
+        if ( agency ) {
+            manifest.short_name = MANIFEST.short_name + ": " + agency.id.toUpperCase();
+            manifest.name = agency.config.title;
+            manifest.start_url = window.location.protocol + "//" + window.location.host + "/" + agency.id;
+            manifest.scope = window.location.protocol + "//" + window.location.host + "/";
+            manifest.background_color = agency.config.colors.primary;
+            manifest.theme_color = agency.config.colors.primary;
+            manifest.icons = [
+                {
+                    "src": config.api.host + "/about/agencies/" + agency.id + "/icon?type=circle&size=192",
+                    "type": "image/png",
+                    "sizes": "192x192"
+                },
+                {
+                    "src": config.api.host + "/about/agencies/" + agency.id + "/icon?type=circle&size=512",
+                    "type": "image/png",
+                    "sizes": "512x512"
+                }
+            ];
+        }
+
+        // Build Default Manifest
+        else {
+            manifest.start_url = window.location.protocol + "//" + window.location.host + manifest.start_url;
+            manifest.scope = window.location.protocol + "//" + window.location.host + manifest.scope;
+            manifest.icons[0].src = window.location.protocol + "//" + window.location.host + manifest.icons[0].src;
+            manifest.icons[1].src = window.location.protocol + "//" + window.location.host + manifest.icons[1].src;
+        }
+        
+        // Set Manifest
+        let manifest_string = JSON.stringify(manifest);
+        let blob = new Blob([manifest_string], {type: "application/json"});
+        let manifest_url = URL.createObjectURL(blob);
+        document.querySelector("#manifest").setAttribute("href", manifest_url);
+    }
+
 
 
     /**

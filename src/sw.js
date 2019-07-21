@@ -13,6 +13,10 @@ workbox.routing.registerRoute(
     new RegExp('\\.(?:js|css|png|ico|json)$'),
     new workbox.strategies.StaleWhileRevalidate()
 );
+workbox.routing.registerRoute(
+    new RegExp('\\/'),
+    new workbox.strategies.StaleWhileRevalidate()
+);
 
 workbox.routing.registerNavigationRoute('/');
 

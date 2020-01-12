@@ -228,7 +228,8 @@
     function _sendFeedback(vm, callback) {
         let agency = vm.$router.currentRoute.params.agency;
         let replyTo = vm.email;
-        let subject = "[Feedback] [" + agency.toUpperCase() + "] " + vm.feedbackType;
+        let subject = vm.feedbackType;
+        let to = vm.feedbackType === "Incorrect Trip Results" ? "agency" : "client";
         
         // Build Email Body
         let body = "<h3>" + vm.feedbackType + "</h3>";
@@ -267,6 +268,7 @@
 
             // Send the Feedback
             api.post("/feedback", {
+                to: to,
                 replyTo: replyTo,
                 subject: subject,
                 body: body,

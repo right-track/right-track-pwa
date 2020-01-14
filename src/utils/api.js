@@ -36,6 +36,17 @@ function post(path, body, callback) {
 }
 
 /**
+ * Make a PUT request to the specified API Path with the 
+ * specified request body
+ * @param  {string}   path     API Request Path
+ * @param  {Object}   body     API Request Body
+ * @param  {Function} callback Callback function(err, response)
+ */
+function put(path, body, callback) {
+    _request("PUT", path, body, false, false, callback);
+}
+
+/**
  * Make a DELETE request to the specified API Path
  * @param  {[type]}   path     API Request Path
  * @param  {Function} callback Callback function(err, response)
@@ -60,7 +71,7 @@ function _request(method, path, body, binary, parseBinary, callback, progress) {
     console.log("--> API REQUEST [" + method + "] " + path);
     
     // Set URL to Config API Host
-    let url = path.includes("http") ? path : config.host + path;
+    let url = path.startsWith("http") ? path : config.host + path;
     
     // Set Request
     var xhr = new XMLHttpRequest();
@@ -84,7 +95,7 @@ function _request(method, path, body, binary, parseBinary, callback, progress) {
         if ( xhr.response ) {
 
             // HANDLE EXPIRED USER SESSION
-            if ( xhr.status === 401 && path !== "/auth/login" ) {
+            if ( xhr.status === 401 && path !== "/auth/login" && path != "/auth/reset" ) {
                 user.logout(function() {
                     location.reload();
                 });
@@ -154,7 +165,7 @@ function _request(method, path, body, binary, parseBinary, callback, progress) {
         }
 
         // Send POST Request (w/ Content-Type and Body)
-        if ( method === "POST" ) {
+        if ( method === "POST" || method === "PUT" ) {
             xhr.setRequestHeader("Content-Type", "application/json");
             xhr.send(JSON.stringify(body));
         }
@@ -171,6 +182,7 @@ function _request(method, path, body, binary, parseBinary, callback, progress) {
 module.exports = {
     get: get,
     post: post,
+    put: put,
     del: del,
     download: download
 }

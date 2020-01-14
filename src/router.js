@@ -9,6 +9,7 @@ import Alerts from "@/components/alerts/Alerts.vue"
 import Register from "@/components/auth/Register.vue"
 import Login from "@/components/auth/Login.vue"
 import Logout from "@/components/auth/Logout.vue"
+import Reset from "@/components/auth/Reset.vue"
 import Agencies from "@/components/agencies/Agencies.vue"
 import Favorites from "@/components/favorites/Favorites.vue"
 import Trips from "@/components/trips/Trips.vue"
@@ -48,6 +49,11 @@ var routes = [
         path: "/auth/logout",
         name: "logout",
         component: Logout
+    },
+    {
+        path: "/:agency?/auth/reset",
+        name: "reset",
+        component: Reset
     },
     {
         path: "/:agency?/alerts/:transitAgency?/:transitDivision?/:transitLine?",

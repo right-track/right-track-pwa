@@ -39,7 +39,9 @@
                         @keyup.enter="login">
                     </v-text-field>
 
-                    <br />
+                    <v-btn class="forgot" @click="reset" color="primary" flat small>Forgot Password?</v-btn>
+
+                    <br /><br />
 
                     <!-- Buttons -->
                     <div class="button-container">
@@ -126,6 +128,20 @@
                         }
                     });
                 }
+            },
+
+            /**
+             * Redirect to the Password Reset page
+             */
+            reset() {
+                this.$router.push({
+                    name: "reset",
+                    query: {
+                        agency: this.agencyId,
+                        src: this.src,
+                        login: this.user
+                    }
+                });
             }
 
         },
@@ -152,6 +168,10 @@
             grid-template-columns: 1fr 1fr;
             grid-template-areas: "register login";
         }
+    }
+    .forgot {
+        float: right;
+        margin-top: -20px;
     }
     .button-login {
         grid-area: login;

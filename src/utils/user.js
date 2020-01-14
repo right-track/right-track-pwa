@@ -3,6 +3,11 @@ const config = require("@/utils/config.js");
 const store = require("@/utils/store.js");
 
 
+// PASSWORD RESET PATH
+const PASSWORD_RESET_PATH = "/auth/reset";
+
+
+
 /**
  * User Login
  * @param  {string}   user     Username or email address
@@ -195,11 +200,61 @@ function register(email, username, password, callback) {
 }
 
 
+/**
+ * Request a Password Reset link be sent to the specified User
+ * @param  {string}   user     User username or email
+ * @param  {string}   agency   Agency ID
+ * @param  {string}   src      Login source
+ * @param  {Function} callback Callback function(err, confirmation)
+ */
+function requestPasswordReset(user, agency, src, callback) {
+
+    // Set Client URL
+    let url = window.location.protocol + "//" + window.location.host + PASSWORD_RESET_PATH;
+    url += "?agency=" + agency + "&src=" + src;
+    url = encodeURIComponent(url);
+
+    // Request Password Reset
+    api.get("/auth/reset?user=" + user + "&url=" + url, function(err, resp) {
+        if ( err || !resp || !resp.token || !resp.confirmation ) {
+            return callback(err);
+        }
+        resp.token.created = new Date(resp.token.created);
+        resp.token.expires = new Date(resp.token.expires);
+        return callback(null, resp);
+    });
+
+}
+
+
+/**
+ * Update the specified User's password
+ * @param  {string}   user     User PID
+ * @param  {string}   token    Password Reset Token
+ * @param  {string}   password New password
+ * @param  {Function} callback Callback function(err)
+ */
+function updatePassword(user, token, password, callback) {
+    let body = {
+        user: user,
+        password: {
+            token: token,
+            new: password
+        }
+    }
+    api.put("/auth/reset", body, function(err, resp) {
+        return callback(err);
+    });
+}
+
+
 
 module.exports = {
     login: login,
     logout: logout,
     isLoggedIn: isLoggedIn,
     getRegistrationRequirements: getRegistrationRequirements,
-    register: register
+    register: register,
+    requestPasswordReset: requestPasswordReset,
+    updatePassword: updatePassword
 }

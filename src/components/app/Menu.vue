@@ -118,7 +118,7 @@
     function _update(vm) {
         _setMenuItems(vm);
         _setFavoritesExpansion(vm);
-        vm.auth.display = !["login", "logout", "register"].includes(vm.$router.currentRoute.name);
+        vm.auth.display = !["login", "logout", "register", "reset"].includes(vm.$router.currentRoute.name);
         if ( vm.auth.display ) {
             _checkLoggedIn(vm);
         }

@@ -40,17 +40,29 @@ const LOGIN = function(vm) {
         },
         {
             key: 3,
-            type: "divider"
+            type: "item",
+            title: "Reset Password",
+            icon: "lock_open",
+            page: "reset",
+            query: {
+                agency: vm.$route.query.agency,
+                src: vm.$route.query.src,
+                login: null
+            }
         },
         {
             key: 4,
+            type: "divider"
+        },
+        {
+            key: 5,
             type: "item",
             title: "Agencies",
             icon: "list",
             page: "agencies"
         },
         {
-            key: 5,
+            key: 6,
             type: "item",
             title: "Back",
             icon: "keyboard_arrow_left",
@@ -190,7 +202,7 @@ function getMenuItems(vm) {
     if ( page === "agencies" || page === "about" || (page === "alerts" && !vm.$router.currentRoute.params.agency) || page === "pageNotFound" ) {
         return HOME(vm);
     }
-    else if ( page === "login" || page === "register" ) {
+    else if ( page === "login" || page === "register" || page === "reset" ) {
         return LOGIN(vm);
     }
     else if ( page === "logout" ) {

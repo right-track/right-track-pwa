@@ -26,19 +26,19 @@
                             type="email"
                             v-model="user"
                             :rules="[rules.required]"
-                            @keyup.enter="reset">
+                            @keydown.enter.prevent="request">
                         </v-text-field>
 
                         <br /><br />
 
                         <!-- Buttons -->
-                        <div class="button-container">
-                            <div class="button-reset">
-                                <v-btn @click="reset" :disabled="!valid_user || resetting" color="primary">
+                        <div class="button-request-container">
+                            <div class="button-request">
+                                <v-btn @click="request" :disabled="!valid_user || resetting" color="primary">
                                     <v-icon>lock_open</v-icon> Reset Password
                                 </v-btn>
                             </div>
-                            <div class="button-login">
+                            <div class="button-request-login">
                                 <v-btn @click="login" :disabled.sync="resetting" color="primary" outline>
                                     <v-icon>person_outline</v-icon> Log In
                                 </v-btn>
@@ -60,9 +60,9 @@
                 <v-card-text>
                     <p class="subheading">
                         A link to change your password has been sent to the email address registered to the account.
-                        Look for an email from <strong>{{request.confirmation.from}}</strong> with a subject of
-                        <strong>{{request.confirmation.subject}}</strong>.  You may need to check your mail's 
-                        Junk/Spam folder.  The link will expire on {{request.token.expires}}.
+                        Look for an email from <strong>{{request_resp.confirmation.from}}</strong> with a subject of
+                        <strong>{{request_resp.confirmation.subject}}</strong>.  You may need to check your mail's 
+                        Junk/Spam folder.  The link will expire on {{request_resp.token.expires}}.
                     </p>
                 </v-card-text>
             </v-card>
@@ -92,19 +92,19 @@
                             type="password"
                             v-model="pass"
                             :rules="[rules.required]"
-                            @keyup.enter="update">
+                            @keydown.enter.prevent="update">
                         </v-text-field>
 
                         <br /><br />
 
                         <!-- Buttons -->
-                        <div class="button-container">
-                            <div class="button-reset">
+                        <div class="button-update-container">
+                            <div class="button-update">
                                 <v-btn @click="update" :disabled="!valid_pass || updating" color="primary">
                                     <v-icon>lock_open</v-icon> Reset Password
                                 </v-btn>
                             </div>
-                            <div class="button-login">
+                            <div class="button-update-login">
                                 <v-btn @click="login" :disabled.sync="updating" color="primary" outline>
                                     <v-icon>person_outline</v-icon> Log In
                                 </v-btn>
@@ -131,10 +131,10 @@
                 display: "request",
                 agencyId: undefined,
                 src: undefined,
-                user: null,
+                user: undefined,
                 token: undefined,
                 userId: undefined,
-                pass: null,
+                pass: undefined,
                 valid_user: undefined,
                 valid_pass: undefined,
                 resetting: false,
@@ -144,7 +144,7 @@
                        return !!value || 'Required';
                     }
                 },
-                request: undefined
+                request_resp: undefined
             }
         },
 
@@ -165,9 +165,9 @@
             },
 
             /**
-             * Start the reset process
+             * Start the request password reset process
              */
-            reset() {
+            request() {
                 if ( this.$refs.form_user.validate() ) {
                     let vm = this;
                     vm.resetting = true;
@@ -179,7 +179,7 @@
                             vm.$emit('showSnackbar', err.message);
                         }
                         else {
-                            vm.request = resp;
+                            vm.request_resp = resp;
                             vm.display = "sent";
                         }
                     });
@@ -233,27 +233,52 @@
 
 
 <style scoped>
-    .button-container {
+    .button-request-container {
         display: grid;
         grid-gap: 10px;
         grid-template-columns: 1fr;
-        grid-template-areas: "reset" "login";
+        grid-template-areas: "request" "request-login";
     }
     @media (min-width: 600px) {
-        .button-container {
+        .button-request-container {
             grid-template-columns: 1fr 1fr;
-            grid-template-areas: "login reset";
+            grid-template-areas: "request-login request";
         }
     }
-    .button-reset {
-        grid-area: reset;
+    .button-request {
+        grid-area: request;
         text-align: center;
     }
-    .button-login {
-        grid-area: login;
+    .button-request-login {
+        grid-area: request-login;
         text-align: center;
     }
-    .button-container .v-btn {
+    .button-request-container .v-btn {
+        width: 90%;
+        max-width: 300px;
+    }
+
+    .button-update-container {
+        display: grid;
+        grid-gap: 10px;
+        grid-template-columns: 1fr;
+        grid-template-areas: "update" "update-login";
+    }
+    @media (min-width: 600px) {
+        .button-update-container {
+            grid-template-columns: 1fr 1fr;
+            grid-template-areas: "update-login update";
+        }
+    }
+    .button-update {
+        grid-area: update;
+        text-align: center;
+    }
+    .button-update-login {
+        grid-area: update-login;
+        text-align: center;
+    }
+    .button-update-container .v-btn {
         width: 90%;
         max-width: 300px;
     }

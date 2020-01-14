@@ -124,7 +124,9 @@
                         // Login Successful
                         else {
                             vm.$emit('showSnackbar', "Welcome, " + userInfo.username + "!");
-                            vm.$router.push({path: vm.src});
+                            vm.$router.push({
+                                path: vm.src ? vm.src : '/'
+                            });
                         }
                     });
                 }

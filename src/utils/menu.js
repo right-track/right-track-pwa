@@ -47,7 +47,7 @@ const LOGIN = function(vm) {
             query: {
                 agency: vm.$route.query.agency,
                 src: vm.$route.query.src,
-                login: null
+                login: undefined
             }
         },
         {

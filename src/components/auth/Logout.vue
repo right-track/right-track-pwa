@@ -27,7 +27,9 @@
             // Perform Logout
             user.logout(function() {
                 vm.$emit('showSnackbar', "Logout complete");
-                vm.$router.push({path: vm.src});
+                vm.$router.push({
+                    path: vm.src ? vm.src : '/'
+                });
             });
         }
 

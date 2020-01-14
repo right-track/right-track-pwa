@@ -212,9 +212,12 @@ function requestPasswordReset(user, agency, src, callback) {
     // Set Client URL
     let url = window.location.protocol + "//" + window.location.host + PASSWORD_RESET_PATH;
     if ( agency ) {
-        url += "?agency=" + agency + "&src=" + src;
+        url += "?agency=" + agency;
+        if ( src ) {
+            url += "&src=" + src;
+        }
     }
-    else {
+    else if ( src ) {
         url += "?src=" + src;
     }
     url = encodeURIComponent(url);

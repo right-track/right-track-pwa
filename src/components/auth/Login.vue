@@ -77,7 +77,7 @@
                 agencyId: undefined,
                 src: undefined,
                 valid: undefined,
-                user: null,
+                user: undefined,
                 pass: null,
                 loggingIn: false,
                 rules: {

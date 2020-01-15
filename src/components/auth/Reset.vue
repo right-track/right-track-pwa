@@ -35,12 +35,12 @@
                         <div class="button-request-container">
                             <div class="button-request">
                                 <v-btn @click="request" :disabled="!valid_user || requesting" color="primary">
-                                    <v-icon>lock_open</v-icon> Reset Password
+                                    <v-icon>lock_open</v-icon>&nbsp;&nbsp;Reset Password
                                 </v-btn>
                             </div>
                             <div class="button-request-login">
-                                <v-btn @click="login" :disabled.sync="requesting" color="primary" outline>
-                                    <v-icon>person_outline</v-icon> Log In
+                                <v-btn @click="cancel" :disabled.sync="requesting" color="primary" outline>
+                                    <v-icon>cancel</v-icon>&nbsp;&nbsp;Cancel
                                 </v-btn>
                             </div>
                         </div>
@@ -101,17 +101,48 @@
                         <div class="button-update-container">
                             <div class="button-update">
                                 <v-btn @click="update" :disabled="!valid_pass || updating" color="primary">
-                                    <v-icon>lock_open</v-icon> Reset Password
+                                    <v-icon>lock_open</v-icon>&nbsp;&nbsp;Reset Password
                                 </v-btn>
                             </div>
                             <div class="button-update-login">
-                                <v-btn @click="login" :disabled.sync="updating" color="primary" outline>
-                                    <v-icon>person_outline</v-icon> Log In
+                                <v-btn @click="cancel" :disabled.sync="updating" color="primary" outline>
+                                    <v-icon>cancel</v-icon>&nbsp;&nbsp;Cancel
                                 </v-btn>
                             </div>
                         </div>
 
                     </v-form>
+                </v-card-text>
+            </v-card>
+        </div>
+
+        <!-- PASSWORD RESET SUCCESS CARD -->
+        <div v-if="display === 'success'">
+            <v-card>
+                <v-card-title class="secondary-bg">
+                    <v-icon large left>lock_open</v-icon> 
+                    <h2>Reset Password</h2>
+                </v-card-title>
+                <v-card-text style="text-align: center">
+
+                    <br />
+
+                    <v-icon large>lock</v-icon>
+
+                    <br /><br />
+
+                    <p class="subheading">
+                        <strong>Password Reset!</strong>
+                        <br /><br />
+                        You must log in again with your new password.
+                    </p>
+
+                    <br />
+
+                    <v-btn @click="login" :disabled.sync="updating" color="primary" block>
+                        <v-icon>person_outline</v-icon>&nbsp;&nbsp;Log In
+                    </v-btn>
+
                 </v-card-text>
             </v-card>
         </div>
@@ -165,6 +196,15 @@
             },
 
             /**
+             * Redirect to the source page
+             */
+            cancel() {
+                this.$router.push({
+                    path: this.src ? this.src : (this.agencyId ? '/' + this.agencyId : '/')
+                });
+            },
+
+            /**
              * Start the request password reset process
              */
             request() {
@@ -201,14 +241,7 @@
                             vm.$emit('showSnackbar', err.message);
                         }
                         else {
-                            vm.$emit('showSnackbar', 'Password Updated');
-                            vm.$router.push({
-                                name: "login",
-                                query: {
-                                    agency: vm.agencyId,
-                                    src: vm.src
-                                }
-                            });
+                            vm.display = "success";
                         }
                     });
                 }

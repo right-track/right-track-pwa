@@ -94,7 +94,7 @@
                                     <v-flex xs12 sm3>
                                         <v-btn color="primary" block
                                             @click="updateUsername"
-                                            :disabled="this.username === this.user.username">
+                                            :disabled="this.updating || this.username === this.user.username">
                                                 Update
                                         </v-btn>
                                     </v-flex>
@@ -116,14 +116,14 @@
                                             <div class="email-button-update">
                                                 <v-btn color="primary" block
                                                     @click="updateEmail"
-                                                    :disabled="this.email === this.user.email">
+                                                    :disabled="this.updating || this.email === this.user.email">
                                                         Update
                                                 </v-btn>
                                             </div>
                                             <div class="email-button-verify">
                                                 <v-btn color="primary" outline block
                                                     @click="verifyEmail"
-                                                    :disabled="user.verified">
+                                                    :disabled="this.updating || user.verified">
                                                         <template v-if="user.verified">
                                                             <v-icon>verified_user</v-icon>&nbsp;Verified
                                                         </template>
@@ -160,7 +160,7 @@
                                     <v-flex xs12 sm3>
                                         <v-btn color="primary" block
                                             @click="updatePassword"
-                                            :disabled="!this.password.current || !this.password.new">
+                                            :disabled="this.updating || !this.password.current || !this.password.new">
                                                 Update
                                         </v-btn>
                                     </v-flex>
@@ -206,7 +206,8 @@
                 password: {
                     current: undefined,
                     new: undefined
-                }
+                },
+                updating: false
             }
         },
 
@@ -230,8 +231,10 @@
              */
             updateUsername() {
                 let vm = this;
-                if ( vm.username !== vm.user.username ) {
+                if ( !vm.updating && vm.username !== vm.user.username ) {
+                    vm.updating = true;
                     user.updateUsername(vm.username, function(err, user) {
+                        vm.updating = false;
                         if ( err ) {
                             vm.$emit('showSnackbar', err.message);
                         }
@@ -249,8 +252,10 @@
              */
             updateEmail() {
                 let vm = this;
-                if ( vm.email !== vm.user.email ) {
+                if ( !vm.updating && vm.email !== vm.user.email ) {
+                    vm.updating = true;
                     user.updateEmail(vm.email, function(err, user) {
+                        vm.updating = false;
                         if ( err ) {
                             vm.$emit('showSnackbar', err.message);
                         }
@@ -282,8 +287,10 @@
              */
             updatePassword() {
                 let vm = this;
-                if ( vm.password.current && vm.password.new ) {
+                if ( !vm.updating && vm.password.current && vm.password.new ) {
+                    vm.updating = true;
                     user.updatePassword(vm.password.current, vm.password.new, function(err, user) {
+                        vm.updating = false;
                         if ( err ) {
                             vm.$emit('showSnackbar', 'Could not update password');
                         }

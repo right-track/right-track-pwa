@@ -333,6 +333,12 @@
             _updateStop(this);
         },
 
+        // ==== BEFORE ROUTE LEAVE ==== //
+        beforeRouteLeave(to, from, next) {
+            if ( TIMER_ID ) clearInterval(TIMER_ID);
+            return next();
+        },
+
         // ==== COMPONENT WATCHERS ==== //
         watch: {
 

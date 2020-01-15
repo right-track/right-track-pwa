@@ -669,6 +669,13 @@
             _updateStops(this);
         },
 
+        // ==== BEFORE ROUTE LEAVE ==== //
+        beforeRouteLeave(to, from, next) {
+            if ( TIMER_ID ) clearInterval(TIMER_ID);
+            if ( STATUS_TIMER_ID ) clearInterval(STATUS_TIMER_ID);
+            return next();
+        },
+
         // ==== COMPONENT WATCHERS ==== //
         watch: {
 

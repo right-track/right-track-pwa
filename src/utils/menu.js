@@ -202,7 +202,7 @@ function getMenuItems(vm) {
     if ( page === "agencies" || page === "about" || (page === "alerts" && !vm.$router.currentRoute.params.agency) || page === "pageNotFound" ) {
         return HOME(vm);
     }
-    else if ( page === "login" || page === "register" || page === "reset" ) {
+    else if ( page === "login" || page === "register" || page === "reset" || page === "verify" ) {
         return LOGIN(vm);
     }
     else if ( page === "logout" ) {

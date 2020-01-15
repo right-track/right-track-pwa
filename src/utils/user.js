@@ -3,8 +3,9 @@ const config = require("@/utils/config.js");
 const store = require("@/utils/store.js");
 
 
-// PASSWORD RESET PATH
+// CLIENT URLs
 const PASSWORD_RESET_PATH = "/auth/reset";
+const EMAIL_VERIFICATION_PATH = "/auth/verify";
 
 
 
@@ -227,8 +228,8 @@ function requestPasswordReset(login, agency, src, callback) {
         if ( err || !resp || !resp.token || !resp.confirmation ) {
             return callback(err);
         }
-        resp.token.created = new Date(resp.token.created);
-        resp.token.expires = new Date(resp.token.expires);
+        resp.token.created = new Date(resp.token.created).toLocaleString();
+        resp.token.expires = new Date(resp.token.expires).toLocaleString();
         return callback(null, resp);
     });
 
@@ -253,6 +254,78 @@ function resetPassword(user, token, password, callback) {
     api.put("/auth/reset", body, function(err, resp) {
         return callback(err);
     });
+}
+
+
+/**
+ * Request an email verification token be sent to the User's email address
+ * @param  {string}   agency   Agency ID
+ * @param  {string}   src      Verification source
+ * @param  {Function} callback Callback function(err, confirmation)
+ */
+function requestEmailVerification(agency, src, callback) {
+
+    // Set Client URL
+    let url = window.location.protocol + "//" + window.location.host + EMAIL_VERIFICATION_PATH;
+    if ( agency ) {
+        url += "?agency=" + agency;
+        if ( src ) {
+            url += "&src=" + src;
+        }
+    }
+    else if ( src ) {
+        url += "?src=" + src;
+    }
+    url = encodeURIComponent(url);
+
+    // Get Logged In User
+    isLoggedIn(function(isLoggedIn, user) {
+        if ( !isLoggedIn ) {
+            return callback(new Error("The User is not logged in."));
+        }
+
+        // Request Email Verification Token
+        api.get("/users/" + user.id + "/verify?url=" + url, function(err, resp) {
+            if ( err || !resp || !resp.token || !resp.confirmation ) {
+                return callback(err);
+            }
+            resp.token.created = new Date(resp.token.created).toLocaleString();
+            resp.token.expires = new Date(resp.token.expires).toLocaleString();
+            return callback(null, resp);
+        });
+    });
+
+}
+
+
+/**
+ * Verify the specified email token for the logged in User
+ * @param  {string}   token    Email Verification Token
+ * @param  {Function} callback Callback function(err, user)
+ */
+function verifyEmail(token, callback) {
+
+    // Get Logged In User
+    isLoggedIn(function(isLoggedIn, user) {
+        if ( !isLoggedIn ) {
+            return callback(new Error("The User is not logged in."));
+        }
+
+        // Verify Token
+        let body = {token: token};
+        api.put("/users/" + user.id + "/verify", body, function(err, resp) {
+            if ( err ) {
+                return callback(err);
+            }
+
+            // Refresh User
+            refreshUser(function(err, user) {
+                return callback(err, user);
+            });
+        });
+
+    });
+       
 }
 
 
@@ -409,6 +482,8 @@ module.exports = {
     register: register,
     requestPasswordReset: requestPasswordReset,
     resetPassword: resetPassword,
+    requestEmailVerification: requestEmailVerification,
+    verifyEmail: verifyEmail,
     updateUsername: updateUsername,
     updateEmail: updateEmail,
     updatePassword: updatePassword,

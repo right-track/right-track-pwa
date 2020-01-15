@@ -105,6 +105,9 @@ function _request(method, path, body, binary, parseBinary, callback, progress) {
                 else if ( isLoggedIn && method === "PUT" && path === "/users/" + userInfo.id ) {
                     logout_on_auth_failed = false;
                 }
+                else if ( isLoggedIn && method === "PUT" && path === "/users/" + userInfo.id + "/verify" ) {
+                    logout_on_auth_failed = false;
+                }
                 
                 // LOGOUT USER IF EXPIRED SESSION
                 if ( xhr.status === 401 && logout_on_auth_failed ) {

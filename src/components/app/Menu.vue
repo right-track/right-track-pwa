@@ -294,6 +294,11 @@
                 let params = item.params;
                 let query = item.query;
                 
+                // Route not defined
+                if ( !route ) {
+                    route = "/";
+                }
+
                 // Go to external site
                 if ( route.startsWith("http") ) {
                     window.location = route;

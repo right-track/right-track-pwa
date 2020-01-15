@@ -10,6 +10,7 @@ import Register from "@/components/auth/Register.vue"
 import Login from "@/components/auth/Login.vue"
 import Logout from "@/components/auth/Logout.vue"
 import Reset from "@/components/auth/Reset.vue"
+import Verify from "@/components/auth/Verify.vue"
 import Agencies from "@/components/agencies/Agencies.vue"
 import Favorites from "@/components/favorites/Favorites.vue"
 import Trips from "@/components/trips/Trips.vue"
@@ -51,9 +52,14 @@ var routes = [
         component: Logout
     },
     {
-        path: "/:agency?/auth/reset",
+        path: "/auth/reset",
         name: "reset",
         component: Reset
+    },
+    {
+        path: "/auth/verify",
+        name: "verify",
+        component: Verify
     },
     {
         path: "/:agency?/alerts/:transitAgency?/:transitDivision?/:transitLine?",

@@ -29,6 +29,7 @@
                         <v-icon>person</v-icon>
                     </v-tab>
 
+
                     <!-- SCHEDULE UPDATES -->
                     <v-tab-item class="tab-item">
                         <h3>Schedule Updates</h3>
@@ -36,6 +37,7 @@
                         <p>Reset Database: clear and download latest</p>
                         <p>Restore Database: clear and download archive</p>
                     </v-tab-item>
+
 
                     <!-- TRIP SEARCHES -->
                     <v-tab-item class="tab-item">
@@ -48,6 +50,7 @@
                         <p>Min Layover Mins: <code>settings.search.minLayoverMins = 0</code></p>
                         <p>Max Transfers: <code>settings.search.maxTransfers = 2</code></p>
                     </v-tab-item>
+
 
                     <!-- USER ACCOUNT -->
                     <v-tab-item class="tab-item">
@@ -264,7 +267,13 @@
              * Verify the User's email address
              */
             verifyEmail() {
-                console.log("VERIFY EMAIL");
+                this.$router.push({
+                    name: "verify",
+                    query: {
+                        agency: this.agencyId,
+                        src: '/' + this.agencyId + '/settings?tab=account'
+                    }
+                });
             },
 
             /**

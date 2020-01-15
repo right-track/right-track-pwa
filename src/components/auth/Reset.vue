@@ -34,12 +34,12 @@
                         <!-- Buttons -->
                         <div class="button-request-container">
                             <div class="button-request">
-                                <v-btn @click="request" :disabled="!valid_user || resetting" color="primary">
+                                <v-btn @click="request" :disabled="!valid_user || requesting" color="primary">
                                     <v-icon>lock_open</v-icon> Reset Password
                                 </v-btn>
                             </div>
                             <div class="button-request-login">
-                                <v-btn @click="login" :disabled.sync="resetting" color="primary" outline>
+                                <v-btn @click="login" :disabled.sync="requesting" color="primary" outline>
                                     <v-icon>person_outline</v-icon> Log In
                                 </v-btn>
                             </div>
@@ -137,7 +137,7 @@
                 pass: undefined,
                 valid_user: undefined,
                 valid_pass: undefined,
-                resetting: false,
+                requesting: false,
                 updating: false,
                 rules: {
                     required: function(value) {
@@ -170,11 +170,11 @@
             request() {
                 if ( this.$refs.form_user.validate() ) {
                     let vm = this;
-                    vm.resetting = true;
+                    vm.requesting = true;
                     
                     // Request Password Reset
                     user.requestPasswordReset(vm.user, vm.agencyId, vm.src, function(err, resp) {
-                        vm.resetting = false;
+                        vm.requesting = false;
                         if ( err ) {
                             vm.$emit('showSnackbar', err.message);
                         }

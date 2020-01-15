@@ -202,12 +202,12 @@ function register(email, username, password, callback) {
 
 /**
  * Request a Password Reset link be sent to the specified User
- * @param  {string}   user     User username or email
+ * @param  {string}   login    User username or email
  * @param  {string}   agency   Agency ID
  * @param  {string}   src      Login source
  * @param  {Function} callback Callback function(err, confirmation)
  */
-function requestPasswordReset(user, agency, src, callback) {
+function requestPasswordReset(login, agency, src, callback) {
 
     // Set Client URL
     let url = window.location.protocol + "//" + window.location.host + PASSWORD_RESET_PATH;
@@ -223,7 +223,7 @@ function requestPasswordReset(user, agency, src, callback) {
     url = encodeURIComponent(url);
 
     // Request Password Reset
-    api.get("/auth/reset?user=" + user + "&url=" + url, function(err, resp) {
+    api.get("/auth/reset?user=" + login + "&url=" + url, function(err, resp) {
         if ( err || !resp || !resp.token || !resp.confirmation ) {
             return callback(err);
         }
@@ -236,13 +236,13 @@ function requestPasswordReset(user, agency, src, callback) {
 
 
 /**
- * Update the specified User's password
+ * Reset the User's password using a password reset token
  * @param  {string}   user     User PID
  * @param  {string}   token    Password Reset Token
  * @param  {string}   password New password
  * @param  {Function} callback Callback function(err)
  */
-function updatePassword(user, token, password, callback) {
+function resetPassword(user, token, password, callback) {
     let body = {
         user: user,
         password: {
@@ -256,6 +256,150 @@ function updatePassword(user, token, password, callback) {
 }
 
 
+/**
+ * Update the username of the logged in User
+ * @param  {string}   username New username
+ * @param  {Function} callback Callback function(err, user)
+ */
+function updateUsername(username, callback) {
+    return updateUser({username: username}, callback);
+}
+
+
+/**
+ * Update the email address of the logged in User
+ * @param  {string}   email    New email address
+ * @param  {Function} callback Callback function(err, user)
+ */
+function updateEmail(email, callback) {
+    return updateUser({email: email}, callback);
+}
+
+
+/**
+ * Update the password of the logged in User
+ * @param  {string}   current  Current password
+ * @param  {string}   update      New password
+ * @param  {Function} callback Callback function(err, user)
+ */
+function updatePassword(current, update, callback) {
+    return updateUser({
+        password: {
+            current: current,
+            new: update
+        }
+    }, callback);
+}
+
+
+/**
+ * Update properties of the logged in User
+ * @param  {object}   properties New properties for the logged in User
+ * @param  {string}   properties.email  New email address
+ * @param  {string}   properties.username  New username
+ * @param  {object}   properties.passsord  New password properties {current: , new: }
+ * @param  {Function} callback   Callback function(err, user)
+ */
+function updateUser(properties, callback) {
+
+    // Make sure the User is currently logged in
+    isLoggedIn(function(isLoggedIn, user) {
+
+        // If not logged in
+        if ( !isLoggedIn ) {
+            return callback(new Error("The User is not currently logged in."));
+        }
+
+        // Make API Request
+        api.put("/users/" + user.id, properties, function(err, resp) {
+            if ( err ) {
+                return callback(err);
+            }
+
+            // Refresh User
+            refreshUser(function(err, user) {
+                return callback(err, user);
+            });
+
+        });
+    });
+
+}
+
+
+/**
+ * Refresh the information of the currently logged in User
+ * @param  {Function} callback Callback function(err, user)
+ */
+function refreshUser(callback) {
+
+    // Make sure the User is currently logged in
+    isLoggedIn(function(isLoggedIn, user) {
+        
+        // If not logged in...
+        if ( !isLoggedIn ) {
+            return callback();
+        }
+        
+        // Get fresh User info
+        api.get("/users/" + user.id, function(err, resp) {
+            if ( err ) {
+                return callback(err);
+            }
+            if ( !resp.user ) {
+                return callback(new Error("No User information returned from the server"));
+            }
+            else {
+                if ( resp.user.sessions ) {
+                    delete resp.user.sessions;    
+                }
+                store.put("user", resp.user);
+                return callback(null, resp.user);   
+            }
+        });
+
+    });
+
+}
+
+
+/**
+ * Delete the User from the API Server
+ * @param  {Function} callback Callback function(err)
+ */
+function deleteUser(callback) {
+
+    // Make sure the User is currently logged in
+    isLoggedIn(function(isLoggedIn, user) {
+
+        // If not logged in...
+        if ( !isLoggedIn ) {
+            return callback(new Error("The User is currently not logged in."));
+        }
+
+        // Delete the User
+        api.del("/users/" + user.id, function(err) {
+            if ( err ) {
+                return callback(err);    
+            }
+
+            // Clear user settings
+            store.del("user", function() {
+                store.del("session", function() {
+                    store.delFavorites(function(err) {
+                        return callback()
+                    });
+                });    
+            });
+        });
+
+    });
+
+}
+
+
+
+
 
 module.exports = {
     login: login,
@@ -264,5 +408,10 @@ module.exports = {
     getRegistrationRequirements: getRegistrationRequirements,
     register: register,
     requestPasswordReset: requestPasswordReset,
-    updatePassword: updatePassword
+    resetPassword: resetPassword,
+    updateUsername: updateUsername,
+    updateEmail: updateEmail,
+    updatePassword: updatePassword,
+    updateUser: updateUser,
+    deleteUser: deleteUser
 }

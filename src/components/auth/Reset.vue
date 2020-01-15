@@ -6,7 +6,7 @@
             <v-card>
                 <v-card-title class="secondary-bg">
                     <v-icon large left>lock_open</v-icon> 
-                    <h2>Request Password Reset</h2>
+                    <h2>Reset Password</h2>
                 </v-card-title>
                 <v-card-text>
                     <p class="subheading">
@@ -195,7 +195,7 @@
                     vm.updating = true;
 
                     // Update Password
-                    user.updatePassword(vm.userId, vm.token, vm.pass, function(err) {
+                    user.resetPassword(vm.userId, vm.token, vm.pass, function(err) {
                         vm.updating = false;
                         if ( err ) {
                             vm.$emit('showSnackbar', err.message);

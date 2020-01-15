@@ -72,92 +72,101 @@ function _request(method, path, body, binary, parseBinary, callback, progress) {
     
     // Set URL to Config API Host
     let url = path.startsWith("http") ? path : config.host + path;
-    
-    // Set Request
-    var xhr = new XMLHttpRequest();
-    xhr.open(method, url, true);
-    xhr.setRequestHeader("Authorization", "Token " + config.clientKey);
-    xhr.responseType = binary ? "arraybuffer" : "text";
-
-    // Set Progress Listener
-    xhr.onprogress = function(event) {
-        if ( progress ) progress((event.loaded/event.total)*100, event.loaded, event.total);
-    }
-
-    // Set Error Listener
-    xhr.onerror = function() {
-        console.log("XHR ERROR [" + method + " " + path + "]");
-        return callback(new Error("Could not make API request. Please try again later."));
-    }
-
-    // Set Load Listener
-    xhr.onload = function(e) {
-        if ( xhr.response ) {
-
-            // HANDLE EXPIRED USER SESSION
-            if ( xhr.status === 401 && path !== "/auth/login" && path != "/auth/reset" ) {
-                user.logout(function() {
-                    location.reload();
-                });
-                return callback(new Error("Session Expired - You have been logged out."));
-            }
-
-            // PARSE JSON RESPONSE
-            else if ( !binary ) {
-                try {
-
-                    // Parse Response to JSON
-                    var resp = JSON.parse(xhr.response);
-                
-                    // Request Success
-                    if ( resp.status === "success" ) {
-                        return callback(null, resp.response);
-                    }
-
-                    // Request Error
-                    else if ( resp.status === "error" ) {
-                        return callback(new Error("[" + resp.error.type + "] " + resp.error.message));
-                    }
-
-                }
-                catch(err) {
-                    console.log("API Response Error: " + err);
-                    console.log(xhr.response);
-                }
-            }
-
-            // PARSE BINARY RESPONSE
-            else {
-                if ( xhr.status === 200 ) {
-                    if ( parseBinary ) {
-                        var uInt8Array = new Uint8Array(xhr.response);
-                        var i = uInt8Array.length;
-                        var binaryString = new Array(i);
-                        while (i--) {
-                          binaryString[i] = String.fromCharCode(uInt8Array[i]);
-                        }
-                        var data = binaryString.join('');
-                        var base64 = window.btoa(data);
-                        return callback(null, base64);
-                    }
-                    else {
-                        return callback(null, xhr.response);
-                    }
-                }
-                else {
-                    return callback(new Error("[" + xhr.status + "] Invalid API Response"));
-                }
-            }
-
-        }
-
-        // Request Failure
-        return callback(new Error("Could not make API request to " + path));
-
-    };
 
     // Get Session Info
     user.isLoggedIn(function (isLoggedIn, userInfo, sessionInfo) {
+
+        // Set Request
+        var xhr = new XMLHttpRequest();
+        xhr.open(method, url, true);
+        xhr.setRequestHeader("Authorization", "Token " + config.clientKey);
+        xhr.responseType = binary ? "arraybuffer" : "text";
+
+        // Set Progress Listener
+        xhr.onprogress = function(event) {
+            if ( progress ) progress((event.loaded/event.total)*100, event.loaded, event.total);
+        }
+
+        // Set Error Listener
+        xhr.onerror = function() {
+            console.log("XHR ERROR [" + method + " " + path + "]");
+            return callback(new Error("Could not make API request. Please try again later."));
+        }
+
+        // Set Load Listener
+        xhr.onload = function(e) {
+            if ( xhr.response ) {
+
+                // HANDLE EXPIRED USER SESSION
+                let logout_on_auth_failed = true;
+                if ( path === "/auth/login" || path === "/auth/reset" ) {
+                    logout_on_auth_failed = false;
+                }
+                else if ( isLoggedIn && method === "PUT" && path === "/users/" + userInfo.id ) {
+                    logout_on_auth_failed = false;
+                }
+                
+                // LOGOUT USER IF EXPIRED SESSION
+                if ( xhr.status === 401 && logout_on_auth_failed ) {
+                    user.logout(function() {
+                        location.reload();
+                    });
+                    return callback(new Error("Session Expired - You have been logged out."));
+                }
+
+                // PARSE JSON RESPONSE
+                else if ( !binary ) {
+                    try {
+
+                        // Parse Response to JSON
+                        var resp = JSON.parse(xhr.response);
+                    
+                        // Request Success
+                        if ( resp.status === "success" ) {
+                            return callback(null, resp.response);
+                        }
+
+                        // Request Error
+                        else if ( resp.status === "error" ) {
+                            return callback(new Error("[" + resp.error.type + "] " + resp.error.message));
+                        }
+
+                    }
+                    catch(err) {
+                        console.log("API Response Error: " + err);
+                        console.log(xhr.response);
+                    }
+                }
+
+                // PARSE BINARY RESPONSE
+                else {
+                    if ( xhr.status === 200 ) {
+                        if ( parseBinary ) {
+                            var uInt8Array = new Uint8Array(xhr.response);
+                            var i = uInt8Array.length;
+                            var binaryString = new Array(i);
+                            while (i--) {
+                              binaryString[i] = String.fromCharCode(uInt8Array[i]);
+                            }
+                            var data = binaryString.join('');
+                            var base64 = window.btoa(data);
+                            return callback(null, base64);
+                        }
+                        else {
+                            return callback(null, xhr.response);
+                        }
+                    }
+                    else {
+                        return callback(new Error("[" + xhr.status + "] Invalid API Response"));
+                    }
+                }
+
+            }
+
+            // Request Failure
+            return callback(new Error("Could not make API request to " + path));
+
+        };
             
         // Add Session Token to request
         if ( isLoggedIn ) {

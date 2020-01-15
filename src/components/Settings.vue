@@ -82,7 +82,9 @@
                                 <p><strong>Update Username:</strong></p>
                                 <v-layout row wrap>
                                     <v-flex xs12 sm8>
-                                        <v-text-field label="Username" v-model="username" box>
+                                        <v-text-field box
+                                            label="Username" v-model="username"
+                                            @keydown.enter.prevent="updateUsername">
                                         </v-text-field>
                                     </v-flex>
                                     <v-flex sm1></v-flex>
@@ -100,7 +102,9 @@
                                 <p><strong>Update Email Address:</strong></p>
                                 <v-layout row wrap>
                                     <v-flex xs12 sm8>
-                                        <v-text-field label="Email Address" v-model="email" box>
+                                        <v-text-field box
+                                            label="Email Address" v-model="email"
+                                            @keydown.enter.prevent="updateEmail">
                                         </v-text-field>
                                     </v-flex>
                                     <v-flex sm1></v-flex>
@@ -134,7 +138,9 @@
                                 <p><strong>Update Password:</strong></p>
                                 <v-layout row wrap>
                                     <v-flex xs12 sm8>
-                                        <v-text-field label="Current Password" v-model="password.current" box>
+                                        <v-text-field type="password" box
+                                            label="Current Password" v-model="password.current"
+                                            @keydown.enter.prevent="updatePassword">
                                         </v-text-field>
                                     </v-flex>
                                     <v-flex sm1></v-flex>
@@ -142,7 +148,9 @@
                                 </v-layout>
                                 <v-layout row wrap>
                                     <v-flex xs12 sm8>
-                                        <v-text-field label="New Password" v-model="password.new" box>
+                                        <v-text-field type="password" box
+                                            label="New Password" v-model="password.new"
+                                            @keydown.enter.prevent="updatePassword">
                                         </v-text-field>
                                     </v-flex>
                                     <v-flex sm1></v-flex>
@@ -159,7 +167,7 @@
 
                                 <p><strong>Delete Account:</strong></p>
 
-                                <v-btn color="error" block
+                                <v-btn color="red" dark block
                                     @click="deleteAccount">
                                         Delete Account
                                 </v-btn>
@@ -218,14 +226,38 @@
              * Update the User's username
              */
             updateUsername() {
-                console.log("UPDATE USERNAME: " + this.username);
+                let vm = this;
+                if ( vm.username !== vm.user.username ) {
+                    user.updateUsername(vm.username, function(err, user) {
+                        if ( err ) {
+                            vm.$emit('showSnackbar', err.message);
+                        }
+                        else {
+                            vm.user = user;
+                            vm.$forceUpdate();
+                            vm.$emit('showSnackbar', 'Username Updated');
+                        }
+                    });
+                }
             },
 
             /**
              * Update the User's email address
              */
             updateEmail() {
-                console.log("UPDATE EMAIL: " + this.email);
+                let vm = this;
+                if ( vm.email !== vm.user.email ) {
+                    user.updateEmail(vm.email, function(err, user) {
+                        if ( err ) {
+                            vm.$emit('showSnackbar', err.message);
+                        }
+                        else {
+                            vm.user = user;
+                            vm.$forceUpdate();
+                            vm.$emit('showSnackbar', 'Email Address Updated');
+                        }
+                    });
+                }
             },
 
             /**
@@ -240,7 +272,20 @@
              * @return {[type]} [description]
              */
             updatePassword() {
-                console.log("UPDATE PASSWORD: " + this.password.current + " --> " + this.password.new);
+                let vm = this;
+                if ( vm.password.current && vm.password.new ) {
+                    user.updatePassword(vm.password.current, vm.password.new, function(err, user) {
+                        if ( err ) {
+                            vm.$emit('showSnackbar', 'Could not update password');
+                        }
+                        else {
+                            vm.user = user;
+                            vm.password = {};
+                            vm.$forceUpdate();
+                            vm.$emit('showSnackbar', 'Password Updated');
+                        }
+                    });
+                }
             },
 
             /**
@@ -248,7 +293,28 @@
              * @return {[type]} [description]
              */
             deleteAccount() {
-                console.log("DELETE ACCOUNT");
+                let vm = this;
+                vm.$emit(
+                    'showDialog', 
+                    'Delete User?', 
+                    'Are you sure you want to delete your account?  Your account information and saved favorites will be removed.  This cannot be undone.',
+                    'Delete Account',
+                    'Cancel',
+                    function() {
+                        
+                        // Delete the User
+                        user.deleteUser(function(err) {
+                            if ( err ) {
+                                vm.$emit('showSnackbar', err.message);
+                            }
+                            else {
+                                vm.$emit('showSnackbar', 'User Account Deleted');
+                                location.reload();
+                            }
+                        });
+
+                    }
+                );
             },
 
             /**

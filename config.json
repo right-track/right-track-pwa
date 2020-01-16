@@ -16,5 +16,22 @@
     "primaryText": "#fff",
     "secondary": "#FFC107",
     "secondaryText": "#000"
+  },
+  "settings": {
+    "updates": {
+      "autoCheck": true
+    },
+    "search": {
+      "allowTransfers": true,
+      "allowChangeInDirection": true,
+      "preDepartureHours": 3,
+      "postDepartureHours": 6,
+      "maxLayoverMins": 30,
+      "minLayoverMins": 0,
+      "maxTransfers": 2,
+      "testing": {
+        "david": "waring"
+      }
+    }
   }
 }

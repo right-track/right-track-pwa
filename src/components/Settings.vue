@@ -33,9 +33,43 @@
                     <!-- SCHEDULE UPDATES -->
                     <v-tab-item class="tab-item">
                         <h3>Schedule Updates</h3>
-                        <p>Check for Updates Automatically: <code>settings.updates.autoCheck = true</code></p>
-                        <p>Reset Database: clear and download latest</p>
-                        <p>Restore Database: clear and download archive</p>
+                        
+                        <v-layout class="mt-1" row wrap>
+                            <v-flex xs10>
+                                <p><strong>Check for Updates Automatically</strong></p>
+                            </v-flex>
+                            <v-flex xs1></v-flex>
+                            <v-flex xs1>
+                                <v-switch class="mt-1" color="primary" v-model="updates_autoCheck"></v-switch>
+                            </v-flex>
+                        </v-layout>
+
+                        <br />
+
+                        <h3>Reset Database</h3>
+
+                        <v-layout class="mt-1" row wrap>
+                            <v-flex xs12 sm8>
+                                <p>Clear the currently installed database and <strong>download the latest schedules</strong></p>
+                            </v-flex>
+                            <v-flex sm1></v-flex>
+                            <v-flex class="mt-2" xs12 sm3>
+                                <v-btn color="primary" block>Reset</v-btn>
+                            </v-flex>
+                        </v-layout>
+
+                        <div class="hidden-sm-and-up"><br /><br /></div>
+
+                        <v-layout class="mt-1" row wrap>
+                            <v-flex xs12 sm8>
+                                <p>Clear the currently installed database and <strong>download a previous set of schedules</strong></p>
+                            </v-flex>
+                            <v-flex sm1></v-flex>
+                            <v-flex class="mt-2" xs12 sm3>
+                                <v-btn color="primary" block>Restore</v-btn>
+                            </v-flex>
+                        </v-layout>
+
                     </v-tab-item>
 
 
@@ -190,6 +224,8 @@
 
 <script>
     const user = require("@/utils/user.js");
+    const settings = require("@/utils/settings.js");
+
     const TAB_NAMES = ["updates", "trips", "account"];
     
     module.exports = {
@@ -200,6 +236,8 @@
                 agencyId: undefined,
                 activeTab: 0,
                 isLoggedIn: true,
+                settings: {},
+                updates_autoCheck: undefined,
                 user: {},
                 username: undefined,
                 email: undefined,
@@ -365,7 +403,7 @@
         mounted() {
             let vm = this;
             vm.agencyId = vm.$route.params.agency;
-            
+
             // Set Active Tab
             let tab = vm.$route.query.tab;
             for ( let i = 0; i < TAB_NAMES.length; i++ ) {
@@ -383,6 +421,19 @@
                     vm.email = user.email;
                 }
             });
+
+            // Set current settings
+            settings.get(function(current) {
+                vm.settings = current;
+                vm.updates_autoCheck = current.updates.autoCheck;
+            });
+        },
+
+        // ==== COMPONENT WATCHERS ==== //
+        watch: {
+            updates_autoCheck: function(val) {
+                settings.setValue("updates.autoCheck", val);
+            }
         }
 
     }

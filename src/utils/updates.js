@@ -24,7 +24,7 @@ function check(agency, force, callback) {
     }
 
     // Get last checked timestamp
-    _getDBUpdateLastChecked(agency, function(lastChecked) {
+    getDBUpdateLastChecked(agency, function(lastChecked) {
         let now = new Date().getTime();
         let delta = (now - lastChecked)/1000;
 
@@ -108,7 +108,7 @@ function isUpdateAvailable(agency, callback) {
  * @param  {string}   agency   Agency ID Code
  * @param  {Function} callback Callback function(timestamp)
  */
-function _getDBUpdateLastChecked(agency, callback) {
+function getDBUpdateLastChecked(agency, callback) {
     store.get("db-version-latest-checked-" + agency, function(err, value) {
         if ( err || !value ) {
             return callback(0);
@@ -157,4 +157,5 @@ function _saveDBVersionLatest(agency, version, notes, callback) {
 module.exports = {
     check: check,
     isUpdateAvailable: isUpdateAvailable,
+    getDBUpdateLastChecked: getDBUpdateLastChecked
 }

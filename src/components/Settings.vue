@@ -44,6 +44,34 @@
                             </v-flex>
                         </v-layout>
 
+                        <v-layout class="mt-1" row wrap>
+                            <v-flex xs12 sm8>
+                                <p><strong>Update Check Frequency</strong></p>
+                            </v-flex>
+                            <v-flex sm1></v-flex>
+                            <v-flex xs12 sm3>
+                                <v-select filled
+                                    v-model="updates_autoCheckFreq_selected"
+                                    :items="updates_autoCheckFreq"
+                                    :disabled="!updates_autoCheck"
+                                    item-text="label"
+                                    item-value="value">
+                                </v-select>
+                            </v-flex>
+                        </v-layout>
+
+                        <br />
+
+                        <v-layout class="mt-1" row wrap>
+                            <v-flex xs12 sm8>
+                                <p><strong>Last Checked:</strong><br />{{updates_lastChecked}}</p>
+                            </v-flex>
+                            <v-flex sm1></v-flex>
+                            <v-flex class="mt-2" xs12 sm3>
+                                <v-btn color="primary" block>Check Now</v-btn>
+                            </v-flex>
+                        </v-layout>
+
                         <br />
 
                         <h3>Reset Database</h3>
@@ -202,12 +230,41 @@
 
                                 <div class="hidden-sm-and-up"><br /><br /></div>
 
-                                <p><strong>Delete Account:</strong></p>
+                                
+                                <v-layout row wrap>
+                                    <v-flex xs12 sm8>
+                                        <p class="mt-1">
+                                            <strong>Forgot Password:</strong><br />
+                                            Get an email with a link to set a new password
+                                        </p>
+                                    </v-flex>
+                                    <v-flex sm1></v-flex>
+                                    <v-flex xs12 sm3>
+                                        <v-btn color="primary" block
+                                            @click="resetPassword">
+                                                Reset
+                                        </v-btn>
+                                    </v-flex>
+                                </v-layout>
 
-                                <v-btn color="red" dark block
-                                    @click="deleteAccount">
-                                        Delete Account
-                                </v-btn>
+                                <br />
+                                <div class="hidden-sm-and-up"><br /><br /></div>
+
+                                <v-layout row wrap>
+                                    <v-flex xs12 sm8>
+                                        <p class="mt-1">
+                                            <strong>Delete Account:</strong><br />
+                                            Remove your account and all saved favorites from the server.
+                                        </p>
+                                    </v-flex>
+                                    <v-flex sm1></v-flex>
+                                    <v-flex xs12 sm3>
+                                        <v-btn color="red" dark block
+                                            @click="deleteAccount">
+                                                Delete
+                                        </v-btn>
+                                    </v-flex>
+                                </v-layout>
 
                             </v-container>
                         </div>
@@ -225,8 +282,101 @@
 <script>
     const user = require("@/utils/user.js");
     const settings = require("@/utils/settings.js");
+    const updates = require("@/utils/updates.js");
 
     const TAB_NAMES = ["updates", "trips", "account"];
+
+    const UPDATES_AUTO_CHECK_FREQ = [
+        {
+            value: 1,
+            label: "Every Hour"
+        },
+        {
+            value: 6,
+            label: "Every 6 Hours"
+        },
+        {
+            value: 12,
+            label: "Every 12 Hours"
+        },
+        {
+            value: 24,
+            label: "Every Day"
+        },
+        {
+            value: 168,
+            label: "Every Week"
+        }
+    ]
+
+
+    /**
+     * Refresh data for the Settings tabs
+     * @param  {Vue}      vm         Vue Instance
+     * @param  {Function} [callback] Callback function()
+     */
+    function refresh(vm, callback) {
+        updateSettings(vm, function() {
+            setLoggedIn(vm, function() {
+                setDBUpdatedLast(vm, function() {
+                    if ( callback ) return callback();
+                });
+            });
+        });
+    }
+
+
+    /**
+     * Update the current Settings
+     * @param  {Vue}      vm         Vue Instance
+     * @param  {Function} [callback] Callback function()
+     */
+    function updateSettings(vm, callback) {
+        settings.get(function(current) {
+            vm.settings = current;
+            vm.updates_autoCheck = current.updates.autoCheck;
+            vm.updates_autoCheckFreq_selected = current.updates.autoCheckFrequency;
+            if ( callback ) return callback();
+        });
+    }
+
+
+    /**
+     * Set the current logged in status
+     * @param  {Vue}      vm         Vue Instance
+     * @param  {Function} [callback] Callback function()
+     */
+    function setLoggedIn(vm, callback) {
+        user.isLoggedIn(function(isLoggedIn, user) {
+            vm.isLoggedIn = isLoggedIn;
+            if ( isLoggedIn ) {
+                vm.user = user;
+                vm.username = user.username;
+                vm.email = user.email;
+            }
+            if ( callback ) return callback();
+        });
+    }
+
+
+    /**
+     * Set the last time the agency DB was checked for an update
+     * @param  {Vue}      vm         Vue Instance
+     * @param  {Function} [callback] Callback function()
+     */
+    function setDBUpdatedLast(vm, callback) {
+        updates.getDBUpdateLastChecked(vm.agencyId, function(timestamp) {
+            if ( timestamp ) {
+                vm.updates_lastChecked = new Date(timestamp).toLocaleString();
+            }
+            else {
+                vm.updates_lastChecked = "Unknown";
+            }
+            if ( callback ) return callback();
+        });
+    }
+
+
     
     module.exports = {
 
@@ -238,6 +388,9 @@
                 isLoggedIn: true,
                 settings: {},
                 updates_autoCheck: undefined,
+                updates_autoCheckFreq: UPDATES_AUTO_CHECK_FREQ,
+                updates_autoCheckFreq_selected: undefined,
+                updates_lastChecked: undefined,
                 user: {},
                 username: undefined,
                 email: undefined,
@@ -343,6 +496,20 @@
             },
 
             /**
+             * Redirect to the Password Reset page
+             */
+            resetPassword() {
+                this.$router.push({
+                    name: "reset",
+                    query: {
+                        agency: this.agencyId,
+                        src: '/' + this.agencyId + '/settings?tab=account',
+                        login: this.username
+                    }
+                });
+            },
+
+            /**
              * Delete the User's account
              * @return {[type]} [description]
              */
@@ -350,7 +517,7 @@
                 let vm = this;
                 vm.$emit(
                     'showDialog', 
-                    'Delete User?', 
+                    'Delete Account?', 
                     'Are you sure you want to delete your account?  Your account information and saved favorites will be removed.  This cannot be undone.',
                     'Delete Account',
                     'Cancel',
@@ -412,27 +579,17 @@
                 }
             }
 
-            // Set Logged In Status
-            user.isLoggedIn(function(isLoggedIn, user) {
-                vm.isLoggedIn = isLoggedIn;
-                if ( isLoggedIn ) {
-                    vm.user = user;
-                    vm.username = user.username;
-                    vm.email = user.email;
-                }
-            });
-
-            // Set current settings
-            settings.get(function(current) {
-                vm.settings = current;
-                vm.updates_autoCheck = current.updates.autoCheck;
-            });
+            // Refresh data
+            refresh(vm);
         },
 
         // ==== COMPONENT WATCHERS ==== //
         watch: {
             updates_autoCheck: function(val) {
                 settings.setValue("updates.autoCheck", val);
+            },
+            updates_autoCheckFreq_selected: function(val) {
+                settings.setValue("updates.autoCheckFrequency", val);
             }
         }
 

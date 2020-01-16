@@ -19,7 +19,8 @@
   },
   "settings": {
     "updates": {
-      "autoCheck": true
+      "autoCheck": true,
+      "autoCheckFrequency": 1
     },
     "search": {
       "allowTransfers": true,
@@ -28,10 +29,7 @@
       "postDepartureHours": 6,
       "maxLayoverMins": 30,
       "minLayoverMins": 0,
-      "maxTransfers": 2,
-      "testing": {
-        "david": "waring"
-      }
+      "maxTransfers": 2
     }
   }
 }

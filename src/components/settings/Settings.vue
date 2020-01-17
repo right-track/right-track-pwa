@@ -36,32 +36,37 @@
                             :agencyId="agencyId"
                             :settings="settings"
                             :isLoggedIn="isLoggedIn"
-                            @refresh="onRefresh">
+                            @refresh="onRefresh"
+                            @showSnackbar="onShowSnackbar"
+                            @showDialog="onShowDialog">
                         </rt-settings-updates>
                     </v-tab-item>
 
 
                     <!-- TRIP SEARCHES -->
                     <v-tab-item>
-                        <p>Trips</p>
-                        <!-- <rt-settings-trips
+                        <rt-settings-trips
                             :agencyId="agencyId"
                             :settings="settings"
                             :isLoggedIn="isLoggedIn"
-                            @refresh="onRefresh">
-                        </rt-settings-trips> -->
+                            @refresh="onRefresh"
+                            @showSnackbar="onShowSnackbar"
+                            @showDialog="onShowDialog">
+                        </rt-settings-trips>
                     </v-tab-item>
 
 
                     <!-- USER ACCOUNT -->
                     <v-tab-item>
-                        <p>Account</p>
-<!--                         <rt-settings-account
+                        <rt-settings-account
                             :agencyId="agencyId"
                             :settings="settings"
                             :isLoggedIn="isLoggedIn"
-                            @refresh="onRefresh">
-                        </rt-settings-account> -->
+                            :user="user"
+                            @refresh="onRefresh"
+                            @showSnackbar="onShowSnackbar"
+                            @showDialog="onShowDialog">
+                        </rt-settings-account>
                     </v-tab-item>
 
                 </v-tabs>
@@ -92,10 +97,8 @@
      * @param  {Function} [callback] Callback function()
      */
     function refresh(vm, callback) {
-        console.log("...REFRESHING");
         updateSettings(vm, function() {
             setLoggedIn(vm, function() {
-                console.log("...DONE");
                 if ( callback ) return callback();
             });
         });
@@ -108,11 +111,8 @@
      * @param  {Function} [callback] Callback function()
      */
     function updateSettings(vm, callback) {
-        console.log("...Updating Settings");
         settings.get(function(current) {
             vm.settings = current;
-            vm.updates_autoCheck = current.updates.autoCheck;
-            vm.updates_autoCheckFreq_selected = current.updates.autoCheckFrequency;
             if ( callback ) return callback();
         });
     }
@@ -124,13 +124,10 @@
      * @param  {Function} [callback] Callback function()
      */
     function setLoggedIn(vm, callback) {
-        console.log("...Setting Logged In Status")
         user.isLoggedIn(function(isLoggedIn, user) {
             vm.isLoggedIn = isLoggedIn;
             if ( isLoggedIn ) {
                 vm.user = user;
-                vm.username = user.username;
-                vm.email = user.email;
             }
             if ( callback ) return callback();
         });
@@ -145,8 +142,9 @@
             return {
                 agencyId: "",
                 activeTab: 0,
+                settings: {},
                 isLoggedIn: true,
-                settings: {}
+                user: {}
             }
         },
 
@@ -177,9 +175,29 @@
              * @param  {Function} [callback] Callback function()
              */
             onRefresh(callback) {
-                console.log("REFRESH REQUEST RECEIVED...");
                 refresh(this, callback);
-            }
+            },
+
+            /**
+             * Display the site snackbar with the specified message
+             * @param {Object} properties Snackbar Properties (or message text)
+             */
+            onShowSnackbar(properties) {
+                this.$emit('showSnackbar', properties);
+            },
+
+            /**
+             * Show a confirmation dialog
+             * @param  {string} title     Dialog title
+             * @param  {string} content   Dialog content (can be HTML)
+             * @param  {string} confirm   Dialog confirm button title
+             * @param  {string} cancel    Dialog cancel button title
+             * @param  {Function} onConfirm Dialog confirm button function (will close dialog)
+             * @param  {Function} [onCancel]  Dialog cancel button function (will close dialog)
+             */
+            onShowDialog(title, content, confirm, cancel, onConfirm, onCancel) {
+                this.$emit('showDialog', title, content, confirm, cancel, onConfirm, onCancel);
+            },
 
         },
 

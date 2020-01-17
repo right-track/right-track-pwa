@@ -17,7 +17,20 @@
     module.exports = {
 
         // ==== COMPONENT PROPERTIES ==== //
-        props: {},
+        props: {
+            agencyId: {
+                type: [String],
+                required: true
+            },
+            settings: {
+                type: Object,
+                required: true
+            },
+            isLoggedIn: {
+                type: Boolean,
+                required: true
+            }
+        },
 
         // ==== COMPONENT METHODS ==== //
         methods: {}

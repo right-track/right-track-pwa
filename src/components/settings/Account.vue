@@ -157,15 +157,33 @@
 
 
 <script>
+    const user = require('@/utils/user.js');
+
     module.exports = {
 
         // ==== COMPONENT PROPERTIES ==== //
-        props: {},
+        props: {
+            agencyId: {
+                type: [String],
+                required: true
+            },
+            settings: {
+                type: Object,
+                required: true
+            },
+            isLoggedIn: {
+                type: Boolean,
+                required: true
+            },
+            user: {
+                type: Object,
+                required: true
+            }
+        },
 
         // ==== COMPONENT DATA ==== //
         data: function() {
             return {
-                user: {},
                 username: undefined,
                 email: undefined,
                 password: {
@@ -195,6 +213,7 @@
                             vm.user = user;
                             vm.$forceUpdate();
                             vm.$emit('showSnackbar', 'Username Updated');
+                            vm.$emit('refresh');
                         }
                     });
                 }
@@ -216,6 +235,7 @@
                             vm.user = user;
                             vm.$forceUpdate();
                             vm.$emit('showSnackbar', 'Email Address Updated');
+                            vm.$emit('refresh');
                         }
                     });
                 }
@@ -326,6 +346,19 @@
                 });
             },
 
+        },
+
+        // ==== COMPONENT WATCHERS ==== //
+        watch: {
+            user: {
+                deep: true,
+                handler(val) {
+                    if ( val ) {
+                        this.username = val.username,
+                        this.email = val.email
+                    }
+                }
+            }
         }
         
     }

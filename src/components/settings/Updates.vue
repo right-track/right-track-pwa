@@ -178,19 +178,24 @@
 
         },
 
+        // ==== COMPONENT MOUNTED ==== //
+        mounted() {
+            refresh(this);
+        },
+
         // ==== COMPONENT WATCHERS ==== //
         watch: {
             settings: {
                 deep: true,
                 handler(val) {
                     this.autoCheck = val.updates.autoCheck;
-                    this.autoCheckFrequency: val.updates.autoCheckFrequency;
+                    this.autoCheckFrequency = val.updates.autoCheckFrequency;
                 }
             },
             autoCheck: function(val) {
                 settings.setValue("updates.autoCheck", val);
             },
-            autoCheckFreq_selected: function(val) {
+            autoCheckFrequency: function(val) {
                 settings.setValue("updates.autoCheckFrequency", val);
             }
         }

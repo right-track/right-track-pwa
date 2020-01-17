@@ -77,9 +77,9 @@
     const settings = require("@/utils/settings.js");
     const updates = require("@/utils/updates.js");
 
-    const Updates = require("@/components/Settings/Updates.vue").default;
-    const Trips = require("@/components/Settings/Trips.vue").default;
-    const Account = require("@/components/Settings/Account.vue").default;
+    const Updates = require("@/components/settings/Updates.vue").default;
+    const Trips = require("@/components/settings/Trips.vue").default;
+    const Account = require("@/components/settings/Account.vue").default;
 
     const TAB_NAMES = ["updates", "trips", "account"];
 

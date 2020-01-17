@@ -241,7 +241,9 @@
                             vm.$emit('showSnackbar', err.message);
                         }
                         else {
-                            vm.display = "success";
+                            user.logout(function() {
+                                vm.display = "success";
+                            });
                         }
                     });
                 }

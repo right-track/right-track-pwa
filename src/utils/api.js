@@ -99,7 +99,7 @@ function _request(method, path, body, binary, parseBinary, callback, progress) {
 
                 // HANDLE EXPIRED USER SESSION
                 let logout_on_auth_failed = true;
-                if ( path === "/auth/login" || path === "/auth/reset" ) {
+                if ( path === "/auth/login" || path === "/auth/reset" || (isLoggedIn && path === "/auth/logout/" + userInfo.id) ) {
                     logout_on_auth_failed = false;
                 }
                 else if ( isLoggedIn && method === "PUT" && path === "/users/" + userInfo.id ) {

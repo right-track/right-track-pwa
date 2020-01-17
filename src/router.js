@@ -4,7 +4,7 @@ import Router from "vue-router"
 // Page content
 import About from "@/components/About.vue"
 import Help from "@/components/Help.vue"
-import Settings from "@/components/Settings.vue"
+import Settings from "@/components/settings/Settings.vue"
 import Alerts from "@/components/alerts/Alerts.vue"
 import Register from "@/components/auth/Register.vue"
 import Login from "@/components/auth/Login.vue"

@@ -102,6 +102,20 @@ const HOME = function(vm) {
         {
             key: 15,
             type: "item",
+            title: "Settings",
+            icon: "settings",
+            page: "settings",
+            params: {
+                agency: vm.$route.params.agency
+            }
+        },
+        {
+            key: 16,
+            type: "divider"
+        },
+        {
+            key: 17,
+            type: "item",
             title: config.maintainer.name,
             icon: "person_pin",
             page: config.maintainer.website
@@ -199,10 +213,11 @@ const MENU = function(vm) {
  */
 function getMenuItems(vm) {
     let page = vm.$route.name;
-    if ( page === "agencies" || page === "about" || (page === "alerts" && !vm.$router.currentRoute.params.agency) || page === "pageNotFound" ) {
+    let agency = vm.$router.currentRoute.params.agency || vm.$router.currentRoute.query.agency;
+    if ( ["agencies", "about", "pageNotFound"].includes(page) || ( !agency && ["alerts", "settings"].includes(page) ) ) {
         return HOME(vm);
     }
-    else if ( page === "login" || page === "register" || page === "reset" || page === "verify" ) {
+    else if ( ["login", "register", "reset", "verify"].includes(page) ) {
         return LOGIN(vm);
     }
     else if ( page === "logout" ) {

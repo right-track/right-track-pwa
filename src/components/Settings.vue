@@ -62,7 +62,7 @@
 
                         <br />
 
-                        <v-layout class="mt-1" row wrap>
+                        <v-layout v-if="agencyId" class="mt-1" row wrap>
                             <v-flex xs12 sm8>
                                 <p><strong>Last Checked:</strong><br />{{updates_lastChecked}}</p>
                             </v-flex>
@@ -74,9 +74,9 @@
 
                         <br />
 
-                        <h3>Reset Database</h3>
+                        <h3 v-if="agencyId">Reset Database</h3>
 
-                        <v-layout class="mt-1" row wrap>
+                        <v-layout v-if="agencyId" class="mt-1" row wrap>
                             <v-flex xs12 sm8>
                                 <p>Clear the currently installed database and <strong>download the latest schedules</strong></p>
                             </v-flex>
@@ -88,7 +88,7 @@
 
                         <div class="hidden-sm-and-up"><br /><br /></div>
 
-                        <v-layout class="mt-1" row wrap>
+                        <v-layout v-if="agencyId" class="mt-1" row wrap>
                             <v-flex xs12 sm8>
                                 <p>Clear the currently installed database and <strong>download a previous set of schedules</strong></p>
                             </v-flex>
@@ -410,7 +410,7 @@
              */
             onTabChange() {
                 this.$router.replace({
-                    name: "settings",
+                    path: this.agencyId ? "/" + this.agencyId + "/settings" : "/settings",
                     query: {
                         tab: TAB_NAMES[this.activeTab]
                     }

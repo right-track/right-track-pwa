@@ -77,7 +77,7 @@ var routes = [
         component: Help
     },
     {
-        path: "/:agency/settings",
+        path: "/:agency?/settings",
         name: "settings",
         component: Settings
     },

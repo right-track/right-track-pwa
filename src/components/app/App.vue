@@ -730,7 +730,7 @@
                 });
             },
 
-             /**
+            /**
              * Set the More Menu Items
              * @param {Array} items The list of more menu items
              */
@@ -832,27 +832,32 @@
 
             /**
              * Force a database update check
+             * @param {Function} [callback] Callback function()
              */
-            onCheckUpdate() {
-                _dbUpdateCheck(this, true);
+            onCheckUpdate(callback) {
+                _dbUpdateCheck(this, true, callback);
             },
 
             /**
              * Start the database download / update process
-             * @param {Object} [updateInfo] Latest Update Info {version, notes}
+             * @param {boolean} force Force the start of the DB Update
              */
-            onStartUpdate(updateInfo) {
+            onStartUpdate(force) {
                 let vm = this;
-                if ( updateInfo ) vm.update = updateInfo;
-                vm.onShowDialog(
-                    "Database Update Available", 
-                    "<p class='subheading'>Version <strong>" + vm.update.version + "</strong> of the schedule database is now available. Download and install it now to get the most up to date trip schedules.</p><p style='background-color: #eee; padding: 5px; font-family: monospace'>" + vm.update.notes + "</p>",
-                    "Download & Install",
-                    "Cancel",
-                    function() {
-                        _dbUpdate(vm);
-                    }
-                );
+                if ( force ) {
+                    _dbUpdate(vm);
+                }
+                else {
+                    vm.onShowDialog(
+                        "Database Update Available", 
+                        "<p class='subheading'>Version <strong>" + vm.update.version + "</strong> of the schedule database is now available. Download and install it now to get the most up to date trip schedules.</p><p style='background-color: #eee; padding: 5px; font-family: monospace'>" + vm.update.notes + "</p>",
+                        "Download & Install",
+                        "Cancel",
+                        function() {
+                            _dbUpdate(vm);
+                        }
+                    );
+                }
             }
 
         },

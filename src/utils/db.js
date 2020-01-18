@@ -295,10 +295,30 @@ function _clearCache() {
 }
 
 
+/**
+ * Clear all stored and cached database information for the specified agency
+ * @param  {string}   agency     Agency ID Code
+ * @param  {Function} [callback] Callback function()
+ */
+function clear(agency, callback) {
+    _clearCache();
+    store.del("db-version-stored-" + agency, function(err) {
+        store.del("db-data-" + agency, function(err) {
+            store.del("db-version-latest-" + agency, function() {
+                store.del("db-version-latest-checked-" + agency, function() {
+                    if ( callback ) return callback();
+                });
+            });
+        });
+    });
+}
+
+
 module.exports = {
     getDB: getDB,
     isReady: isReady,
     getDBVersion: getDBVersion,
     setDBVersion: setDBVersion,
-    update: update
+    update: update,
+    clear: clear
 }

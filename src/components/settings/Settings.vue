@@ -38,7 +38,8 @@
                             :isLoggedIn="isLoggedIn"
                             @refresh="onRefresh"
                             @showSnackbar="onShowSnackbar"
-                            @checkUpdate="onCheckUpdate">
+                            @checkUpdate="onCheckUpdate"
+                            @startUpdate="onStartUpdate">
                         </rt-settings-updates>
                     </v-tab-item>
 
@@ -186,9 +187,18 @@
 
             /**
              * Have the App component check for a DB Update
+             * @param {Function} [callback] Callback function()
              */
-            onCheckUpdate() {
-                this.$emit('checkUpdate');
+            onCheckUpdate(callback) {
+                this.$emit('checkUpdate', callback);
+            },
+
+            /**
+             * Have the App component start a DB Update
+             * @param  {boolean} force Force the start of the DB Update
+             */
+            onStartUpdate(force) {
+                this.$emit('startUpdate', force);
             }
 
         },

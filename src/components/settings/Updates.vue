@@ -44,8 +44,7 @@
                 </v-flex>
                 <v-flex sm1></v-flex>
                 <v-flex class="mt-2" xs12 sm3>
-                    <v-btn color="primary" block
-                            @click="check">
+                    <v-btn @click="check" color="primary" block>
                         Check Now
                     </v-btn>
                 </v-flex>
@@ -62,7 +61,9 @@
                 </v-flex>
                 <v-flex sm1></v-flex>
                 <v-flex class="mt-2" xs12 sm3>
-                    <v-btn color="primary" block>Reset</v-btn>
+                    <v-btn @click="reset" color="primary" block>
+                        Reset
+                    </v-btn>
                 </v-flex>
             </v-layout>
 
@@ -75,7 +76,9 @@
                 </v-flex>
                 <v-flex sm1></v-flex>
                 <v-flex class="mt-2" xs12 sm3>
-                    <v-btn color="primary" block>Restore</v-btn>
+                    <v-btn @click="restore" color="primary" block>
+                        Restore
+                    </v-btn>
                 </v-flex>
             </v-layout>
 
@@ -88,6 +91,7 @@
 <script>
     const settings = require('@/utils/settings.js');
     const updates = require('@/utils/updates.js');
+    const db = require('@/utils/db.js');
 
     // Update Frequency Options
     const UPDATES_AUTO_CHECK_FREQ = [
@@ -147,6 +151,32 @@
     }
 
 
+    /**
+     * Start the process to check for a DB Update
+     * @param  {Vue} vm Vue Instance
+     */
+    function checkDatabaseUpdate(vm) {
+        vm.$emit('checkUpdate', function() {
+            refresh(vm);
+        });
+    }
+
+
+    /**
+     * Clear all stored DB-related data and force an update
+     * @param  {Vue} vm Vue Instance
+     */
+    function resetDatabase(vm) {
+        db.clear(vm.agencyId, function() {
+            vm.$emit('startUpdate', true);
+        });
+    }
+
+    function restoreDatabase(vm) {
+
+    }
+
+
     module.exports = {
 
         // ==== COMPONENT PROPERTIES ==== //
@@ -178,7 +208,13 @@
         // ==== COMPONENT METHODS ==== //
         methods: {
             check() {
-                this.$emit('checkUpdate');
+                checkDatabaseUpdate(this);
+            },
+            reset() {
+                resetDatabase(this);
+            },
+            restore() {
+                restoreDatabase(this);
             }
         },
 

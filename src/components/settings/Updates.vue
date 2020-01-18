@@ -144,6 +144,37 @@
     }
 
 
+    function checkForUpdate(vm) {
+
+        // Make sure Agency is set
+        if ( vm.agencyId ) {
+            updates.check(vm.agencyId, true, function(err, updateInfo) {
+                
+                // Update Available
+                if ( updateInfo ) {
+                    vm.$emit('showSnackBar', {
+                        message: "A schedule database update is available (" + updateInfo.version + ")",
+                        dismiss: "Update",
+                        onDismiss: startUpdate(vm)
+                    });
+                }
+
+                // No Update Available
+                else {
+                    vm.$emit('showSnackBar', "There is no database update available at this time");
+                }
+
+            });
+        }
+
+    }
+
+
+    function startUpdate(vm) {
+        alert("Start Update");
+    }
+
+
 
     module.exports = {
 

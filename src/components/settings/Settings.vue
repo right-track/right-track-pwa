@@ -38,7 +38,7 @@
                             :isLoggedIn="isLoggedIn"
                             @refresh="onRefresh"
                             @showSnackbar="onShowSnackbar"
-                            @showDialog="onShowDialog">
+                            @checkUpdate="onCheckUpdate">
                         </rt-settings-updates>
                     </v-tab-item>
 
@@ -50,8 +50,7 @@
                             :settings="settings"
                             :isLoggedIn="isLoggedIn"
                             @refresh="onRefresh"
-                            @showSnackbar="onShowSnackbar"
-                            @showDialog="onShowDialog">
+                            @showSnackbar="onShowSnackbar">
                         </rt-settings-trips>
                     </v-tab-item>
 
@@ -64,8 +63,7 @@
                             :isLoggedIn="isLoggedIn"
                             :user="user"
                             @refresh="onRefresh"
-                            @showSnackbar="onShowSnackbar"
-                            @showDialog="onShowDialog">
+                            @showSnackbar="onShowSnackbar">
                         </rt-settings-account>
                     </v-tab-item>
 
@@ -187,17 +185,11 @@
             },
 
             /**
-             * Show a confirmation dialog
-             * @param  {string} title     Dialog title
-             * @param  {string} content   Dialog content (can be HTML)
-             * @param  {string} confirm   Dialog confirm button title
-             * @param  {string} cancel    Dialog cancel button title
-             * @param  {Function} onConfirm Dialog confirm button function (will close dialog)
-             * @param  {Function} [onCancel]  Dialog cancel button function (will close dialog)
+             * Have the App component check for a DB Update
              */
-            onShowDialog(title, content, confirm, cancel, onConfirm, onCancel) {
-                this.$emit('showDialog', title, content, confirm, cancel, onConfirm, onCancel);
-            },
+            onCheckUpdate() {
+                this.$emit('checkUpdate');
+            }
 
         },
 

@@ -839,9 +839,11 @@
 
             /**
              * Start the database download / update process
+             * @param {Object} [updateInfo] Latest Update Info {version, notes}
              */
-            onStartUpdate() {
+            onStartUpdate(updateInfo) {
                 let vm = this;
+                if ( updateInfo ) vm.update = updateInfo;
                 vm.onShowDialog(
                     "Database Update Available", 
                     "<p class='subheading'>Version <strong>" + vm.update.version + "</strong> of the schedule database is now available. Download and install it now to get the most up to date trip schedules.</p><p style='background-color: #eee; padding: 5px; font-family: monospace'>" + vm.update.notes + "</p>",

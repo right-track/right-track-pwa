@@ -44,7 +44,10 @@
                 </v-flex>
                 <v-flex sm1></v-flex>
                 <v-flex class="mt-2" xs12 sm3>
-                    <v-btn color="primary" block>Check Now</v-btn>
+                    <v-btn color="primary" block
+                            @click="check">
+                        Check Now
+                    </v-btn>
                 </v-flex>
             </v-layout>
 
@@ -144,38 +147,6 @@
     }
 
 
-    function checkForUpdate(vm) {
-
-        // Make sure Agency is set
-        if ( vm.agencyId ) {
-            updates.check(vm.agencyId, true, function(err, updateInfo) {
-                
-                // Update Available
-                if ( updateInfo ) {
-                    vm.$emit('showSnackBar', {
-                        message: "A schedule database update is available (" + updateInfo.version + ")",
-                        dismiss: "Update",
-                        onDismiss: startUpdate(vm)
-                    });
-                }
-
-                // No Update Available
-                else {
-                    vm.$emit('showSnackBar', "There is no database update available at this time");
-                }
-
-            });
-        }
-
-    }
-
-
-    function startUpdate(vm) {
-        alert("Start Update");
-    }
-
-
-
     module.exports = {
 
         // ==== COMPONENT PROPERTIES ==== //
@@ -206,7 +177,9 @@
 
         // ==== COMPONENT METHODS ==== //
         methods: {
-
+            check() {
+                this.$emit('checkUpdate');
+            }
         },
 
         // ==== COMPONENT MOUNTED ==== //

@@ -101,10 +101,6 @@
             label: "Every Hour"
         },
         {
-            value: 6,
-            label: "Every 6 Hours"
-        },
-        {
             value: 12,
             label: "Every 12 Hours"
         },

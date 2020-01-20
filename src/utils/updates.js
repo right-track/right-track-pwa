@@ -1,12 +1,7 @@
 const api = require("@/utils/api.js");
 const store = require("@/utils/store.js");
 const db = require("@/utils/db.js");
-
-/**
- * Update Check Interval (seconds)
- * @type {Number}
- */
-const CHECK_INTERVAL = 3600;
+const settings = require("@/utils/settings.js");
 
 
 /**
@@ -23,58 +18,64 @@ function check(agency, force, callback) {
         force = false;
     }
 
-    // Get last checked timestamp
-    getDBUpdateLastChecked(agency, function(lastChecked) {
-        let now = new Date().getTime();
-        let delta = (now - lastChecked)/1000;
+    // Get Update Settings
+    settings.getValue("updates.autoCheck", function(autoCheck){
+        settings.getValue("updates.autoCheckFrequency", function(autoCheckFrequency) {
 
-        // Update interval exceeded (or forced)
-        if ( delta > CHECK_INTERVAL || force ) {
+            // Get last checked timestamp
+            getDBUpdateLastChecked(agency, function(lastChecked) {
+                let now = new Date().getTime();
+                let delta = (now - lastChecked)/(1000*60*60);
 
-            // Get version from API server
-            api.get("/updates/database/" + agency, function(err, resp) {
-                if ( err ) {
-                    if ( force ) return callback(err);
+                // Update interval exceeded (or forced)
+                if ( (autoCheck && delta > autoCheckFrequency) || force ) {
+
+                    // Get version from API server
+                    api.get("/updates/database/" + agency, function(err, resp) {
+                        if ( err ) {
+                            if ( force ) return callback(err);
+                        }
+
+                        // Save the db check timestamp
+                        _saveDBUpdateLastChecked(agency);
+
+                        // Save the latest db version
+                        let latestVersion = resp.version;
+                        let latestNotes = resp.notes;
+                        _saveDBVersionLatest(agency, latestVersion, latestNotes);
+
+                        // Get the stored DB version
+                        db.getDBVersion(agency, function(storedVersion) {
+
+                            // Return Update Info
+                            if ( latestVersion > storedVersion ) {
+                                return callback(null, {
+                                    isAvailable: true,
+                                    version: latestVersion,
+                                    notes: latestNotes
+                                });
+                            }
+                            else {
+                                return callback(null, undefined);
+                            }
+
+                        });
+
+                    });
+
                 }
 
-                // Save the db check timestamp
-                _saveDBUpdateLastChecked(agency);
-
-                // Save the latest db version
-                let latestVersion = resp.version;
-                let latestNotes = resp.notes;
-                _saveDBVersionLatest(agency, latestVersion, latestNotes);
-
-                // Get the stored DB version
-                db.getDBVersion(agency, function(storedVersion) {
-
-                    // Return Update Info
-                    if ( latestVersion > storedVersion ) {
-                        return callback(null, {
-                            isAvailable: true,
-                            version: latestVersion,
-                            notes: latestNotes
-                        });
-                    }
-                    else {
-                        return callback(null, undefined);
-                    }
-
-                });
-
+                // Return saved info
+                else {
+                    isUpdateAvailable(agency, function(updateInfo) {
+                        return callback(null, updateInfo);
+                    });
+                }
             });
-
-        }
-
-        // Return saved info
-        else {
-            isUpdateAvailable(agency, function(updateInfo) {
-                return callback(null, updateInfo);
-            });
-        }
-
-
+            
+        });
     });
+
 }
 
 

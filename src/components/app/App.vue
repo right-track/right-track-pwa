@@ -530,8 +530,9 @@
     /**
      * Download and Install the latest agency database
      * @param  {Vue} vm Vue Instance
+     * @param  {int} [version] Version of the DB to download
      */
-    function _dbUpdate(vm) {
+    function _dbUpdate(vm, version) {
 
         // Set Progress Dialog
         vm.progress = {
@@ -542,7 +543,7 @@
         }
 
         // Start Download and Install
-        database.update(vm.agencyId, 
+        database.update(vm.agencyId, version,
             function(progress, loaded, total) {
                 if ( progress >= 97 ) {
                     vm.progress.title = "Installing Database...";
@@ -840,12 +841,13 @@
 
             /**
              * Start the database download / update process
-             * @param {boolean} force Force the start of the DB Update
+             * @param {boolean} [force] Force the start of the DB Update
+             * @param {int} [version] Version to install
              */
-            onStartUpdate(force) {
+            onStartUpdate(force, version) {
                 let vm = this;
                 if ( force ) {
-                    _dbUpdate(vm);
+                    _dbUpdate(vm, version);
                 }
                 else {
                     vm.onShowDialog(

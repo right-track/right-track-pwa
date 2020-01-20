@@ -76,7 +76,7 @@
                 </v-flex>
                 <v-flex sm1></v-flex>
                 <v-flex class="mt-2" xs12 sm3>
-                    <v-btn @click="restore" color="primary" block>
+                    <v-btn @click="restore" color="primary" :disabled="restoring" block>
                         Restore
                     </v-btn>
                 </v-flex>
@@ -89,6 +89,7 @@
 
 
 <script>
+    const api = require('@/utils/api.js');
     const settings = require('@/utils/settings.js');
     const updates = require('@/utils/updates.js');
     const db = require('@/utils/db.js');
@@ -172,8 +173,53 @@
         });
     }
 
+    /**
+     * Get a list of archived DB to select for install
+     * @param  {Vue} vm Vue Instance
+     */
     function restoreDatabase(vm) {
+        if ( vm.agencyId ) {
+            vm.restoring = true;
+            
+            // Download archive list
+            api.get("/updates/database/archive/" + vm.agencyId + "?max=10", function(err, resp) {
+                vm.restoring = false;
 
+                // Parse repsonse
+                if ( err || !resp || !resp.archive || resp.archive.length === 0 ) {
+                    vm.$emit('showSnackbar', 'Could not get list of archived databases.  Please try again later.');
+                }
+                let archive = resp.archive;
+
+                // Set Style
+                let css = "<style>";
+                css += "#archive-select{border:1px solid #ccc;border-radius:5px;padding:5px 10px;}";
+                css += "</style>";
+
+                // Build HTML
+                let html = css;
+                html += "<p><strong>Select a Database version to install:</strong></p>";
+                html += "<select id='archive-select'>";
+                for ( let i = 0; i < archive.length; i++ ) {
+                    html += "<option value='" + archive[i] + "'>" + archive[i] + "</option>";
+                }
+                html += "</select>";
+
+                // Display Dialog
+                vm.$emit('showDialog',
+                    'Restore Database',
+                    html,
+                    'Download & Install',
+                    'Cancel',
+                    function() {
+                        var e = document.getElementById("archive-select");
+                        var version = e.options[e.selectedIndex].value;
+                        vm.$emit('startUpdate', true, version);
+                    }
+                );
+
+            });
+        }
     }
 
 
@@ -201,7 +247,8 @@
                 autoCheck: undefined,
                 autoCheckFrequency_options: UPDATES_AUTO_CHECK_FREQ,
                 autoCheckFrequency: undefined,
-                lastChecked: undefined
+                lastChecked: undefined,
+                restoring: false
             }
         },
 

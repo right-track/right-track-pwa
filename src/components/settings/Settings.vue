@@ -38,6 +38,7 @@
                             :isLoggedIn="isLoggedIn"
                             @refresh="onRefresh"
                             @showSnackbar="onShowSnackbar"
+                            @showDialog="onShowDialog"
                             @checkUpdate="onCheckUpdate"
                             @startUpdate="onStartUpdate">
                         </rt-settings-updates>
@@ -64,7 +65,8 @@
                             :isLoggedIn="isLoggedIn"
                             :user="user"
                             @refresh="onRefresh"
-                            @showSnackbar="onShowSnackbar">
+                            @showSnackbar="onShowSnackbar"
+                            @showDialog="onShowDialog">
                         </rt-settings-account>
                     </v-tab-item>
 
@@ -186,6 +188,13 @@
             },
 
             /**
+             * Display a dialog with the specified properties
+             */
+            onShowDialog(title, content, confirm, cancel, onConfirm, onCancel) {
+                this.$emit('showDialog', title, content, confirm, cancel, onConfirm, onCancel);
+            },
+
+            /**
              * Have the App component check for a DB Update
              * @param {Function} [callback] Callback function()
              */
@@ -195,10 +204,11 @@
 
             /**
              * Have the App component start a DB Update
-             * @param  {boolean} force Force the start of the DB Update
+             * @param  {boolean} [force] Force the start of the DB Update
+             * @param  {int} [version] Version to Install
              */
-            onStartUpdate(force) {
-                this.$emit('startUpdate', force);
+            onStartUpdate(force, version) {
+                this.$emit('startUpdate', force, version);
             }
 
         },

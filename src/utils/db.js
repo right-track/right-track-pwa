@@ -78,12 +78,35 @@ getDB = function(agencyCode, callback) {
 
 
 /**
- * Download and install the latest agency database
- * @param  {string}   agency     Agency ID Code
- * @param  {Function} [progress] Progress callback function(percent)
- * @param  {Function} callback   Callback function(err, db)
+ * Download and install the specified version of the agency database
+ * @param  {string}    agency     Agency ID Code
+ * @param  {int}       version    Version to download and install
+ * @param  {Function}  [progress] Progress callback function(percent)
+ * @param  {Function}  callback   Callback function(err, db)
  */
-function update(agency, progress, callback) {
+// function restore(agency, version, progress, callback) {
+//     _install(agency, version, progress, callback);
+// }
+
+// *
+//  * Download and install the latest agency database
+//  * @param  {string}   agency     Agency ID Code
+//  * @param  {Function} [progress] Progress callback function(percent)
+//  * @param  {Function} callback   Callback function(err, db)
+ 
+// function update(agency, progress, callback) {
+//     _install(agency, undefined, progress, callback);
+// }
+
+
+/**
+ * Download and Install the specified version (or latest) agency database
+ * @param  {string}    agency     Agency ID Code
+ * @param  {int}       version    Version to download and install (or latest)
+ * @param  {Function}  [progress] Progress callback function(percent)
+ * @param  {Function}  callback   Callback function(err, db)
+ */
+function update(agency, version, progress, callback) {
 
     // Parse Arguments
     if ( callback === undefined && typeof progress === 'function' ) {
@@ -91,8 +114,22 @@ function update(agency, progress, callback) {
         progress = function() {};
     }
     
-    // Download
-    api.download("/updates/database/" + agency + "?download=latest&zip", progress, function(err, zipped) {
+    // Download Archive
+    if ( version ) {
+        api.download("/updates/database/archive/" + agency + "?download=" + version + "&zip", progress, function(err, zipped) {
+            _continue(err, zipped)
+        });
+    }
+    
+    // Download Latest
+    else {
+        api.download("/updates/database/" + agency + "?download=latest&zip", progress, function(err, zipped) {
+            _continue(err, zipped)
+        });
+    }
+
+    // Install the zipped Database
+    function _continue(err, zipped) {
         if ( err ) {
             return callback(err);
         }
@@ -129,7 +166,7 @@ function update(agency, progress, callback) {
                 });
             });
         });
-    });
+    }
 }
 
 

@@ -78,28 +78,6 @@ getDB = function(agencyCode, callback) {
 
 
 /**
- * Download and install the specified version of the agency database
- * @param  {string}    agency     Agency ID Code
- * @param  {int}       version    Version to download and install
- * @param  {Function}  [progress] Progress callback function(percent)
- * @param  {Function}  callback   Callback function(err, db)
- */
-// function restore(agency, version, progress, callback) {
-//     _install(agency, version, progress, callback);
-// }
-
-// *
-//  * Download and install the latest agency database
-//  * @param  {string}   agency     Agency ID Code
-//  * @param  {Function} [progress] Progress callback function(percent)
-//  * @param  {Function} callback   Callback function(err, db)
- 
-// function update(agency, progress, callback) {
-//     _install(agency, undefined, progress, callback);
-// }
-
-
-/**
  * Download and Install the specified version (or latest) agency database
  * @param  {string}    agency     Agency ID Code
  * @param  {int}       version    Version to download and install (or latest)

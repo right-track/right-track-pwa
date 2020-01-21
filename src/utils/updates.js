@@ -11,7 +11,6 @@ const settings = require("@/utils/settings.js");
  * @param  {Function} callback Callback function(err, updateInfo)
  */
 function check(agency, force, callback) {
-    console.log("--> DB Update Check...");
 
     // Parse arguments
     if ( !callback && typeof force === 'function' ) {
@@ -28,11 +27,8 @@ function check(agency, force, callback) {
                 let now = new Date().getTime();
                 let delta = (now - lastChecked)/(1000*60*60);
 
-                console.log("    Auto: " + autoCheck + " | " + delta + " > " + autoCheckFrequency + " | " + force);
-
                 // Update interval exceeded (or forced)
                 if ( (autoCheck && delta > autoCheckFrequency) || force ) {
-                    console.log("    Checking...");
 
                     // Get version from API server
                     api.get("/updates/database/" + agency, function(err, resp) {

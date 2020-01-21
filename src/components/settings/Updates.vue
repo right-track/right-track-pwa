@@ -50,6 +50,8 @@
                 </v-flex>
             </v-layout>
 
+            <p><strong>Currently Installed:</strong><br /><span v-if="version">Version </span>{{version}}</p>
+
             <br />
 
             <h3>Reset Database</h3>
@@ -124,7 +126,10 @@
     function refresh(vm, callback) {
         vm.$emit('refresh', function() {
             setDBUpdatedLast(vm, function() {
-                if ( callback ) return callback();
+                db.getDBVersion(vm.agencyId, function(version) {
+                    vm.version = version;
+                    if ( callback ) return callback();
+                });
             });
         });
     }
@@ -244,6 +249,7 @@
                 autoCheckFrequency_options: UPDATES_AUTO_CHECK_FREQ,
                 autoCheckFrequency: undefined,
                 lastChecked: undefined,
+                version: undefined,
                 restoring: false
             }
         },

@@ -237,9 +237,6 @@
             // Update the Favorites
             _updateFavorites(vm);
 
-            // Check for DB Update
-            _dbUpdateCheck(vm);
-
             // Update Transit Feed
             _updateTransitFeed(vm);
 
@@ -256,6 +253,11 @@
         // Clear update info if no agency specified
         if ( !vm.agencyId ) {
             vm.update = {};
+        }
+
+        // Check for DB update, if necessary
+        else {
+            _dbUpdateCheck(vm);
         }
 
     }

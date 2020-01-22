@@ -44,6 +44,7 @@
     const cache = require("@/utils/cache.js");
     const DB = require("@/utils/db.js");
     const favorites = require("@/utils/favorites.js");
+    const settings = require("@/utils/settings.js");
     const TripResultItem = require("@/components/trip/TripResultItem.vue").default;
 
     /**
@@ -389,35 +390,41 @@
         // Set Departure
         vm.isNextDeparture = !vm.$router.currentRoute.params.time || !vm.$router.currentRoute.params.date;
         vm.departure =  vm.isNextDeparture ?  DateTime.now() : DateTime.create(vm.$router.currentRoute.params.time, vm.$router.currentRoute.params.date);
-                
-        // Create TripSearch
-        let search = new TripSearch(vm.origin, vm.destination, vm.departure);
+        
+        // Get Search Settings
+        settings.getValue("search", function(options) {
+            vm.options = options;
 
-        // Get Database
-        DB.getDB(vm.agencyId, function(err, db) {
-            if ( err ) {
-                console.log(err);
-                vm.$emit('showSnackbar', "Database Error. Please try again later.");
-                vm.results = [];
-                return;
-            }
+            // Create TripSearch
+            let search = new TripSearch(vm.origin, vm.destination, vm.departure, vm.options);
 
-            // Start Search
-            search.search(db, function(err, results) {
-                vm.results = results;
+            // Get Database
+            DB.getDB(vm.agencyId, function(err, db) {
+                if ( err ) {
+                    console.log(err);
+                    vm.$emit('showSnackbar', "Database Error. Please try again later.");
+                    vm.results = [];
+                    return;
+                }
 
-                // Setup the Status Feeds
-                _setupStatusFeeds(vm);
+                // Start Search
+                search.search(db, function(err, results) {
+                    vm.results = results;
 
-                // Update Status Bar
-                _updateStatusBar(vm);
+                    // Setup the Status Feeds
+                    _setupStatusFeeds(vm);
 
-                // Parse the Results
-                _parseResults(vm, true, true);
-                if ( TIMER_ID ) clearInterval(TIMER_ID);
-                if ( vm.isNextDeparture ) TIMER_ID = setInterval(function() { _parseResults(vm) }, 1000);
+                    // Update Status Bar
+                    _updateStatusBar(vm);
 
+                    // Parse the Results
+                    _parseResults(vm, true, true);
+                    if ( TIMER_ID ) clearInterval(TIMER_ID);
+                    if ( vm.isNextDeparture ) TIMER_ID = setInterval(function() { _parseResults(vm) }, 1000);
+
+                });
             });
+
         });
 
     }
@@ -598,6 +605,7 @@
                 origin: {},
                 destination: {},
                 departure: undefined,
+                options: {},
                 isNextDeparture: false,
                 results: undefined,
                 resultsHighlightIndex: undefined,

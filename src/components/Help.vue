@@ -58,14 +58,13 @@
                             <li>
                                 Make sure you have the latest agency schedule database installed
                                 <ul>
-                                    <li>Go to the <strong>Favorites</strong> page for the agency</li>
-                                    <li>From the <v-icon>more_vert</v-icon> menu (top-right of toolbar), select <strong>Check for DB Update</strong></li>
-                                    <li>If an update is available, <strong>Download &amp; Install</strong> the new database</li>
+                                    <li>Go to the <a @click="settings">Settings</a> page</li>
+                                    <li>Click the <strong>Reset</strong> button to clear the existing schedule database and download the latest schedules</li>
                                 </ul>
                             </li>
                             <li>
                                 If you have the latest agency schedule database installed and the Trip Results are still displaying 
-                                incorrect times, please report the error using the <strong>Feedback Form</strong> below
+                                incorrect times, please report the error using the <a @click="feedback">Feedback Form</a>
                             </li>
                         </ol>
 
@@ -316,6 +315,7 @@
         // ==== COMPONENT DATA ==== //
         data: function() {
             return {
+                agencyId: undefined,
                 activeTab: 0,
 
                 // Form Data
@@ -343,14 +343,31 @@
 
         // ==== COMPONENT METHODS ==== //
         methods: {
-            // onTabChange() {
-            //     this.$router.replace({
-            //         path: this.agencyId ? "/" + this.agencyId + "/help" : "/help",
-            //         query: {
-            //             tab: TAB_NAMES[this.activeTab]
-            //         }
-            //     });
-            // },
+            onTabChange() {
+                this.$router.replace({
+                    path: this.agencyId ? "/" + this.agencyId + "/help" : "/help",
+                    query: {
+                        tab: TAB_NAMES[this.activeTab]
+                    }
+                });
+            },
+            settings: function() {
+                this.$router.push({
+                    path: this.agencyId ? "/" + this.agencyId + "/settings": "/settings",
+                    query: {
+                        tab: "updates"
+                    }
+                });
+            },
+            feedback: function() {
+                for ( let i = 0; i < TAB_NAMES.length; i++ ) {
+                    if ( TAB_NAMES[i] === "feedback" ) {
+                        this.activeTab = i;
+                        this.feedbackType = "Incorrect Trip Results";
+                        this.onTabChange();
+                    }
+                }
+            },
             submit: function() {
                 let vm = this;
                 vm.valid = false;
@@ -379,6 +396,7 @@
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
             let vm = this;
+            vm.agencyId = vm.$route.params.agency;
 
             // Set Active Tab
             let tab = vm.$route.query.tab;

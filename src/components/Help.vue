@@ -7,158 +7,184 @@
                 <v-icon>help</v-icon>&nbsp;&nbsp;Help &amp; Feedback
             </v-card-title>
 
-            <v-card-text>
+            <v-card-text class="card-content">
 
-                <h2>General Help</h2>
-
-                <p class="question">The website display is messed up/wonky/not what I'm expecting</p>
-                <ol>
-                    <li>Since this site is using modern web technologies, <strong>make sure you're using a recent version 
-                        of a modern browser</strong>.  Google Chrome, Mozilla Firefox, and their variants work best.  Apple 
-                        Safari should work decently.  All others haven't been thoroughly tested.</li>
-                    <li>This site is a <strong>Progressive Web App (PWA)</strong> meaning that the code used to display 
-                        the site is cached/stored in your browser (for offline use).  After an update to the site, your 
-                        browser may still be using (portions of) old code.
-                        <ul>
-                            <li>
-                                <strong>Try performing a manual refresh</strong>.  This can generally be done by holding the 
-                                shift-key while pressing the refresh button (a couple of times for good luck).
-                            </li>
-                            <li>
-                                <strong>Try clearing the site's cache/data from your browser</strong>.  The steps for this vary 
-                                depending on your browser, but there is generally a function for this by clicking the icon to the 
-                                left of the URL in the browser's location bar.
-                            </li>
-                        </ul>
-                    </li>
-                </ol>
-
-                <p class="question">A trip search is showing incorrect times</p>
-                <ol>
-                    <li>
-                        Make sure you have the latest agency schedule database installed
-                        <ul>
-                            <li>Go to the <strong>Favorites</strong> page for the agency</li>
-                            <li>From the <v-icon>more_vert</v-icon> menu (top-right of toolbar), select <strong>Check for DB Update</strong></li>
-                            <li>If an update is available, <strong>Download &amp; Install</strong> the new database</li>
-                        </ul>
-                    </li>
-                    <li>
-                        If you have the latest agency schedule database installed and the Trip Results are still displaying 
-                        incorrect times, please report the error using the <strong>Feedback Form</strong> below
-                    </li>
-                </ol>
-
-
-                <br /><br />
-
+                <v-tabs grow icons-and-text
+                    v-model="activeTab"
+                    v-on:change="onTabChange"
+                    height="40"
+                    color="secondary-bg">
                 
-                <h2>Feedback Form</h2>
+                    <v-tabs-slider color="primary"></v-tabs-slider>
 
-                <p>If you have any feedback, such as a bug report, feature suggestion or any other way 
-                to improve the site, you can contact the developer using the form below.</p>
+                    <v-tab>
+                        <v-icon>help</v-icon>
+                    </v-tab>
 
-                <v-form ref="form">
-
-                    <v-text-field box
-                        prepend-icon="email"
-                        label="Email Address (optional)"
-                        type="email"
-                        v-model="email"
-                        @keyup.enter="submit">
-                    </v-text-field>
-
-                    
-                    <v-select box
-                        prepend-icon="list"
-                        label="Feedback Type"
-                        :items="feedbackTypes"
-                        v-model="feedbackType">
-                    </v-select>
+                    <v-tab>
+                        <v-icon>comment</v-icon>
+                    </v-tab>
 
 
+                    <!-- GENERAL HELP -->
+                    <v-tab-item class="tab-item">
+                        
+                        <h3>General Help</h3>
 
-                    <v-slide-y-transition mode="out-in">
+                        <p class="question">The website display is messed up/wonky/not what I'm expecting</p>
+                        <ol>
+                            <li>Since this site is using modern web technologies, <strong>make sure you're using a recent version 
+                                of a modern browser</strong>.  Google Chrome, Mozilla Firefox, and their variants work best.  Apple 
+                                Safari should work decently.  All others haven't been thoroughly tested.</li>
+                            <li>This site is a <strong>Progressive Web App (PWA)</strong> meaning that the code used to display 
+                                the site is cached/stored in your browser (for offline use).  After an update to the site, your 
+                                browser may still be using (portions of) old code.
+                                <ul>
+                                    <li>
+                                        <strong>Try performing a manual refresh</strong>.  This can generally be done by holding the 
+                                        shift-key while pressing the refresh button (a couple of times for good luck).
+                                    </li>
+                                    <li>
+                                        <strong>Try clearing the site's cache/data from your browser</strong>.  The steps for this vary 
+                                        depending on your browser, but there is generally a function for this by clicking the icon to the 
+                                        left of the URL in the browser's location bar.
+                                    </li>
+                                </ul>
+                            </li>
+                        </ol>
 
-                        <div v-if="feedbackType === 'Incorrect Trip Results'" key="trip">
+                        <p class="question">A trip search is showing incorrect times</p>
+                        <ol>
+                            <li>
+                                Make sure you have the latest agency schedule database installed
+                                <ul>
+                                    <li>Go to the <strong>Favorites</strong> page for the agency</li>
+                                    <li>From the <v-icon>more_vert</v-icon> menu (top-right of toolbar), select <strong>Check for DB Update</strong></li>
+                                    <li>If an update is available, <strong>Download &amp; Install</strong> the new database</li>
+                                </ul>
+                            </li>
+                            <li>
+                                If you have the latest agency schedule database installed and the Trip Results are still displaying 
+                                incorrect times, please report the error using the <strong>Feedback Form</strong> below
+                            </li>
+                        </ol>
 
-                            <p><strong>NOTE:</strong> The schedule information shown on the site comes 
-                            directly from schedule data provided by the specific agency.  Errors in the 
-                            scheduled departure/arrival times and/or missing or incorrect trips will have 
-                            to be fixed by the originating agency.  Errors in transfers can be fixed by 
-                            this site and suggestions for improving specific transfers are appreciated.</p>
+                    </v-tab-item>
 
-                            <v-select box
-                                prepend-icon="location_on"
-                                label="Origin"
-                                :items="stops"
-                                v-model="origin">
-                            </v-select>
 
-                            <v-select box
-                                prepend-icon="location_on"
-                                label="Destination"
-                                :items="stops"
-                                v-model="destination">
-                            </v-select>
+                    <!-- FEEDBACK -->
+                    <v-tab-item class="tab-item">
+
+                        <h3>Feedback Form</h3>
+
+                        <p>If you have any feedback, such as a bug report, feature suggestion or any other way 
+                        to improve the site, you can contact the developer using the form below.</p>
+
+                        <v-form ref="form">
 
                             <v-text-field box
-                                prepend-icon="date_range"
-                                label="Date / Time"
-                                v-model="datetime">
+                                prepend-icon="email"
+                                label="Email Address (optional)"
+                                type="email"
+                                v-model="email"
+                                @keyup.enter="submit">
                             </v-text-field>
 
-                            <v-textarea box auto-grow
-                                prepend-icon="message"
-                                label="Description"
-                                hint="Please describe what was (incorrectly) displayed on the site and what you thought should have been displayed."
-                                v-model="tripDescription">
-                            </v-textarea>
-
-                        </div>
-
-                        <div v-if="feedbackType === 'General Bug Report'" key="bug">
-
-                            <v-textarea box auto-grow
-                                prepend-icon="message"
-                                label="Bug Description"
-                                hint="Please describe the bug as detailed as you can (ie steps to produce the problem) and what you thought should have happened."
-                                v-model="bugDescription">
-                            </v-textarea>
-
-                        </div>
-
-                        <div v-if="feedbackType === 'Feature Suggestion'" key="feature">
-
-                            <v-textarea box auto-grow
-                                prepend-icon="message"
-                                label="Feature Suggestion"
-                                hint="Please describe the feature suggestion."
-                                v-model="featureDescription">
-                            </v-textarea>
-
-                        </div>
+                            
+                            <v-select box
+                                prepend-icon="list"
+                                label="Feedback Type"
+                                :items="feedbackTypes"
+                                v-model="feedbackType">
+                            </v-select>
 
 
-                        <div v-if="feedbackType === 'Other'" key="other">
 
-                            <v-textarea box auto-grow
-                                prepend-icon="message"
-                                label="Other Feedback"
-                                v-model="otherDescription">
-                            </v-textarea>
+                            <v-slide-y-transition mode="out-in">
 
-                        </div>
+                                <div v-if="feedbackType === 'Incorrect Trip Results'" key="trip">
 
-                    </v-slide-y-transition>
+                                    <p><strong>NOTE:</strong> The schedule information shown on the site comes 
+                                    directly from schedule data provided by the specific agency.  Errors in the 
+                                    scheduled departure/arrival times and/or missing or incorrect trips will have 
+                                    to be fixed by the originating agency.  Errors in transfers can be fixed by 
+                                    this site and suggestions for improving specific transfers are appreciated.</p>
 
-                    <v-btn color="primary" :disabled="!valid" block
-                        @keyup.enter="submit"
-                        @click="submit">
-                            Submit
-                    </v-btn>
+                                    <v-select box
+                                        prepend-icon="location_on"
+                                        label="Origin"
+                                        :items="stops"
+                                        v-model="origin">
+                                    </v-select>
 
-                </v-form>
+                                    <v-select box
+                                        prepend-icon="location_on"
+                                        label="Destination"
+                                        :items="stops"
+                                        v-model="destination">
+                                    </v-select>
+
+                                    <v-text-field box
+                                        prepend-icon="date_range"
+                                        label="Date / Time"
+                                        v-model="datetime">
+                                    </v-text-field>
+
+                                    <v-textarea box auto-grow
+                                        prepend-icon="message"
+                                        label="Description"
+                                        hint="Please describe what was (incorrectly) displayed on the site and what you thought should have been displayed."
+                                        v-model="tripDescription">
+                                    </v-textarea>
+
+                                </div>
+
+                                <div v-if="feedbackType === 'General Bug Report'" key="bug">
+
+                                    <v-textarea box auto-grow
+                                        prepend-icon="message"
+                                        label="Bug Description"
+                                        hint="Please describe the bug as detailed as you can (ie steps to produce the problem) and what you thought should have happened."
+                                        v-model="bugDescription">
+                                    </v-textarea>
+
+                                </div>
+
+                                <div v-if="feedbackType === 'Feature Suggestion'" key="feature">
+
+                                    <v-textarea box auto-grow
+                                        prepend-icon="message"
+                                        label="Feature Suggestion"
+                                        hint="Please describe the feature suggestion."
+                                        v-model="featureDescription">
+                                    </v-textarea>
+
+                                </div>
+
+
+                                <div v-if="feedbackType === 'Other'" key="other">
+
+                                    <v-textarea box auto-grow
+                                        prepend-icon="message"
+                                        label="Other Feedback"
+                                        v-model="otherDescription">
+                                    </v-textarea>
+
+                                </div>
+
+                            </v-slide-y-transition>
+
+                            <v-btn color="primary" :disabled="!valid" block
+                                @keyup.enter="submit"
+                                @click="submit">
+                                    Submit
+                            </v-btn>
+
+                        </v-form>
+
+                    </v-tab-item>
+
+                </v-tabs>
 
             </v-card-text>
         </v-card>
@@ -171,6 +197,8 @@
     const api = require("@/utils/api.js");
     const DB = require("@/utils/db.js");
     const StopSelectionDialog = require("@/components/StopSelectionDialog.vue").default;
+
+    const TAB_NAMES = ["help", "feedback"];
 
     /**
      * Get the Stops from the Agency DB
@@ -288,6 +316,7 @@
         // ==== COMPONENT DATA ==== //
         data: function() {
             return {
+                activeTab: 0,
 
                 // Form Data
                 valid: undefined,
@@ -314,6 +343,14 @@
 
         // ==== COMPONENT METHODS ==== //
         methods: {
+            // onTabChange() {
+            //     this.$router.replace({
+            //         path: this.agencyId ? "/" + this.agencyId + "/help" : "/help",
+            //         query: {
+            //             tab: TAB_NAMES[this.activeTab]
+            //         }
+            //     });
+            // },
             submit: function() {
                 let vm = this;
                 vm.valid = false;
@@ -343,6 +380,14 @@
         mounted() {
             let vm = this;
 
+            // Set Active Tab
+            let tab = vm.$route.query.tab;
+            for ( let i = 0; i < TAB_NAMES.length; i++ ) {
+                if ( TAB_NAMES[i] === tab ) {
+                    vm.activeTab = i;
+                }
+            }
+
             // Set List of Stop Names
             _getStops(vm, function(stops) {
                 vm.stops = [];
@@ -371,10 +416,20 @@
 
 
 <style scoped>
-    h2 {
-        border-bottom: 1px solid #eee;
-        margin-bottom: 10px;
+    .card-content {
+        padding: 0 0 16px 0;
     }
+
+    .tab-item {
+        padding: 16px;
+    }
+    .tab-item h3 {
+        border-bottom: 1px solid #999;
+    }
+    .tab-item p {
+        margin: 10px 5px;
+    }
+
     p.question {
         font-weight: 700;
         font-size: 16px;

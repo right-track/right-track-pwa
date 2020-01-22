@@ -16,12 +16,32 @@
         <!-- No Results Found -->
         <v-fade-transition>
             <div v-if="results && results.length === 0" class="trip-results-none">
+
                 <br /><br />
+
                 <v-icon color="#111" size="75">error_outline</v-icon>
                 <br />
                 <h2>No Results Found</h2>
                 <br />
-                <p class="subheading">No Trips were found between the specified stops at this time.</p>
+                <p class="subheading trip-results-none-subheading">
+                    No Trips were found between <strong>{{origin.name}}</strong> and <strong>{{destination.name}}</strong> 
+                    departing around {{departure.getTimeReadable()}} on {{departure.getDateReadable()}}
+                </p>
+                
+                <br /><br />
+                
+                <ul class="trip-results-none-list">
+                    <li>
+                        <a @click="checkUpdates">Make sure you have the latest schedule database installed</a>
+                    </li>
+                    <li>
+                        <a @click="checkSettings">If your trip requires a transfer, make sure transfers are enabled</a>
+                    </li>
+                    <li>
+                        <a @click="reportError">Report a possible error in the schedule database</a>
+                    </li>
+                </ul>
+
             </div>
         </v-fade-transition>
                 
@@ -668,6 +688,43 @@
                         }
                     });
                 }
+            },
+
+            /**
+             * Display the Updates Settings page
+             */
+            checkUpdates: function() {
+                this.$router.push({
+                    path: "/" + this.agencyId + "/settings",
+                    query: {
+                        tab: "updates"
+                    }
+                });
+            },
+
+            /**
+             * Display the Trip Settings page
+             */
+            checkSettings: function() {
+                this.$router.push({
+                    path: "/" + this.agencyId + "/settings",
+                    query: {
+                        tab: "trips"
+                    }
+                });
+            },
+
+            /**
+             * Display the Feedback page
+             */
+            reportError: function() {
+                this.$router.push({
+                    path: "/" + this.agencyId + "/help",
+                    query: {
+                        tab: "feedback",
+                        type: "Incorrect Trip Results"
+                    }
+                });
             }
 
         },
@@ -730,6 +787,19 @@
 
     .trip-results-none {
         text-align: center;
+    }
+    .trip-results-none-subheading {
+        max-width: 450px; 
+        margin: 5px auto;
+    }
+    ul.trip-results-none-list {
+        text-align: left;
+        max-width: 450px;
+        margin: auto;
+        list-style-type: circle;
+    }
+    ul.trip-results-none-list li {
+        margin: 15px 0;
     }
 
     .trip-results-loading {

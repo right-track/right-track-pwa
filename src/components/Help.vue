@@ -406,6 +406,12 @@
                 }
             }
 
+            // Set Feedback Type, if provided
+            let type = vm.$route.query.type;
+            if ( type ) {
+                vm.feedbackType = type;
+            }
+
             // Set List of Stop Names
             _getStops(vm, function(stops) {
                 vm.stops = [];

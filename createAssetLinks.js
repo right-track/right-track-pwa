@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const exec = require('child_process').execSync;
 
 const ASSET_LINKS_PATH = 'assetlinks.json';
 const STATIC_DIR = './static';
@@ -16,7 +17,7 @@ if ( fs.existsSync(ASSET_LINKS_PATH) ) {
 
             console.log("    ... writing assetlinks.json to " + directory);
             if ( !fs.existsSync(directory) ) {
-                fs.mkdirSync(directory, {recursive: true});
+                exec("mkdir -p '" + directory + "'");
             }
             fs.writeFileSync(
                 path.resolve(directory, "assetlinks.json"),

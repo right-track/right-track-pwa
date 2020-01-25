@@ -4,10 +4,9 @@
   "description": "Right Track Progessive Web App",
   "main": "index.js",
   "scripts": {
-    "createAssetLinks": "node createAssetLinks.js",
-    "dev": "npm run createAssetLinks; webpack-dev-server --progress",
-    "build:dev": "npm run createAssetLinks; webpack -d --mode development",
-    "build": "npm run createAssetLinks; webpack -p --mode production",
+    "dev": "webpack-dev-server --progress",
+    "build:dev": "webpack -d --mode development",
+    "build": "webpack -p --mode production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

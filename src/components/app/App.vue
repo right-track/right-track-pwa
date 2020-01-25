@@ -376,7 +376,7 @@
         if ( agency ) {
             manifest.short_name = MANIFEST.short_name + ": " + agency.id.toUpperCase();
             manifest.name = agency.config.title;
-            manifest.start_url = window.location.protocol + "//" + window.location.host + "/" + agency.id;
+            manifest.start_url = window.location.protocol + "//" + window.location.host + "/?start=" + agency.id;
             manifest.scope = window.location.protocol + "//" + window.location.host + "/";
             manifest.background_color = agency.config.colors.primary;
             manifest.theme_color = agency.config.colors.primary;
@@ -869,6 +869,14 @@
         // ==== COMPONTENT MOUNTED ==== //
         mounted: function() {
             let vm = this;
+
+            // Check for start param
+            let start = this.$route.query.start;
+            if ( start ) {
+                this.$router.push({
+                    path: "/" + start,
+                });
+            }
 
             // Initial Page Update
             _pageUpdate(vm);

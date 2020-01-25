@@ -15,7 +15,9 @@ if ( fs.existsSync(ASSET_LINKS_PATH) ) {
             let content = asset_links[i].content;
 
             console.log("    ... writing assetlinks.json to " + directory);
-            fs.mkdirSync(directory, {recursive: true});
+            if ( !fs.existsSync(directory) ) {
+                fs.mkdirSync(directory, {recursive: true});
+            }
             fs.writeFileSync(
                 path.resolve(directory, "assetlinks.json"),
                 JSON.stringify(content, null, 2)

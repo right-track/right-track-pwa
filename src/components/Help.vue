@@ -195,6 +195,7 @@
     const core = require("right-track-core");
     const api = require("@/utils/api.js");
     const DB = require("@/utils/db.js");
+    const store = require("@/utils/store.js");
     const StopSelectionDialog = require("@/components/StopSelectionDialog.vue").default;
 
     const TAB_NAMES = ["help", "feedback"];
@@ -280,30 +281,33 @@
 
         // Get Database Version
         DB.getDBVersion(agency, function(version) {
+            store.get("client", function(err, client) {
 
-            // Set Metadata
-            let metadata = {
-                agency: agency,
-                database: version,
-                site: {
-                    version: vm.site.version,
-                    hash: vm.site.hash,
-                    host: window.location.hostname
-                },
-                ua: navigator.userAgent
-            }
+                // Set Metadata
+                let metadata = {
+                    agency: agency,
+                    database: version,
+                    site: {
+                        version: vm.site.version,
+                        hash: vm.site.hash,
+                        host: window.location.hostname
+                    },
+                    app_client: client,
+                    ua: navigator.userAgent
+                }
 
-            // Send the Feedback
-            api.post("/feedback", {
-                to: to,
-                replyTo: replyTo,
-                subject: subject,
-                body: body,
-                metadata: metadata
-            }, function(err) {
-                return callback(err);
+                // Send the Feedback
+                api.post("/feedback", {
+                    to: to,
+                    replyTo: replyTo,
+                    subject: subject,
+                    body: body,
+                    metadata: metadata
+                }, function(err) {
+                    return callback(err);
+                });
+
             });
-
         });
 
     }

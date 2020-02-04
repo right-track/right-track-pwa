@@ -23,6 +23,8 @@
                     <strong>Version: </strong>{{ site.version }} (<a :href="config.maintainer.repository + '/commits/master'">{{site.hash}}</a>)
                     <br />
                     <strong>Source Code:</strong> <a :href="config.maintainer.repository">{{ config.maintainer.repository }}</a>
+                    <br />
+                    <strong>Client: </strong>{{client}}
                 </p>
 
                 <br />
@@ -92,6 +94,7 @@
     const config = require("@/utils/config.js");
     const cache = require("@/utils/cache.js");
     const db = require("@/utils/db.js");
+    const store = require("@/utils/store.js");
 
 
     /**
@@ -128,7 +131,6 @@
                 for ( let i = 0; i < vm.agencies.length; i++ ) {
                     db.getDBVersion(vm.agencies[i].id, function(version) {
                         vm.agencies[i].database.installed = version;
-                        console.log(JSON.stringify(vm.agencies));
                     });
                 }
             }
@@ -153,6 +155,17 @@
     }
 
 
+    /**
+     * Update Client String
+     * @param  {Vue} vm Vue Instance
+     */
+    function _updateClient(vm) {
+        store.get("client", function(err, client) {
+            vm.client = client;
+        });
+    }
+
+
 
     module.exports = {
 
@@ -169,7 +182,8 @@
                 site: {
                     version: __VERSION__,
                     hash: __VERSION_HASH__
-                }
+                },
+                client: null
             }
         },
 
@@ -179,6 +193,7 @@
             _updateServerInfo(this);
             _updateAgencies(this);
             _updateTransitAgencies(this);
+            _updateClient(this);
         }
     }
 </script>

@@ -890,6 +890,13 @@
             window.addEventListener('offline', function() {
                 _updateNetworkAvailabilityStatus(vm);
             });
+
+            // Set App Client
+            let client = "web";
+            if ( document.referrer.includes('android-app://') ) {
+                client = "android";
+            }
+            store.put("client", client);
         },
 
         // ==== COMPONENT WATCHERS ==== //

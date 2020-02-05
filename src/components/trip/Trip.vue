@@ -190,6 +190,31 @@
                         }
                     });
                 }
+            },
+            {
+                type: "divider"
+            },
+        ]
+
+        let settingsItems = [
+            {
+                type: "divider"
+            },
+            {
+                type: "item",
+                icon: "settings",
+                title: "Trip Settings",
+                function: function() {
+                    vm.$router.push({
+                        name: 'settings',
+                        params: {
+                            agency: vm.$router.currentRoute.params.agency
+                        },
+                        query: {
+                            tab: 'trips'
+                        }
+                    });
+                }
             }
         ]
 
@@ -248,7 +273,7 @@
          * Finish setting up the menu items
          */
         function _finish() {
-            let menuItems = _buildMenuItems(baseItems, originItems, transferItems, destinationItems);
+            let menuItems = _buildMenuItems(baseItems, originItems, transferItems, destinationItems, settingsItems);
             vm.$emit('setMoreMenuItems', menuItems);
         }
     }

@@ -57,14 +57,14 @@
                     <strong>&nbsp;Transfer @ {{ trip.transfers[index].stop.name }}</strong>
                     <span v-if="condensed"> ({{ formatTravelTime(trip.transfers[index].layoverTime, true) }})</span>
                     <br />
-                    <span v-if="!condensed"><v-icon color="#111">timelapse</v-icon> {{ formatTravelTime(trip.transfers[index].layoverTime) }}</span>
+                    <span v-if="showTravelTimes && !condensed"><v-icon color="#111">timelapse</v-icon> {{ formatTravelTime(trip.transfers[index].layoverTime) }}</span>
                 </div>
             </div>
 
         </div>
 
         <!-- Total Travel Time -->
-        <div v-if="trip.segments.length > 1" class="trip-total-traveltime">
+        <div v-if="showTravelTimes && trip.segments.length > 1" class="trip-total-traveltime">
             <div class="spacing" v-if="!condensed"></div>
             <span v-if="!condensed"><strong>Total Travel Time</strong><br /></span>
             <v-icon color="#111">access_time</v-icon> {{ formatTravelTime(trip.travelTime) }}
@@ -285,7 +285,7 @@
         color: #ff6f00;
         font-size: 16px;
         font-weight: bold;
-        margin-bottom: -12px;
+        margin-bottom: -10px;
     }
 
     .trip-segment-wrapper {

@@ -1,5 +1,61 @@
 <template>
     <div class="tab-item">
+
+        <h3>Trip Results Display:</h3>
+
+        <!-- Display Mode -->
+        <v-layout class="mt-1" row wrap>
+            <v-flex xs12 sm8>
+                <p>
+                    <strong>Display Density:</strong><br />
+                    Display the results in a spaced out <strong>comfortable</strong> view or 
+                    a more compact <strong>condensed</strong> view
+                </p>
+            </v-flex>
+            <v-flex sm1></v-flex>
+            <v-flex xs12 sm3>
+                <v-select filled
+                    v-model="displayCondensed"
+                    :items="displayCondensed_options">
+                </v-select>
+            </v-flex>
+        </v-layout>
+
+        <!-- Departs In Times -->
+        <v-layout class="mt-1" row wrap>
+            <v-flex xs10>
+                <p><strong>Departs In Times</strong><br />Display the 'Departs in x minutes' for upcoming departures</p>
+            </v-flex>
+            <v-flex xs1></v-flex>
+            <v-flex xs1>
+                <v-switch class="mt-1" color="primary" v-model="showDepartsInTimes"></v-switch>
+            </v-flex>
+        </v-layout>
+
+        <!-- Headsigns -->
+        <v-layout class="mt-1" row wrap>
+            <v-flex xs10>
+                <p><strong>Trip Headsigns</strong><br />Display the final destination of trip segments</p>
+            </v-flex>
+            <v-flex xs1></v-flex>
+            <v-flex xs1>
+                <v-switch class="mt-1" color="primary" v-model="showHeadsigns"></v-switch>
+            </v-flex>
+        </v-layout>
+
+        <!-- Travel Times -->
+        <v-layout class="mt-1" row wrap>
+            <v-flex xs10>
+                <p><strong>Travel Times</strong><br />Display the calculated travel times of trips and their segments</p>
+            </v-flex>
+            <v-flex xs1></v-flex>
+            <v-flex xs1>
+                <v-switch class="mt-1" color="primary" v-model="showTravelTimes"></v-switch>
+            </v-flex>
+        </v-layout>
+
+        <br />
+
         <h3>Trip Searches:</h3>
 
         <!-- Pre-Departure Hours -->
@@ -130,6 +186,7 @@
     const settings = require('@/utils/settings.js');
 
     // TRIP SETTINGS OPTIONS
+    const DISPLAY_MODES = ["Comfortable", "Condensed"]
     const DEPARTURE_HOURS = [1, 2, 3, 6, 12];
     const MAX_TRANSFERS = [1, 2];
     const LAYOVER_MINS = [0, 1, 5, 10, 15, 30, 60];
@@ -168,6 +225,11 @@
         // ==== COMPONENT DATA ==== //
         data: function() {
             return {
+                displayCondensed: undefined,
+                displayCondensed_options: DISPLAY_MODES,
+                showDepartsInTimes: undefined,
+                showHeadsigns: undefined,
+                showTravelTimes: undefined,
                 preDepartureHours: undefined,
                 preDepartureHours_options: DEPARTURE_HOURS,
                 postDepartureHours: undefined,
@@ -193,6 +255,10 @@
             settings: {
                 deep: true,
                 handler(val) {
+                    this.displayCondensed = val.trips.condensed ? "Condensed" : "Comfortable";
+                    this.showDepartsInTimes = val.trips.showDepartsInTimes;
+                    this.showHeadsigns = val.trips.showHeadsigns;
+                    this.showTravelTimes = val.trips.showTravelTimes;
                     this.preDepartureHours = val.search.preDepartureHours;
                     this.postDepartureHours = val.search.postDepartureHours;
                     this.allowTransfers = val.search.allowTransfers;
@@ -201,6 +267,18 @@
                     this.minLayoverMins = val.search.minLayoverMins;
                     this.maxLayoverMins = val.search.maxLayoverMins;
                 }
+            },
+            displayCondensed: function(val) {
+                settings.setValue("trips.condensed", val === "Condensed")
+            },
+            showDepartsInTimes: function(val) {
+                settings.setValue("trips.showDepartsInTimes", val);
+            },
+            showHeadsigns: function(val) {
+                settings.setValue("trips.showHeadsigns", val);
+            },
+            showTravelTimes: function(val) {
+                settings.setValue("trips.showTravelTimes", val);
             },
             preDepartureHours: function(val) {
                 settings.setValue("search.preDepartureHours", val);

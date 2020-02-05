@@ -4,21 +4,32 @@
         <!-- General Settings -->
         <h3>Schedule Updates</h3>
 
+        <div class="hidden-sm-and-up"><br /></div>
+
         <!-- Auto Check for Updates -->
         <v-layout class="mt-1" row wrap>
             <v-flex xs10>
-                <p><strong>Check for Updates Automatically</strong></p>
+                <p>
+                    <strong>Check for Updates Automatically</strong><br />
+                    When the app/website is running, automatically check for a schedule database update 
+                    and show a notification when one is available
+                </p>
             </v-flex>
-            <v-flex xs1></v-flex>
+            <v-flex xs1 class="hidden-xs-only"></v-flex>
             <v-flex xs1>
                 <v-switch class="mt-1" color="primary" v-model="autoCheck"></v-switch>
             </v-flex>
         </v-layout>
 
+        <div class="hidden-sm-and-up"><br /></div>
+
         <!-- Auto Check Frequency -->
         <v-layout class="mt-1" row wrap>
             <v-flex xs12 sm8>
-                <p><strong>Update Check Frequency</strong></p>
+                <p>
+                    <strong>Update Check Frequency</strong><br />
+                    The time interval between update checks
+                </p>
             </v-flex>
             <v-flex sm1></v-flex>
             <v-flex xs12 sm3>
@@ -50,11 +61,16 @@
                 </v-flex>
             </v-layout>
 
+            <div class="hidden-sm-and-up"><br /><br /></div>
+
             <p><strong>Currently Installed:</strong><br /><span v-if="version">Version </span>{{version}}</p>
 
+            <div class="hidden-sm-and-up"><br /></div>
             <br />
 
             <h3>Reset Database</h3>
+
+            <div class="hidden-sm-and-up"><br /></div>
 
             <!-- Reset -->
             <v-layout class="mt-1" row wrap>

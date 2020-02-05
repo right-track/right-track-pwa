@@ -8,8 +8,7 @@
         <div v-for="(segment, index) in trip.segments" :key="'trip-segment-' + index" class="trip-segment-wrapper">
             
             <!-- Headsign -->
-            <div class="trip-segment-headsign" v-if="showHeadsigns">
-                <div class="spacing" v-if="!condensed"></div>
+            <div :class="condensed ? 'trip-segment-headsign-condensed' : 'trip-segment-headsign'" v-if="showHeadsigns">
                 <span :style="{'background-color': '#' + segment.trip.route.color, 'color': '#' + segment.trip.route.textColor}">
                     <v-icon :color="'#' + segment.trip.route.textColor">train</v-icon> <strong>{{ segment.trip.headsign }}&nbsp;</strong>
                 </span>
@@ -145,12 +144,12 @@
 
                 // Departing Now
                 if ( mins >= -1 && mins <= 1 ) {
-                    rtn = "<p class='trip-departs-time-text'>Departing Now!</p>";
+                    rtn = "<p style='margin: 0'>Departing Now!</p>";
                 }
 
                 // Departing within 2 hours
                 else if ( mins > 0 && mins <= 120 ) {
-                    rtn = "<p class='trip-departs-time-text'>Departs in ";
+                    rtn = "<p style='margin: 0'>Departs in ";
                     if ( status && status.delay > 0 ) rtn += " about ";
                     rtn += datetime.minutesToString(mins) + "</p>";
                 }
@@ -296,12 +295,17 @@
         padding: 10px 0 0 0;
     }
 
-    .trip-segment-headsign {
+    .trip-segment-headsign, .trip-segment-headsign-condensed {
         grid-area: headsign;
         text-align: center;
-        margin-bottom: 5px;
     }
-    .trip-segment-headsign > span {
+    .trip-segment-headsign {
+        margin: 12px 0;
+    }
+    .trip-segment-headsign-condensed {
+        margin: 5px 0;
+    }
+    .trip-segment-headsign > span, .trip-segment-headsign-condensed > span {
         border-radius: 5px;
         padding: 2px;
     }

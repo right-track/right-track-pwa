@@ -3,6 +3,8 @@
 
         <h3>Trip Results Display:</h3>
 
+        <div class="hidden-sm-and-up"><br /></div>
+
         <!-- Display Mode -->
         <v-layout class="mt-1" row wrap>
             <v-flex xs12 sm8>
@@ -21,42 +23,51 @@
             </v-flex>
         </v-layout>
 
+        <div class="hidden-sm-and-up"><br /></div>
+
         <!-- Departs In Times -->
         <v-layout class="mt-1" row wrap>
             <v-flex xs10>
                 <p><strong>Departs In Times</strong><br />Display the 'Departs in x minutes' for upcoming departures</p>
             </v-flex>
-            <v-flex xs1></v-flex>
+            <v-flex xs1 class="hidden-xs-only"></v-flex>
             <v-flex xs1>
                 <v-switch class="mt-1" color="primary" v-model="showDepartsInTimes"></v-switch>
             </v-flex>
         </v-layout>
+
+        <div class="hidden-sm-and-up"><br /></div>
 
         <!-- Headsigns -->
         <v-layout class="mt-1" row wrap>
             <v-flex xs10>
                 <p><strong>Trip Headsigns</strong><br />Display the final destination of trip segments</p>
             </v-flex>
-            <v-flex xs1></v-flex>
+            <v-flex xs1 class="hidden-xs-only"></v-flex>
             <v-flex xs1>
                 <v-switch class="mt-1" color="primary" v-model="showHeadsigns"></v-switch>
             </v-flex>
         </v-layout>
+
+        <div class="hidden-sm-and-up"><br /></div>
 
         <!-- Travel Times -->
         <v-layout class="mt-1" row wrap>
             <v-flex xs10>
                 <p><strong>Travel Times</strong><br />Display the calculated travel times of trips and their segments</p>
             </v-flex>
-            <v-flex xs1></v-flex>
+            <v-flex xs1 class="hidden-xs-only"></v-flex>
             <v-flex xs1>
                 <v-switch class="mt-1" color="primary" v-model="showTravelTimes"></v-switch>
             </v-flex>
         </v-layout>
 
+        <div class="hidden-sm-and-up"><br /></div>
         <br />
 
         <h3>Trip Searches:</h3>
+
+        <div class="hidden-sm-and-up"><br /></div>
 
         <!-- Pre-Departure Hours -->
         <v-layout class="mt-1" row wrap>
@@ -75,6 +86,8 @@
             </v-flex>
         </v-layout>
 
+        <div class="hidden-sm-and-up"><br /></div>
+
         <!-- Post-Departure Hours -->
         <v-layout class="mt-1" row wrap>
             <v-flex xs12 sm8>
@@ -92,20 +105,25 @@
             </v-flex>
         </v-layout>
 
+        <div class="hidden-sm-and-up"><br /></div>
         <br />
 
         <h3>Transfer Settings:</h3>
 
+        <div class="hidden-sm-and-up"><br /></div>
+
         <!-- Allow Transfers -->
         <v-layout class="mt-1" row wrap>
             <v-flex xs10>
-                <p><strong>Allow Transfers</strong></p>
+                <p><strong>Allow Transfers</strong><br />Include trip results that require switching between trains</p>
             </v-flex>
-            <v-flex xs1></v-flex>
+            <v-flex xs1 class="hidden-xs-only"></v-flex>
             <v-flex xs1>
                 <v-switch class="mt-1" color="primary" v-model="allowTransfers"></v-switch>
             </v-flex>
         </v-layout>
+
+        <div class="hidden-sm-and-up"><br /></div>
 
         <!-- Max Transfers -->
         <v-layout class="mt-1" row wrap>
@@ -125,20 +143,23 @@
             </v-flex>
         </v-layout>
 
+        <div class="hidden-sm-and-up"><br /></div>
+
         <!-- Change in Directions -->
         <v-layout class="mt-1" row wrap>
-            <v-flex xs8>
+            <v-flex xs10>
                 <p>
                     <strong>Allow Change in Direction:</strong><br />
                     Allow a transfer between trains that run in opposite directions (this may require an additional fare)
                 </p>
             </v-flex>
-            <v-flex x3></v-flex>
+            <v-flex xs1 class="hidden-xs-only"></v-flex>
             <v-flex xs1>
                 <v-switch class="mt-1" color="primary" v-model="allowChangeInDirection" :disabled="!allowTransfers"></v-switch>
             </v-flex>
         </v-layout>
 
+        <div class="hidden-sm-and-up"><br /></div>
 
         <!-- Min Layover Mins -->
         <v-layout class="mt-1" row wrap>
@@ -158,6 +179,7 @@
             </v-flex>
         </v-layout>
         
+        <div class="hidden-sm-and-up"><br /></div>
 
         <!-- Max Layover Mins -->
         <v-layout class="mt-1" row wrap>

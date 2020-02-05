@@ -382,6 +382,14 @@
                         vm.$emit('showSnackbar', 'Could not submit feedback.  Please try again later.');
                     }
                     else {
+                        vm.feedbackType = undefined;
+                        vm.origin = undefined;
+                        vm.destination = undefined;
+                        vm.datetime = undefined;
+                        vm.tripDescription = undefined;
+                        vm.bugDescription = undefined;
+                        vm.featureDescription = undefined;
+                        vm.otherDescription = undefined;
                         vm.$emit('showSnackbar', 'Feedback submitted.  Thank you!');   
                     }
                 });

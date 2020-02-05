@@ -19,7 +19,8 @@
 
             <div class="favorites-login" v-show="showLogin">
                 <p class="subheading">
-                    Use your <strong>Right Track Account</strong> to sync your favorites across devices.
+                    Use your <strong>Right Track Account</strong> to sync your favorites across devices or 
+                    use the <v-icon>edit</v-icon> button now to add your favorites directly to this device.
                 </p>
 
                 <div class="button-container">

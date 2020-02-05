@@ -30,6 +30,12 @@
       "maxLayoverMins": 30,
       "minLayoverMins": 0,
       "maxTransfers": 2
+    },
+    "trips": {
+      "condensed": false,
+      "showHeadsigns": true,
+      "showTravelTimes": true,
+      "showDepartsInTimes": true
     }
   }
 }

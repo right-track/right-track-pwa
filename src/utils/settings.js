@@ -2,6 +2,7 @@
 
 const config = require('@/utils/config.js');
 const store = require('@/utils/store.js');
+const DEFAULT_SETTINGS = config.settings;
 
 
 /**
@@ -16,6 +17,15 @@ function getValue(property, callback) {
         for ( let i = 0; i < parts.length; i++ ) {
             value = value[parts[i]];
         }
+
+        // Value not found in settings, try the default
+        if ( !value ) {
+            value = DEFAULT_SETTINGS;
+            for ( let i = 0; i < parts.length; i++ ) {
+                value = value[parts[i]];
+            }
+        }
+
         return callback(value)
     });
 }
@@ -61,7 +71,7 @@ function setValue(property, value, callback) {
 function get(callback) {
     store.get("settings", function(err, settings) {
         if ( err || !settings ) {
-            return callback(config.settings);
+            return callback(DEFAULT_SETTINGS);
         }
         return callback(settings);
     });

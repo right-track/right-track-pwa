@@ -1,53 +1,75 @@
 <template>
     <div class="trip-wrapper" :class="{'highlight-trip-wrapper': highlight}" @click="selectTrip">
-        <div class="trip-departs-time" v-html="departs"></div>
         
+        <!-- Departs in Time -->
+        <div class="trip-departs-time" v-if="showDepartsInTimes" v-html="departs"></div>
+        
+        <!-- TRIP SEGMENTS -->
         <div v-for="(segment, index) in trip.segments" :key="'trip-segment-' + index" class="trip-segment-wrapper">
-            <div class="trip-segment-headsign">
+            
+            <!-- Headsign -->
+            <div class="trip-segment-headsign" v-if="showHeadsigns">
+                <div class="spacing" v-if="!condensed"></div>
                 <span :style="{'background-color': '#' + segment.trip.route.color, 'color': '#' + segment.trip.route.textColor}">
                     <v-icon :color="'#' + segment.trip.route.textColor">train</v-icon> <strong>{{ segment.trip.headsign }}&nbsp;</strong>
                 </span>
             </div>
             
+            <!-- Departure / Arrival Times -->
             <div class="trip-segment-times">
                 {{ formatTime(segment.enter.departureTime) }} <v-icon color="#111">arrow_forward</v-icon> {{ formatTime(segment.exit.arrivalTime) }}
             </div>
+
+            <!-- Status -->
             <div class="trip-segment-status">
                 <v-fade-transition>
                     <div :key="'status-' + status[index]" v-html="status[index]"></div>
                 </v-fade-transition>
             </div>
+
+            <!-- Travel Time -->
             <div class="trip-segment-traveltime">
-                &nbsp;<v-icon color="#111">access_time</v-icon> {{ formatTravelTime(segment.travelTime) }}
+                <span v-if="showTravelTimes">
+                    &nbsp;<v-icon color="#111">access_time</v-icon> {{ formatTravelTime(segment.travelTime) }}
+                </span>
             </div>
+
+            <!-- Track Assignment -->
             <div class="trip-segment-track">
                 <v-fade-transition>
                     <div :key="'track-' + track[index]" v-html="track[index]"></div>
                 </v-fade-transition>
             </div>
 
+            <!-- Trip Details Section -->
             <v-expand-transition>
                 <rt-trip-details v-if="tripDetailsVisible" class="trip-segment-details" 
                     :trip="segment.trip" :enter="segment.enter" :exit="segment.exit">
                 </rt-trip-details>
             </v-expand-transition>
 
+            <!-- TRANSFER INFO -->
             <div v-if="trip.transfers[index]" class="trip-segment-transfer">
                 <div class="trip-segment-transfer-icon">
                     <v-icon color="#111">call_split</v-icon>
                 </div>
                 <div class="trip-segment-transfer-info">
-                    <strong>&nbsp;Transfer @ {{ trip.transfers[index].stop.name }}</strong><br />
-                    <v-icon color="#111">timelapse</v-icon> {{ formatTravelTime(trip.transfers[index].layoverTime) }}
+                    <strong>&nbsp;Transfer @ {{ trip.transfers[index].stop.name }}</strong>
+                    <span v-if="condensed"> ({{ formatTravelTime(trip.transfers[index].layoverTime, true) }})</span>
+                    <br />
+                    <span v-if="!condensed"><v-icon color="#111">timelapse</v-icon> {{ formatTravelTime(trip.transfers[index].layoverTime) }}</span>
                 </div>
             </div>
 
         </div>
 
+        <!-- Total Travel Time -->
         <div v-if="trip.segments.length > 1" class="trip-total-traveltime">
-            <strong>Total Travel Time</strong><br />
+            <div class="spacing" v-if="!condensed"></div>
+            <span v-if="!condensed"><strong>Total Travel Time</strong><br /></span>
             <v-icon color="#111">access_time</v-icon> {{ formatTravelTime(trip.travelTime) }}
         </div>
+
     </div>
 </template>
 
@@ -83,7 +105,11 @@
         props: {
             trip: Object,
             highlight: Boolean,
-            statusFeeds: Array
+            statusFeeds: Array,
+            condensed: Boolean,
+            showHeadsigns: Boolean,
+            showTravelTimes: Boolean,
+            showDepartsInTimes: Boolean
         },
 
         // ==== COMPONENT DATA ==== //
@@ -119,12 +145,12 @@
 
                 // Departing Now
                 if ( mins >= -1 && mins <= 1 ) {
-                    rtn = "<p>Departing Now!</p>";
+                    rtn = "<p class='trip-departs-time-text'>Departing Now!</p>";
                 }
 
                 // Departing within 2 hours
                 else if ( mins > 0 && mins <= 120 ) {
-                    rtn = "<p>Departs in ";
+                    rtn = "<p class='trip-departs-time-text'>Departs in ";
                     if ( status && status.delay > 0 ) rtn += " about ";
                     rtn += datetime.minutesToString(mins) + "</p>";
                 }
@@ -179,10 +205,11 @@
             /**
              * Format the travel/layover durations to x hours y minutes
              * @param  {string} mins Duration in minutes
+             * @param  {boolean} [short] condense the display time
              * @return {string}      Formatted Duration
              */
-            formatTravelTime(mins) {
-                return datetime.minutesToString(mins);
+            formatTravelTime(mins, short) {
+                return datetime.minutesToString(mins, short);
             },
 
             /**
@@ -233,7 +260,7 @@
 <style scoped>
 
     .trip-wrapper {
-        padding: 15px 0;
+        padding: 7px 0;
         background: linear-gradient(to bottom, #ffffffaa, #ecececaa);
         cursor: pointer;
     }
@@ -248,12 +275,17 @@
     .trip-wrapper .v-icon {
         font-size: 16px !important;
     }
+
+    div.spacing {
+        height: 12px;
+    }
     
     .trip-departs-time {
         text-align: center;
         color: #ff6f00;
         font-size: 16px;
         font-weight: bold;
+        margin-bottom: -12px;
     }
 
     .trip-segment-wrapper {
@@ -261,7 +293,7 @@
         grid-gap: 2px 10px;
         grid-template-columns: 1fr 125px;
         grid-template-areas: "headsign headsign" "times status" "traveltime track" "details details" "transfer transfer";
-        padding: 15px 0 10px 0;
+        padding: 10px 0 0 0;
     }
 
     .trip-segment-headsign {
@@ -290,6 +322,7 @@
     .trip-segment-traveltime {
         grid-area: traveltime;
         padding-left: 10px;
+        font-size: 90%;
     }
 
     .trip-segment-track {
@@ -301,12 +334,13 @@
     .trip-segment-transfer {
         grid-area: transfer;
         margin: 0 auto;
-        padding: 15px 0 10px 0;
+        padding: 2px 0 0 0;
         display: grid;
         grid-gap: 10px;
         grid-template-columns: max-content 1fr;
         grid-template-areas: "transfer-icon transfer-info";
         align-items: center;
+        font-size: 90%;
     }
     .trip-segment-transfer-icon {
         grid-area: transfer-icon;
@@ -331,6 +365,6 @@
 
     .trip-total-traveltime {
         text-align: center;
-        padding-top: 10px;
+        font-size: 90%;
     }
 </style>

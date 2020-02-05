@@ -3,10 +3,14 @@
 
         <!-- List of Trip Results -->
         <template v-for="(trip, index) in results">
-            <v-card :id="'trip-result-card-' + index" class="trip-result-card" :key="'trip-' + index">
+            <v-card :id="'trip-result-card-' + index" :class="display_condensed ? 'trip-result-card-condensed' : 'trip-result-card'" :key="'trip-' + index">
                 <rt-trip-result-item 
                     :trip="trip" 
                     :highlight="index === resultsHighlightIndex"
+                    :condensed="display_condensed"
+                    :showHeadsigns="display_showHeadsigns"
+                    :showTravelTimes="display_showTravelTimes"
+                    :showDepartsInTimes="display_showDepartsInTimes"
                     :statusFeeds="statusFeeds">
                 </rt-trip-result-item>
             </v-card>
@@ -348,6 +352,24 @@
         });
     }
 
+
+    /**
+     * Set the Trip Results display settings
+     * @param  {Vue}   vm       Vue Instance
+     * @param  {Function} [callback] Callback function()
+     */
+    function _updateSettings(vm, callback) {
+        settings.getValue("trips", function(display) {
+            if ( display ) {
+                vm.display_condensed = display.condensed;
+                vm.display_showHeadsigns = display.showHeadsigns;
+                vm.display_showTravelTimes = display.showTravelTimes;
+                vm.display_showDepartsInTimes = display.showDepartsInTimes;
+            }
+            if ( callback ) return callback();
+        });
+    }
+
     /**
      * Update the Origin and Destination Stops
      * - Update the More Menu Items
@@ -633,7 +655,11 @@
                 statusFeeds: [],
                 updatingStatus: false,
                 updatingFavorite: true,
-                isFavorite: false
+                isFavorite: false,
+                display_condensed: undefined,
+                display_showHeadsigns: undefined,
+                display_showTravelTimes: undefined,
+                display_showDepartsInTimes: undefined
             }
         },
 
@@ -731,7 +757,10 @@
 
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
-            _updateStops(this);
+            let vm = this;
+            _updateSettings(vm, function() {
+                _updateStops(vm);
+            });
         },
 
         // ==== BEFORE ROUTE LEAVE ==== //
@@ -777,10 +806,18 @@
 
 
 <style scoped>
-    .trip-result-card {
-        margin: 10px 0 40px 0;
+    .container {
+        max-width: 600px !important;
     }
-    .trip-result-card:active {
+
+    .trip-result-card {
+        margin: 5px -16px 25px -16px;
+    }
+    .trip-result-card-condensed {
+        margin: 0 -32px;
+        border: 1px solid #ccc !important;
+    }
+    .trip-result-card:active, .trip-result-card-condensed:active {
         box-shadow: none;
         border: 1px solid #ddd;
     }

@@ -2,7 +2,7 @@
     <div class="trip-wrapper" :class="{'highlight-trip-wrapper': highlight}" @click="selectTrip">
         
         <!-- Departs in Time -->
-        <div class="trip-departs-time" v-if="showDepartsInTimes" v-html="departs"></div>
+        <div :class="condensed ? 'trip-departs-time-condensed' : 'trip-departs-time'" v-if="showDepartsInTimes" v-html="departs"></div>
         
         <!-- TRIP SEGMENTS -->
         <div v-for="(segment, index) in trip.segments" :key="'trip-segment-' + index" class="trip-segment-wrapper">
@@ -54,9 +54,9 @@
                 </div>
                 <div class="trip-segment-transfer-info">
                     <strong>&nbsp;Transfer @ {{ trip.transfers[index].stop.name }}</strong>
-                    <span v-if="condensed"> ({{ formatTravelTime(trip.transfers[index].layoverTime, true) }})</span>
+                    <span v-if="condensed && showTravelTimes"> ({{ formatTravelTime(trip.transfers[index].layoverTime, true) }})</span>
                     <br />
-                    <span v-if="showTravelTimes && !condensed"><v-icon color="#111">timelapse</v-icon> {{ formatTravelTime(trip.transfers[index].layoverTime) }}</span>
+                    <span v-if="!condensed && showTravelTimes"><v-icon color="#111">timelapse</v-icon> {{ formatTravelTime(trip.transfers[index].layoverTime) }}</span>
                 </div>
             </div>
 
@@ -279,12 +279,17 @@
         height: 12px;
     }
     
-    .trip-departs-time {
+    .trip-departs-time, .trip-departs-time-condensed {
         text-align: center;
         color: #ff6f00;
         font-size: 16px;
         font-weight: bold;
-        margin-bottom: -10px;
+    }
+    .trip-departs-time {
+        margin: 5px 0 -5px 0;
+    }
+    .trip-departs-time-condensed {
+        margin: 0 0 -10px 0;
     }
 
     .trip-segment-wrapper {

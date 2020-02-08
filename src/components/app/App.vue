@@ -1,6 +1,9 @@
 <template>
     <v-app>
 
+        <!-- PREPPING DATABASE ALERT -->
+        <rt-prepping-database-alert :visible="preppingDatabase"></rt-prepping-database-alert>
+
         <!-- NAVIGATION DRAWER -->
         <v-navigation-drawer mobile-break-point="960" width="250" v-model="drawerVisible" clipped app>
             <rt-drawer-menu 
@@ -165,6 +168,7 @@
     const ProgressDialog = require("@/components/app/ProgressDialog.vue").default;
     const Snackbar = require("@/components/app/Snackbar.vue").default;
     const OfflineAlert = require("@/components/app/OfflineAlert.vue").default;
+    const PreppingDatabaseAlert = require("@/components/app/PreppingDatabaseAlert.vue").default;
 
     const MANIFEST = require("@/manifest.json");
 
@@ -418,8 +422,10 @@
      * @param  {string} agencyId Agency ID Code
      */
     function _prepDatabase(vm) {
-        if ( vm.agencyId && !database.isReady(vm.agencyId) ) {
+        if ( vm.agencyId && !vm.preppingDatabase && !database.isReady(vm.agencyId) ) {
+            vm.preppingDatabase = true;
             database.getDB(vm.agencyId, function(err, db, update) {
+                vm.preppingDatabase = false;
                 if ( err ) {
                     vm.onShowSnackbar("Error: Could not prep DB");
                 }
@@ -676,7 +682,10 @@
                 },
 
                 // Network Availability Status
-                networkOnline: true
+                networkOnline: true,
+
+                // Prepping Database Flag
+                preppingDatabase: false
 
             }
         },
@@ -690,7 +699,8 @@
             'rt-confirmation-dialog': ConfirmationDialog,
             'rt-progress-dialog': ProgressDialog,
             'rt-snackbar': Snackbar,
-            'rt-offline-alert': OfflineAlert
+            'rt-offline-alert': OfflineAlert,
+            'rt-prepping-database-alert': PreppingDatabaseAlert
         },
 
 

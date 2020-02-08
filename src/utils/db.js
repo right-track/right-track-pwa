@@ -167,8 +167,16 @@ function _uInt8ArraytoDB(agency, data, callback) {
         // Build the Right Track Database
         let db = new RightTrackDB(config, data);
 
-        // Return the Database
-        return callback(null, db);
+        // Make test DB query
+        console.log("---> TESTING DB QUERY:");
+        db.get("SELECT * FROM rt_about;", function(err, info) {
+            if ( err ) {
+                return callback(err);
+            }
+            console.log("LOADED RIGHT TRACK DATABASE:");
+            console.log(info);
+            return callback(null, db);
+        });
     });
     
 }

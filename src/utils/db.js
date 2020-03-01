@@ -1,9 +1,16 @@
 const core = require("right-track-core");
-const RightTrackDB = require("right-track-db-sqljs")("/js/worker.sql.js");
 const JSZip = require("jszip");
 const api = require("@/utils/api.js");
 const cache = require("@/utils/cache.js");
 const store = require("@/utils/store.js");
+
+const initSqlJs = require("@/../static/js/sql-wasm.js");
+const config = {
+    locateFile: function(filename) {
+        return '/js/' + filename;
+    }
+}
+const RightTrackDB = require("right-track-db-sqljs")(initSqlJs, config);
 
 let PREPPING_DB = false;
 let PREPPING_DB_CALLBACKS = [];
@@ -165,17 +172,19 @@ function _uInt8ArraytoDB(agency, data, callback) {
         let config = rta.getConfig();
 
         // Build the Right Track Database
-        let db = new RightTrackDB(config, data);
+        let db = new RightTrackDB(config, data, function() {
 
-        // Make test DB query
-        console.log("---> TESTING DB QUERY:");
-        db.get("SELECT * FROM rt_about;", function(err, info) {
-            if ( err ) {
-                return callback(err);
-            }
-            console.log("LOADED RIGHT TRACK DATABASE:");
-            console.log(info);
-            return callback(null, db);
+            // Make test DB query
+            console.log("---> TESTING DB QUERY:");
+            db.get("SELECT * FROM rt_about;", function(err, info) {
+                if ( err ) {
+                    return callback(err);
+                }
+                console.log("LOADED RIGHT TRACK DATABASE:");
+                console.log(info);
+                return callback(null, db);
+            });
+
         });
     });
     

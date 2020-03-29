@@ -6,12 +6,17 @@
             <v-card :id="'trip-result-card-' + index" :class="display_condensed ? 'trip-result-card-condensed' : 'trip-result-card'" :key="'trip-' + index">
                 <rt-trip-result-item 
                     :trip="trip" 
+                    :index="index"
                     :highlight="index === resultsHighlightIndex"
                     :condensed="display_condensed"
                     :showHeadsigns="display_showHeadsigns"
                     :showTravelTimes="display_showTravelTimes"
                     :showDepartsInTimes="display_showDepartsInTimes"
-                    :statusFeeds="statusFeeds">
+                    :statusFeeds="statusFeeds"
+                    :share_started="share_started"
+                    :share_selected="share_selectedResults.includes(index)"
+                    @addShareSelectedResult="onAddShareSelectedResult"
+                    @removeShareSelectedResult="onRemoveShareSelectedResult">
                 </rt-trip-result-item>
             </v-card>
         </template>
@@ -89,7 +94,6 @@
     let TIMER_ID = undefined;
 
 
-
     /**
      * Get the Stop for the specified agency and id
      * @param  {string}   agency   Agency ID code
@@ -121,9 +125,20 @@
                 key: 1,
                 type: "icon",
                 icon: vm.isFavorite ? "star" : "star_outline",
-                disabled: vm.updatingFavorite,
+                disabled: vm.updatingFavorite || vm.share_started,
                 function() {
                     vm.toggleFavorite();
+                }
+            },
+            {
+                key: 2,
+                type: "icon",
+                icon: "share",
+                disabled: vm.share_started,
+                function() {
+                    if ( !vm.share_started ) {
+                        _startShare(vm);
+                    }
                 }
             }
         ]
@@ -664,6 +679,86 @@
     }
 
 
+    /**
+     * Start the Trip Share workflow
+     * @param  {Vue} vm Vue Instance
+     */
+    function _startShare(vm) {
+        vm.share_started = true;
+        vm.share_selectedResults = [];
+        _updateToolbarMenu(vm);
+        vm.$emit('showSnackbar', {
+            visible: true,
+            message: 'Select trips to share', 
+            duration: 0,
+            dismiss: 'Share',
+            onDismiss: function() {
+                _buildShare(vm);
+            }
+        });
+    }
+
+
+    /**
+     * Build the Trip Share information from the selected Trips 
+     * and display the Share prompt
+     * @param  {Vue} vm Vue Instance
+     */
+    function _buildShare(vm) {
+
+        // Return if there are no selected Trips
+        if ( vm.share_selectedResults.length === 0 ) {
+            return _finishShare(vm);
+        }
+
+        // Build the Title
+        let title = vm.origin.name + " --> " + vm.destination.name;
+        if ( !vm.isNextDeparture ) {
+            title += " [" + vm.departure.getTimeReadable() + " on " + vm.departure.getDateReadable(true) + "]";
+        }
+
+        // Build the Text
+        let text = "";
+        if ( vm.isNextDeparture ) {
+            text += "Upcoming ";
+        }
+        text += "Trip Results for " + vm.origin.name + " to " + vm.destination.name;
+        if ( !vm.isNextDeparture ) {
+            text += "\nDeparting at: " + vm.departure.getTimeReadable() + " on " + vm.departure.getDateReadable(true);
+        }
+
+        // Add selected Trip Results
+        // TODO
+
+
+        // Display the Share Prompt
+        navigator.share({
+            title: title,
+            text: text,
+            url: location.href
+        })
+        .then(function() {
+            return _finishShare(vm);
+        })
+        .catch(function(err) {
+            console.log(err);
+            return _finishShare(vm);
+        });
+
+    }
+
+
+    /**
+     * Finish the Trip Share workflow
+     * @param  {Vue} vm Vue Instance
+     */
+    function _finishShare(vm) {
+        vm.share_started = false;
+        vm.share_selectedResults = [];
+        _updateToolbarMenu(vm);
+    }
+
+
     module.exports = {
 
         // ==== COMPONENT DATA ==== //
@@ -682,6 +777,8 @@
                 updatingStatus: false,
                 updatingFavorite: true,
                 isFavorite: false,
+                share_started: false,
+                share_selectedResults: [],
                 display_condensed: undefined,
                 display_showHeadsigns: undefined,
                 display_showTravelTimes: undefined,
@@ -777,6 +874,20 @@
                         type: "Incorrect Trip Results"
                     }
                 });
+            },
+
+            onAddShareSelectedResult: function(index) {
+                this.share_selectedResults.push(index);
+            },
+
+            onRemoveShareSelectedResult: function(index) {
+                let t = [];
+                for ( let i = 0; i < this.share_selectedResults.length; i++ ) {
+                    if ( this.share_selectedResults[i] !== index ) {
+                        t.push(this.share_selectedResults[i]);
+                    }
+                }
+                this.share_selectedResults = t;
             }
 
         },

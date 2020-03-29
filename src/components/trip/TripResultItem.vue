@@ -1,5 +1,5 @@
 <template>
-    <div class="trip-wrapper" :class="{'highlight-trip-wrapper': highlight}" @click="selectTrip">
+    <div class="trip-wrapper" :class="{'highlight-trip-wrapper': highlight, 'share-trip-wrapper': share_selected}" @click="selectTrip">
         
         <!-- Departs in Time -->
         <div :class="condensed ? 'trip-departs-time-condensed' : 'trip-departs-time'" v-if="showDepartsInTimes" v-html="departs"></div>
@@ -103,12 +103,15 @@
         // ==== COMPONENT PROPS ==== //
         props: {
             trip: Object,
+            index: Number,
             highlight: Boolean,
             statusFeeds: Array,
             condensed: Boolean,
             showHeadsigns: Boolean,
             showTravelTimes: Boolean,
-            showDepartsInTimes: Boolean
+            showDepartsInTimes: Boolean,
+            share_started: Boolean,
+            share_selected: Boolean
         },
 
         // ==== COMPONENT DATA ==== //
@@ -217,7 +220,17 @@
              * @return {[type]} [description]
              */
             selectTrip: function() {
-                this.tripDetailsVisible = !this.tripDetailsVisible;
+                if ( this.share_started ) {
+                    if ( !this.share_selected ) {
+                        this.$emit('addShareSelectedResult', this.index);
+                    }
+                    else {
+                        this.$emit('removeShareSelectedResult', this.index);
+                    }
+                }
+                else {
+                    this.tripDetailsVisible = !this.tripDetailsVisible;
+                }
             }
             
         },
@@ -269,6 +282,13 @@
 
     .highlight-trip-wrapper {
         border: 3px solid var(--v-primary-base);
+    }
+
+    .share-trip-wrapper {
+        background-color: #ff0000;
+    }
+    .share-trip-wrapper:hover {
+        background-color: #dd0000;
     }
 
     .trip-wrapper .v-icon {

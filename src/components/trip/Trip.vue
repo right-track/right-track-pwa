@@ -75,6 +75,7 @@
     const DB = require("@/utils/db.js");
     const favorites = require("@/utils/favorites.js");
     const settings = require("@/utils/settings.js");
+    const datetime = require("@/utils/datetime.js");
     const TripResultItem = require("@/components/trip/TripResultItem.vue").default;
 
     /**
@@ -128,17 +129,6 @@
                 disabled: vm.updatingFavorite || vm.share_started,
                 function() {
                     vm.toggleFavorite();
-                }
-            },
-            {
-                key: 2,
-                type: "icon",
-                icon: "share",
-                disabled: vm.share_started,
-                function() {
-                    if ( !vm.share_started ) {
-                        _startShare(vm);
-                    }
                 }
             }
         ]
@@ -205,6 +195,16 @@
                             time: vm.departure.getTimeInt()
                         }
                     });
+                }
+            },
+            {
+                type: "item",
+                icon: "share",
+                title: "Share Trips",
+                function: function() {
+                    if ( !vm.share_started ) {
+                        _startShare(vm);
+                    }
                 }
             },
             {
@@ -722,27 +722,61 @@
         if ( vm.isNextDeparture ) {
             text += "Upcoming ";
         }
-        text += "Trip Results for " + vm.origin.name + " to " + vm.destination.name;
+        text += "Trips from " + vm.origin.name + " to " + vm.destination.name;
         if ( !vm.isNextDeparture ) {
             text += "\nDeparting at: " + vm.departure.getTimeReadable() + " on " + vm.departure.getDateReadable(true);
         }
+        text += "\n\n";
 
         // Add selected Trip Results
-        // TODO
+        for ( let i = 0; i < vm.share_selectedResults.length; i++ ) {
+            let trip = vm.results[vm.share_selectedResults[i]];
+            let count = i+1;
+            
+            // Origin --> Destination
+            text += "#" + count + ") "
+            text += trip.origin.stop.name + " @ " + DateTime.createFromTime(trip.origin.departureTime).getTimeReadable();
+            text += " --> ";
+            text += trip.destination.stop.name + " @ " + DateTime.createFromTime(trip.destination.arrivalTime).getTimeReadable();
+            text += "\n";
+            
+            // Transfer Info
+            if ( trip.transfers && trip.transfers.length > 0 ) {
+                for ( let j = 0; j < trip.transfers.length; j++ ) {
+                    let transfer = trip.transfers[j];
+                    text += "    Transfer @ " + transfer.stop.name + " (";
+                    text += DateTime.createFromTime(transfer.arrival.time).getTimeReadable();
+                    text += " -> ";
+                    text += DateTime.createFromTime(transfer.departure.time).getTimeReadable();
+                    text += ")\n";
+                }
+            }
+        }
 
+        // Add URL
+        cache.getAgency(vm.agencyId, function(err, agency) {
 
-        // Display the Share Prompt
-        navigator.share({
-            title: title,
-            text: text,
-            url: location.href
-        })
-        .then(function() {
-            return _finishShare(vm);
-        })
-        .catch(function(err) {
-            console.log(err);
-            return _finishShare(vm);
+            if ( agency && agency.config && agency.config.title ) {
+                text += "\n-----------------------------------------------------------------\n";
+                text += agency.config.title + "\n";
+                text += window.location.origin + "/" + vm.agencyId + "\n";
+                text += "Scheduled train times with real-time status and track information\n";
+                text += "-----------------------------------------------------------------\n";
+            }
+
+            // Display the Share Prompt
+            navigator.share({
+                title: title,
+                text: text,
+                url: location.href
+            })
+            .then(function() {
+                return _finishShare(vm);
+            })
+            .catch(function(err) {
+                console.log(err);
+                return _finishShare(vm);
+            });
         });
 
     }

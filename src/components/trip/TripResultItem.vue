@@ -1,5 +1,9 @@
 <template>
     <div class="trip-wrapper" :class="{'highlight-trip-wrapper': highlight, 'share-trip-wrapper': share_selected}" @click="selectTrip">
+
+        <div class="peak" v-if="peakResult">
+            <v-icon color="orange">monetization_on</v-icon>
+        </div>
         
         <!-- Departs in Time -->
         <div :class="condensed ? 'trip-departs-time-condensed' : 'trip-departs-time'" v-if="showDepartsInTimes" v-html="departs"></div>
@@ -118,6 +122,7 @@
         data: function() {
             return {
                 tripDetailsVisible: false,
+                peakResult: false,
                 departs: undefined,
                 status: [],
                 track: []
@@ -238,9 +243,13 @@
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
             this.departs = this.getDeparts(this.trip.departs);
+            this.peakResult = false;
             for ( let i = 0; i < this.trip.segments.length; i++ ) {
                 this.status[i] = this.getStatus(this.trip.segments[i]);
                 this.track[i] = this.getTrack(this.trip.segments[i]);
+                if ( this.trip.segments[i].trip.peak ) {
+                    this.peakResult = true;
+                }
             }
         },
 
@@ -270,7 +279,6 @@
 
 
 <style scoped>
-
     .trip-wrapper {
         padding: 7px 0;
         background: linear-gradient(to bottom, #ffffffaa, #ecececaa);
@@ -396,4 +404,13 @@
         text-align: center;
         font-size: 90%;
     }
+
+
+    /** Peak Indicator */
+    .peak {
+        position: absolute;
+        top: 7px;
+        right: 7px;
+    }
+
 </style>

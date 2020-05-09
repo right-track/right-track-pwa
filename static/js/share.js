@@ -452,13 +452,13 @@ navigator.share = navigator.share || (function() {
                             case 'email': {
                                 let body = "";
                                 if ( text ) {
-                                    body = text.replace("\n", escape("\n"));
-                                    body += escape("\r\n") + url;
+                                    body = text.replace("\n", "\r\n");
+                                    body += "\r\n" + url;
                                 }
                                 else {
                                     body = url;
                                 }
-                                window.open("mailto:" + '' + '?subject=' + title + '&body=' + body);
+                                window.open("mailto:" + '' + '?subject=' + encodeURI(title) + '&body=' + encodeURI(body));
                                 break;
                             }
                             case 'sms': {

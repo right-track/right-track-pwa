@@ -757,11 +757,11 @@
         cache.getAgency(vm.agencyId, function(err, agency) {
 
             if ( agency && agency.config && agency.config.title ) {
-                text += "\n-----------------------------------------------------------------\n";
+                text += "\n------------\n";
                 text += agency.config.title + "\n";
                 text += window.location.origin + "/" + vm.agencyId + "\n";
                 text += "Scheduled train times with real-time status and track information\n";
-                text += "-----------------------------------------------------------------\n";
+                text += "------------\n";
             }
 
             // Display the Share Prompt

@@ -10,6 +10,7 @@
                 <div class="departures-header-item departures-header-destination">Destination</div>
                 <div class="departures-header-item departures-header-status">Status</div>
                 <div class="departures-header-item departures-header-track">Track</div>
+                <div class="departures-header-item departures-header-peak"></div>
             </div>
 
             <!-- Station Departures -->
@@ -379,15 +380,15 @@
         min-height: 50px;
         display: grid;
         grid-gap: 0 10px;
-        grid-template-columns: 100px 1fr 75px;
-        grid-template-areas: "time destination destination" "time status track";
+        grid-template-columns: 100px 1fr 75px 25px;
+        grid-template-areas: "time destination destination peak" "time status track peak";
         background-color: #fff;
         border-bottom: 1px solid #eee;
     }
     @media (min-width: 960px) {
         .departures-header {
-            grid-template-columns: 100px 1fr 100px 90px;
-            grid-template-areas: "time destination status track";
+            grid-template-columns: 100px 1fr 100px 90px 25px;
+            grid-template-areas: "time destination status track peak";
         }
     }
 
@@ -409,6 +410,10 @@
     }
     .departures-header-track {
         grid-area: track;
+        text-align: center;
+    }
+    .departures-header-peak {
+        grid-area: peak;
         text-align: center;
     }
 </style>

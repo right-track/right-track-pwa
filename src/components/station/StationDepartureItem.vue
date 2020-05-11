@@ -36,6 +36,16 @@
                     {{ departure.status.track }}
                 </div> 
 
+                <!-- Peak -->
+                <div class="departure-item departure-peak">
+                    <v-tooltip v-if="departure.trip.peak" bottom>
+                        <template #activator="{ on }">
+                            <v-icon class="departure-peak-icon" v-on="on" v-bind:style="{color: '#' + departure.trip.route.textColor}">monetization_on</v-icon>
+                        </template>
+                        <span>This departure is on a peak train and a higher fare may be required</span>
+                    </v-tooltip>
+                </div>
+
                 <!-- Remarks (xs, sm) -->
                 <div class="departure-item departure-remarks">
                     {{ departure.status.remarks }}
@@ -102,8 +112,8 @@
     .departure-wrapper {
         display: grid;
         grid-gap: 0 10px;
-        grid-template-columns: 100px 1fr 75px;
-        grid-template-areas: "time destination destination" "time status track" "remarks remarks remarks";
+        grid-template-columns: 100px 1fr 75px 25px;
+        grid-template-areas: "time destination destination peak" "time status track peak" "remarks remarks remarks remarks";
         min-height: 50px;
         cursor: pointer;
         border-top: 1px solid rgba(0, 0, 0, 0.40);
@@ -114,8 +124,8 @@
     }
     @media (min-width: 960px) {
         .departure-wrapper {
-            grid-template-columns: 100px 1fr 100px 90px;
-            grid-template-areas: "time destination status track";
+            grid-template-columns: 100px 1fr 100px 90px 25px;
+            grid-template-areas: "time destination status track peak";
         }
     }
 
@@ -139,6 +149,10 @@
         grid-area: track;
         text-align: center;
     }
+    .departure-peak {
+        grid-area: peak;
+        text-align: center;
+    }
     .departure-remarks {
         grid-area: remarks;
         text-align: center;
@@ -147,5 +161,9 @@
         .departure-remarks {
             display: none;
         }
+    }
+
+    .departure-peak-icon {
+        font-size: 18px;
     }
 </style>

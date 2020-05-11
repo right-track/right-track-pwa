@@ -2,7 +2,12 @@
     <div class="trip-wrapper" :class="{'highlight-trip-wrapper': highlight, 'share-trip-wrapper': share_selected}" @click="selectTrip">
 
         <div class="peak" v-if="peakResult">
-            <v-icon color="orange">monetization_on</v-icon>
+            <v-tooltip bottom>
+                <template #activator="{ on }">
+                    <v-icon class="peak-icon" v-on="on" color="orange">monetization_on</v-icon>
+                </template>
+                <span>One or more trains on this trip is a peak train and a higher fare may be required</span>
+            </v-tooltip>
         </div>
         
         <!-- Departs in Time -->
@@ -411,6 +416,9 @@
         position: absolute;
         top: 7px;
         right: 7px;
+    }
+    .peak-icon {
+        font-size: 36px !important;
     }
 
 </style>

@@ -62,6 +62,28 @@
                     <!-- Stop ADA -->
                     <div class="trip-details-stops-row-item trip-details-stops-row-ada">
                         <v-icon :color="getStopTimeRowTextColor(index)" v-if="st.stop.wheelchairBoarding === 1">accessible</v-icon>
+                        
+                        <!-- Pickup Only -->
+                        <v-tooltip v-if="st.pickupType == 0 && st.dropOffType == 1" bottom>
+                            <template #activator="{ on }">
+                                 <span v-on="on">
+                                    <v-icon :color="getStopTimeRowTextColor(index)">train</v-icon>
+                                    <v-icon :color="getStopTimeRowTextColor(index)" style="margin-left: -10px">chevron_left</v-icon>
+                                </span>
+                            </template>
+                            <span>This train is scheduled to only pick up passengers at this stop</span>
+                        </v-tooltip>
+
+                        <!-- Drop Off Only -->
+                        <v-tooltip v-if="st.pickupType == 1 && st.dropOffType == 0" bottom>
+                            <template #activator="{ on }">
+                                 <span v-on="on">
+                                    <v-icon :color="getStopTimeRowTextColor(index)">train</v-icon>
+                                    <v-icon :color="getStopTimeRowTextColor(index)" style="margin-left: -10px">chevron_right</v-icon>
+                                </span>
+                            </template>
+                            <span>This train is scheduled to only drop off passengers at this stop</span>
+                        </v-tooltip>
                     </div>
 
                 </div>

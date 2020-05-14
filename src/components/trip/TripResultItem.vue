@@ -4,7 +4,7 @@
         <div class="peak" v-if="peakResult">
             <v-tooltip bottom>
                 <template #activator="{ on }">
-                    <v-icon class="peak-icon" v-on="on" color="orange">monetization_on</v-icon>
+                    <v-icon class="peak-icon" v-on="on">monetization_on</v-icon>
                 </template>
                 <span>One or more trains on this trip is a peak train and a higher fare may be required</span>
             </v-tooltip>
@@ -305,7 +305,7 @@
     }
 
     .trip-wrapper .v-icon {
-        font-size: 16px !important;
+        font-size: 16px;
     }
 
     div.spacing {
@@ -414,11 +414,12 @@
     /** Peak Indicator */
     .peak {
         position: absolute;
-        top: 7px;
-        right: 7px;
+        top: 15px;
+        right: 15px;
     }
     .peak-icon {
-        font-size: 36px !important;
+        font-size: 18px !important;
+        color: #eee;
     }
 
 </style>

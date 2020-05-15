@@ -100,6 +100,8 @@
         <!-- SELECT STATION DIALOG -->
         <rt-stop-selection-dialog :properties="selectDialogProps" @stopSelected="onStopSelected"></rt-stop-selection-dialog>
 
+        <!-- ENTER TRAIN NUMBER DIALOG -->
+        <rt-train-number-selection-dialog :properties="trainNumberSelectionDialogProps" @trainNumberSelected="onTrainNumberSelected"></rt-train-number-selection-dialog>
 
     </v-container>
 </template>
@@ -113,6 +115,7 @@
     const DB = require("@/utils/db.js");
     const FavoritesList = require("@/components/favorites/FavoritesList.vue").default;
     const StopSelectionDialog = require("@/components/StopSelectionDialog.vue").default;
+    const TrainNumberSelectionDialog = require("@/components/TrainNumberSelectionDialog.vue").default;
     const Messages = require("@/components/app/Messages.vue").default;
 
 
@@ -138,6 +141,25 @@
                 }
             }
         ]
+    }
+
+
+    /**
+     * Update the Toolbar Menu Items
+     * @param  {Vue} vm    Vue Instance
+     */
+    function _updateToolbarMenu(vm) {
+        let toolbarMenuItems = [
+            {
+                key: 1,
+                type: "icon",
+                icon: "train",
+                function() {
+                    _lookupTrainNumber(vm);
+                }
+            }
+        ]
+        vm.$emit('setToolbarMenuItems', toolbarMenuItems);
     }
 
 
@@ -192,8 +214,7 @@
      * @param  {Function} callback Callback function(stops)
      */
     function _getStops(vm, callback) {
-        let agencyID = vm.$route.params.agency;
-        let db = DB.getDB(agencyID, function(err, db) {
+        DB.getDB(vm.agencyID, function(err, db) {
             if ( err ) {
                 console.error(err);
                 return;
@@ -285,6 +306,37 @@
         });
     }
 
+    /**
+     * Get trip details by train number
+     * @param  {Vue} vm Vue Instance
+     */
+    function _lookupTrainNumber(vm) {
+        vm.trainNumberSelectionDialogProps.visible = true;
+    }
+
+    /**
+     * Display the trip details of the specified train number and date
+     * @param  {Vue}    vm          Vue Instance
+     * @param  {String} trainNumber Train Number (trip short name)
+     * @param  {int}    date        Date Int (yyyymmdd)
+     */
+    function _displayTrainNumberDetails(vm, trainNumber, date) {
+        console.log("DISPLAY TRAIN NUMBER: " + trainNumber + " on " + date);
+        DB.getDB(vm.agencyID, function(err, db) {
+            if ( err ) {
+                console.error(err);
+                return;
+            }
+            core.query.trips.getTripByShortName(db, trainNumber, date, function(err, trip) {
+                if ( err ) {
+                    console.error(err);
+                    return;
+                }
+                console.log(trip)
+            });
+        });
+    }
+
 
     module.exports = {
 
@@ -303,6 +355,9 @@
                     type: undefined,
                     stops: undefined
                 },
+                trainNumberSelectionDialogProps: {
+                    visible: false
+                },
                 removeMode: false,
                 removeSelected: [],
                 reorderMode: false
@@ -313,6 +368,7 @@
         components: {
             'rt-favorites-list': FavoritesList,
             'rt-stop-selection-dialog': StopSelectionDialog,
+            'rt-train-number-selection-dialog': TrainNumberSelectionDialog,
             'rt-messages': Messages
         },
 
@@ -406,6 +462,18 @@
             },
 
             /**
+             * Handle the return of a selected train number
+             * @param  {String} trainNumber Train Number
+             * @param  {int}    date        Date
+             */
+            onTrainNumberSelected(trainNumber, date) {
+                this.trainNumberSelectionDialogProps.visible = false;
+                if ( trainNumber && trainNumber !== "" && date && date > 0 ) {
+                    _displayTrainNumberDetails(this, trainNumber, date);
+                }
+            },
+
+            /**
              * Start the Favorite removal process
              */
             removeFavorites() {
@@ -456,6 +524,9 @@
                 vm.$emit('setMoreMenuItems', isLoggedIn ? MORE_MENU_ITEMS(vm) : []);
                 _displayFavorites(vm);
             });
+
+            // Set toolbar items
+            _updateToolbarMenu(vm);
 
             // Display Database Info
             _displayDBInfo(vm);

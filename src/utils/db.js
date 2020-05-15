@@ -168,13 +168,10 @@ function _uInt8ArraytoDB(agency, data, callback) {
         let db = new RightTrackDB(config, data);
 
         // Make test DB query
-        console.log("---> TESTING DB QUERY:");
         db.get("SELECT * FROM rt_about;", function(err, info) {
             if ( err ) {
                 return callback(err);
             }
-            console.log("LOADED RIGHT TRACK DATABASE:");
-            console.log(info);
             return callback(null, db);
         });
     });

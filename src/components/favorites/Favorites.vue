@@ -100,8 +100,11 @@
         <!-- SELECT STATION DIALOG -->
         <rt-stop-selection-dialog :properties="selectDialogProps" @stopSelected="onStopSelected"></rt-stop-selection-dialog>
 
-        <!-- ENTER TRAIN NUMBER DIALOG -->
+        <!-- SELECT TRAIN NUMBER DIALOG -->
         <rt-train-number-selection-dialog :properties="trainNumberSelectionDialogProps" @trainNumberSelected="onTrainNumberSelected"></rt-train-number-selection-dialog>
+
+        <!-- DISPLAY TRAIN NUMBER DETAILS DIALOG -->
+        <rt-train-number-details-dialog :properties="trainNumberDetailsDialogProps"></rt-train-number-details-dialog>
 
     </v-container>
 </template>
@@ -115,7 +118,8 @@
     const DB = require("@/utils/db.js");
     const FavoritesList = require("@/components/favorites/FavoritesList.vue").default;
     const StopSelectionDialog = require("@/components/StopSelectionDialog.vue").default;
-    const TrainNumberSelectionDialog = require("@/components/TrainNumberSelectionDialog.vue").default;
+    const TrainNumberSelectionDialog = require("@/components/favorites/TrainNumberSelectionDialog.vue").default;
+    const TrainNumberDetailsDialog = require("@/components/favorites/TrainNumberDetailsDialog.vue").default;
     const Messages = require("@/components/app/Messages.vue").default;
 
 
@@ -315,26 +319,43 @@
     }
 
     /**
-     * Display the trip details of the specified train number and date
-     * @param  {Vue}    vm          Vue Instance
-     * @param  {String} trainNumber Train Number (trip short name)
-     * @param  {int}    date        Date Int (yyyymmdd)
+     * Get the trip details of the specified train number and date
+     * @param  {Vue}      vm          Vue Instance
+     * @param  {String}   trainNumber Train Number (trip short name)
+     * @param  {int}      date        Date Int (yyyymmdd)
+     * @param  {Function} callback    Callback function(err, trip)
      */
-    function _displayTrainNumberDetails(vm, trainNumber, date) {
-        console.log("DISPLAY TRAIN NUMBER: " + trainNumber + " on " + date);
-        DB.getDB(vm.agencyID, function(err, db) {
+    function _getTrainNumberDetails(vm, trainNumber, date, callback) {
+        DB.getDB(vm.agencyId, function(err, db) {
             if ( err ) {
-                console.error(err);
-                return;
+                console.log(err);
+                return callback(new Error("Could not access schedule database.  Refresh the page and try again."));
             }
             core.query.trips.getTripByShortName(db, trainNumber, date, function(err, trip) {
                 if ( err ) {
-                    console.error(err);
-                    return;
+                    console.log(err);
+                    return callback(new Error("Could not query schedule database.  Refresh the page and try again."));
                 }
-                console.log(trip)
+                return callback(null, trip);
             });
         });
+    }
+
+    /**
+     * Display the selected Train Number details
+     * @param  {Vue}    vm          Vue Instance
+     * @param  {String} trainNumber Train Number
+     * @param  {int}    date        Date of Train Number
+     * @param  {Trip}   trip        Trip Details
+     */
+    function _displayTrainNumberDetails(vm, trainNumber, date, trip) {
+        vm.trainNumberSelectionDialogProps.visible = false;
+        vm.trainNumberDetailsDialogProps = {
+            visible: true,
+            trainNumber: trainNumber,
+            date: date,
+            trip: trip
+        }
     }
 
 
@@ -358,6 +379,12 @@
                 trainNumberSelectionDialogProps: {
                     visible: false
                 },
+                trainNumberDetailsDialogProps: {
+                    visible: false,
+                    trainNumber: undefined,
+                    date: undefined,
+                    trip: undefined
+                },
                 removeMode: false,
                 removeSelected: [],
                 reorderMode: false
@@ -369,6 +396,7 @@
             'rt-favorites-list': FavoritesList,
             'rt-stop-selection-dialog': StopSelectionDialog,
             'rt-train-number-selection-dialog': TrainNumberSelectionDialog,
+            'rt-train-number-details-dialog': TrainNumberDetailsDialog,
             'rt-messages': Messages
         },
 
@@ -467,9 +495,19 @@
              * @param  {int}    date        Date
              */
             onTrainNumberSelected(trainNumber, date) {
-                this.trainNumberSelectionDialogProps.visible = false;
-                if ( trainNumber && trainNumber !== "" && date && date > 0 ) {
-                    _displayTrainNumberDetails(this, trainNumber, date);
+                let vm = this;
+                if ( trainNumber && trainNumber !== "" && date && date >= 19700101 && date <= 21001231 ) {
+                    _getTrainNumberDetails(vm, trainNumber, date, function(err, trip) {
+                        if ( err ) {
+                            vm.$emit('showSnackbar', err.toString());
+                        }
+                        else if ( !trip ) {
+                            vm.$emit('showSnackbar', 'No matching trip found for train number and date');
+                        }
+                        else {
+                            _displayTrainNumberDetails(vm, trainNumber, date, trip);
+                        }
+                    });
                 }
             },
 

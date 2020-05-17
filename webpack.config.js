@@ -88,7 +88,18 @@ module.exports = (env, argv) => ({
     new webpack.DefinePlugin({
       __VERSION__: JSON.stringify(gitVersion),
       __VERSION_HASH__: JSON.stringify(gitCommitHash)
-    })
+    }),
+    new CopyWebpackPlugin([{
+      from: path.resolve(__dirname, 'version.json'),
+      to: path.resolve(__dirname, 'dist', 'version.json'),
+      noErrorOnMissing: true,
+      transform (content, path) {
+        return JSON.stringify({
+            version: gitVersion,
+            hash: gitCommitHash
+          }, null, 4);
+      }
+    }])
   ],
 
   optimization: {

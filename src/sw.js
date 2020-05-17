@@ -2,7 +2,7 @@ workbox.skipWaiting();
 workbox.clientsClaim();
 
 workbox.routing.registerRoute(
-    new RegExp('worker\\.sql\\.js$'),
+    new RegExp('sql-wasm\\.(?:wasm|js)$'),
     new workbox.strategies.CacheFirst()
 );
 workbox.routing.registerRoute(

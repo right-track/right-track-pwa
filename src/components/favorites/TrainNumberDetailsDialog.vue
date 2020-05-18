@@ -2,7 +2,7 @@
     <v-dialog v-model.sync="properties.visible" max-width="700" persistent scrollable>
         <v-card class="card">
             <v-card-title class="headline secondary-bg">                
-                <v-icon>train</v-icon>&nbsp;&nbsp;Trip Details
+                <v-icon>list</v-icon>&nbsp;&nbsp;Train {{properties.trainNumber}}
                 <v-spacer></v-spacer>
                 <v-icon @click="close">close</v-icon>
             </v-card-title>

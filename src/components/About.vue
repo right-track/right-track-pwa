@@ -18,13 +18,19 @@
 
                 <br />
                 
+                <v-btn class="header-button" color="primary" small outline>
+                    <v-icon>refresh</v-icon>
+                    <span class="hidden-xs-only">&nbsp;&nbsp;Reload App</span>
+                </v-btn>
                 <h2>{{ config.title }}</h2>
+
                 <p>
                     <strong>Version: </strong>{{ site.version }} (<a :href="config.maintainer.repository + '/commits/master'">{{site.hash}}</a>)
                     <br />
                     <strong>Source Code:</strong> <a :href="config.maintainer.repository">{{ config.maintainer.repository }}</a>
                     <br />
                     <strong>Client: </strong>{{client}}
+                    <br />
                 </p>
 
                 <br />
@@ -33,7 +39,7 @@
                 <!-- API Server Info -->
                 <h2>{{ server.name }}</h2>
                 <p>
-                    <strong>Host: </strong><a :href="'https://' + server.host">{{ server.host}}</a>
+                    <strong>Host: </strong><a :href="'//' + server.host">{{ server.host}}</a>
                     <br />
                     <strong>Version: </strong>{{ server.version}}
                     <br />
@@ -203,6 +209,10 @@
     h2 {
         border-bottom: 1px solid #eee;
         margin-bottom: 10px;
+    }
+    .header-button {
+        margin-top: -2px;
+        float: right;
     }
     ul {
         margin-bottom: 10px;

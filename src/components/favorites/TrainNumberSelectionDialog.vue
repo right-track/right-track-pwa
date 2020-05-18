@@ -2,7 +2,7 @@
     <v-dialog v-model.sync="properties.visible" max-width="400" v-on:keydown.enter="onKeyDownEnter" v-on:keydown="onKeyDown" persistent scrollable>
         <v-card class="card">
             <v-card-title class="headline secondary-bg">                
-                <v-icon>train</v-icon>&nbsp;&nbsp;Lookup Train Number
+                <v-icon>list</v-icon>&nbsp;&nbsp;Lookup Train Number
                 <v-spacer></v-spacer>
                 <v-icon @click="close">close</v-icon>
             </v-card-title>

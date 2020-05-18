@@ -157,7 +157,7 @@
             {
                 key: 1,
                 type: "icon",
-                icon: "train",
+                icon: "list",
                 function() {
                     _lookupTrainNumber(vm);
                 }

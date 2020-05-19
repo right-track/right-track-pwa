@@ -18,19 +18,20 @@
 
                 <br />
                 
-                <v-btn class="header-button" color="primary" small outline>
-                    <v-icon>refresh</v-icon>
-                    <span class="hidden-xs-only">&nbsp;&nbsp;Reload App</span>
-                </v-btn>
                 <h2>{{ config.title }}</h2>
 
                 <p>
-                    <strong>Version: </strong>{{ site.version }} (<a :href="config.maintainer.repository + '/commits/master'">{{site.hash}}</a>)
+                    <strong>Installed Version: </strong>{{ site.version }} (<a :href="config.maintainer.repository + '/commits/master'">{{site.hash}}</a>)
+                    <br />
+                    <strong>Latest Version: </strong>{{ site.availableVersion }} (<a :href="config.maintainer.repository + '/commits/master'">{{site.availableHash}}</a>)
                     <br />
                     <strong>Source Code:</strong> <a :href="config.maintainer.repository">{{ config.maintainer.repository }}</a>
                     <br />
                     <strong>Client: </strong>{{client}}
                     <br />
+                    <v-btn class="reload-button" color="primary" @click="reloadApp" title="Reload the app to ensure you have the latest version" small outline>
+                        <v-icon>cloud_download</v-icon>&nbsp;&nbsp;Update App&nbsp;
+                    </v-btn>
                 </p>
 
                 <br />
@@ -172,6 +173,19 @@
     }
 
 
+    /**
+     * Set the available App version and hash
+     * @param  {[type]} vm [description]
+     * @return {[type]}    [description]
+     */
+    function _updateAppInfo(vm) {
+        cache.checkAppUpdate(function(err, update, current, available, hash) {
+            vm.site.availableVersion = available;
+            vm.site.availableHash = hash;
+        });
+    }
+
+
 
     module.exports = {
 
@@ -187,10 +201,24 @@
                 },
                 site: {
                     version: __VERSION__,
-                    hash: __VERSION_HASH__
+                    hash: __VERSION_HASH__,
+                    availableVersion: undefined,
+                    availableHash: undefined
                 },
                 client: null
             }
+        },
+
+        // ==== COMPONENT METHODS ==== //
+        methods: {
+
+            /**
+             * Reload the App in an attempt to update
+             */
+            reloadApp() {
+                this.$emit('startAppUpdate');
+            }
+
         },
 
         // ==== COMPONTENT MOUNTED ==== //
@@ -200,6 +228,7 @@
             _updateAgencies(this);
             _updateTransitAgencies(this);
             _updateClient(this);
+            _updateAppInfo(this);
         }
     }
 </script>
@@ -210,12 +239,10 @@
         border-bottom: 1px solid #eee;
         margin-bottom: 10px;
     }
-    .header-button {
-        margin-top: -2px;
-        float: right;
+    .reload-button {
+        margin-left: -2px;
     }
     ul {
         margin-bottom: 10px;
     }
-
 </style>

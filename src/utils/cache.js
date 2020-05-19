@@ -286,7 +286,7 @@ getMessages = function(agency, callback) {
 
 /**
  * Check for an app update
- * @param  {Function} callback Callback function(err, updateAvailable, installedVersion, availableVersion)
+ * @param  {Function} callback Callback function(err, updateAvailable, installedVersion, availableVersion, availableHash)
  */
 checkAppUpdate = function(callback) {
 
@@ -301,12 +301,12 @@ checkAppUpdate = function(callback) {
         }
         
         // Compare to installed info
+        let updateAvailable = false;
         if ( info && info.version ) {
-            if ( parseInt(info.version) > parseInt(__VERSION__) ) {
-                return callback(null, true, __VERSION__, parseInt(info.version))
-            }
+            updateAvailable = parseInt(info.version) > parseInt(__VERSION__);
+            return callback(null, updateAvailable, __VERSION__, parseInt(info.version), info.hash);
         }
-
+        
         return callback(null, false);
     });
 }
@@ -484,6 +484,18 @@ function _putCache(path, response, callback) {
 }
 
 
+/**
+ * Clear all cached data
+ * @param  {Function} [callback] Callback function(success)
+ */
+function clear(callback) {
+    caches.delete(API_CACHE).then(function(success) {
+        console.log("CACHE DELETED: " + success);
+        if ( callback ) return callback(success);
+    });
+}
+
+
 
 module.exports = {
     getServerInfo: getServerInfo,
@@ -496,5 +508,6 @@ module.exports = {
     getTransitDivisionIcon: getTransitDivisionIcon,
     getTransitFeed: getTransitFeed,
     getMessages: getMessages,
-    checkAppUpdate: checkAppUpdate
+    checkAppUpdate: checkAppUpdate,
+    clear: clear
 }

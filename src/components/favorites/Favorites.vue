@@ -143,6 +143,15 @@
                 function: function() {
                     vm.$emit('checkUpdate');
                 }
+            },
+            {
+                key: 3,
+                type: "item",
+                icon: "cloud_download",
+                title: "Check for App Update",
+                function: function() {
+                    vm.$emit('checkAppUpdate');
+                }
             }
         ]
     }

@@ -117,7 +117,9 @@
                         @showDialog="onShowDialog" 
                         @showSnackbar="onShowSnackbar"
                         @checkUpdate="onCheckUpdate"
-                        @startUpdate="onStartUpdate">
+                        @startUpdate="onStartUpdate"
+                        @checkAppUpdate="onCheckAppUpdate"
+                        @startAppUpdate="onStartAppUpdate">
                     </router-view>
                 </transition>
 
@@ -595,18 +597,27 @@
 
         // Check for App Update
         cache.checkAppUpdate(function(err, update, current, available) {
+            vm.appUpdate.isAvailable = false;
             if ( update ) {
-                console.log("==> APP UPDATE AVAILABLE: " + available + " > " + current);
                 let key = "app-update-" + available;
-                console.log(key);
                 store.get(key, function(err, alerted) {
-                    console.log(alerted);
                     if ( !alerted ) {
                         vm.appUpdate.isAvailable = true;
                         vm.appUpdate.version = available;
+                        if ( force ) {
+                            vm.onShowSnackbar({
+                                message: "An app update is available (" + available + ")",
+                                dismiss: "Update",
+                                onDismiss: vm.onStartAppUpdate
+                            });
+                        }
                     }
                 });
             }
+            else if ( force ) {
+                vm.onShowSnackbar("There is no app update available at this time")
+            }
+            if ( callback ) return callback(err, update, current, available);
         });
     }
 
@@ -911,12 +922,22 @@
             },
 
             /**
+             * Start a forced app update check
+             * @param {Function} [callback] Callback function()
+             */
+            onCheckAppUpdate(callback) {
+                _appUpdateCheck(this, true, callback);
+            },
+
+            /**
              * Start the App update process
              */
             onStartAppUpdate() {
                 let key = "app-update-" + this.appUpdate.version;
                 store.put(key, true, function() {
-                    window.location.reload(true);
+                    cache.clear(function() {
+                        window.location.reload(true);
+                    });
                 });
             }
 

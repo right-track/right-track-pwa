@@ -285,6 +285,34 @@ getMessages = function(agency, callback) {
 
 
 /**
+ * Check for an app update
+ * @param  {Function} callback Callback function(err, updateAvailable, installedVersion, availableVersion)
+ */
+checkAppUpdate = function(callback) {
+
+    // Set path with current host
+    let path = "/updates/apps/" 
+        + encodeURIComponent(window.location.protocol + '//' + window.location.host);
+
+    // Get update info
+    _getCacheElseFresh(path, 86400, function(err, info) {
+        if ( err ) {
+            return callback(err);
+        }
+        
+        // Compare to installed info
+        if ( info && info.version ) {
+            if ( parseInt(info.version) > parseInt(__VERSION__) ) {
+                return callback(null, true, __VERSION__, parseInt(info.version))
+            }
+        }
+
+        return callback(null, false);
+    });
+}
+
+
+/**
  * Get API data (cache first, then network)
  * - return cached data, if present
  * - return network data, when no cached data is present
@@ -467,5 +495,6 @@ module.exports = {
     getTransitAgencyIcon: getTransitAgencyIcon,
     getTransitDivisionIcon: getTransitDivisionIcon,
     getTransitFeed: getTransitFeed,
-    getMessages: getMessages
+    getMessages: getMessages,
+    checkAppUpdate: checkAppUpdate
 }

@@ -15,7 +15,22 @@
                 </v-list-tile>
             </v-list>
         </v-slide-y-transition>
-        
+
+        <!-- App Update -->
+        <v-slide-y-transition>
+            <v-list v-if="appUpdate.isAvailable" class="py-0 secondary-bg" two-line>
+                <v-list-tile @click="startAppUpdate">
+                    <v-list-tile-action>
+                        <v-icon>refresh</v-icon>
+                    </v-list-tile-action>
+                    <v-list-tile-content>
+                        <v-list-tile-title>App Update</v-list-tile-title>
+                        <v-list-tile-sub-title>Reload App to Install</v-list-tile-sub-title>
+                    </v-list-tile-content>
+                </v-list-tile>
+            </v-list>
+        </v-slide-y-transition>
+
         <!-- User Info -->
         <v-list v-if="auth.display" class="py-0">
             <v-list-tile @click="startAuth">
@@ -198,6 +213,13 @@
                     message: undefined
                 }
             },
+            appUpdate: {
+                type: Object,
+                default: {
+                    isAvailable: false,
+                    version: undefined
+                }
+            },
             transitAlertCount: {
                 type: Number,
                 default: 0
@@ -276,10 +298,16 @@
 
             /**
              * Start the DB Update Process
-             * @return {[type]} [description]
              */
             startUpdate() {
                 this.$emit('startUpdate');
+            },
+
+            /**
+             * Start the App Update Process
+             */
+            startAppUpdate() {
+                this.$emit('startAppUpdate');
             },
 
             /**

@@ -6,9 +6,11 @@
             <rt-drawer-menu 
                 :favorites="favorites.favorites" 
                 :update="update"
+                :appUpdate="appUpdate"
                 :transitAlertCount="transitAlertCount"
                 @showDialog="onShowDialog"
-                @startUpdate="onStartUpdate">
+                @startUpdate="onStartUpdate"
+                @startAppUpdate="onStartAppUpdate">
             </rt-drawer-menu>
         </v-navigation-drawer>
 
@@ -19,7 +21,7 @@
             <!-- Menu Toggle -->
             <v-toolbar-side-icon @click.stop="toggleDrawer"></v-toolbar-side-icon>
             <v-fade-transition>
-                <span v-if="update.isAvailable && !drawerVisible" class="toolbar-badge secondary-bg"></span>
+                <span v-if="(appUpdate.isAvailable || update.isAvailable) && !drawerVisible" class="toolbar-badge secondary-bg"></span>
             </v-fade-transition>
 
             <!-- Toolbar Title -->
@@ -259,6 +261,9 @@
         else {
             _dbUpdateCheck(vm);
         }
+
+        // Check for an App update, if necessary
+        _appUpdateCheck(vm);
 
     }
 
@@ -577,6 +582,36 @@
 
 
     /**
+     * Check for an app update
+     * @param  {Vue}       vm       Vue Instance
+     * @param  {Boolean}   force    Force an update check
+     * @param  {Function}  callback Callback function(err, updateAvailable, currentVersion, availableVersion)
+     */
+    function _appUpdateCheck(vm, force, callback) {
+        if ( callback === undefined && typeof force === 'function' ) {
+            callback = force;
+            force = false;
+        }
+
+        // Check for App Update
+        cache.checkAppUpdate(function(err, update, current, available) {
+            if ( update ) {
+                console.log("==> APP UPDATE AVAILABLE: " + available + " > " + current);
+                let key = "app-update-" + available;
+                console.log(key);
+                store.get(key, function(err, alerted) {
+                    console.log(alerted);
+                    if ( !alerted ) {
+                        vm.appUpdate.isAvailable = true;
+                        vm.appUpdate.version = available;
+                    }
+                });
+            }
+        });
+    }
+
+
+    /**
      * Update the current network availability status
      * @param  {Vue} vm Vue Instance
      */
@@ -633,6 +668,12 @@
                     isAvailable: false,
                     version: undefined,
                     notes: undefined
+                },
+
+                // App Update Information
+                appUpdate: {
+                    isAvailable: false,
+                    version: undefined
                 },
 
                 // Bottom Bar visibility flag
@@ -867,6 +908,16 @@
                         }
                     );
                 }
+            },
+
+            /**
+             * Start the App update process
+             */
+            onStartAppUpdate() {
+                let key = "app-update-" + this.appUpdate.version;
+                store.put(key, true, function() {
+                    window.location.reload(true);
+                });
             }
 
         },

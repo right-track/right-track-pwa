@@ -196,13 +196,16 @@
              */
             getTrack(segment) {
                 let statusInfo = _findStatusInfo(this, segment);
-                let track = statusInfo ? statusInfo.track : "";
-                if ( track && track !== "" ) {
-                    return "<span style='font-weight: 500'>Track " + track + "</span>";
+                let rtn = "";
+                if ( statusInfo && statusInfo.track ) {
+                    if ( statusInfo.track.scheduled ) {
+                        rtn = "<span style='font-weight: 500; opacity: 0.5'><em>Track " + statusInfo.track.track + "</em></span>";
+                    }
+                    else {
+                        rtn = "<span style='font-weight: 500;'>Track " + statusInfo.track.track + "</span>";
+                    }
                 }
-                else {
-                    return track;
-                }
+                return rtn;
             },
 
             /**
@@ -222,6 +225,11 @@
              */
             formatTravelTime(mins, short) {
                 return datetime.minutesToString(mins, short);
+            },
+
+            formatTrack(track) {
+                console.log(track);
+                return "Track " + track.track;
             },
 
             /**

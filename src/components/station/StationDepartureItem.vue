@@ -33,7 +33,12 @@
 
                 <!-- Track -->
                 <div class="departure-item departure-track">
-                    {{ departure.status.track }}
+                    <span v-if="departure.status.track.scheduled" style="opacity: 0.5">
+                        <em>{{ departure.status.track.track }}</em>
+                    </span>
+                    <span v-else>
+                        {{ departure.status.track.track }}
+                    </span>
                 </div> 
 
                 <!-- Peak -->

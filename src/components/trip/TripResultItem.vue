@@ -198,7 +198,10 @@
                 let statusInfo = _findStatusInfo(this, segment);
                 let rtn = "";
                 if ( statusInfo && statusInfo.track ) {
-                    if ( statusInfo.track.scheduled ) {
+                    if ( statusInfo.track.changed ) {
+                        rtn = "<span style='font-weight: 500; text-decoration: underline'>Track " + statusInfo.track.track + "</span>";
+                    }
+                    else if ( statusInfo.track.scheduled ) {
                         rtn = "<span style='font-weight: 500; opacity: 0.5'><em>Track " + statusInfo.track.track + "</em></span>";
                     }
                     else {

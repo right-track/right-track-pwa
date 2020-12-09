@@ -33,7 +33,10 @@
 
                 <!-- Track -->
                 <div class="departure-item departure-track">
-                    <span v-if="departure.status.track.scheduled" style="opacity: 0.5">
+                    <span v-if="departure.status.track.changed" style="text-decoration: underline">
+                        {{ departure.status.track.track }}
+                    </span>
+                    <span v-else-if="departure.status.track.scheduled" style="opacity: 0.5">
                         <em>{{ departure.status.track.track }}</em>
                     </span>
                     <span v-else>

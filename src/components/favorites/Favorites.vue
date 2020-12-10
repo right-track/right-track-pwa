@@ -106,7 +106,7 @@
         <rt-stop-selection-dialog :properties="stopSelectionDialogProps" @stopSelected="onStopSelected"></rt-stop-selection-dialog>
 
         <!-- SELECT TRANSIT LINE DIALOG -->
-        <rt-transit-selection-dialog :properties="transitSelectionDialogProps"></rt-transit-selection-dialog>
+        <rt-transit-selection-dialog :properties="transitSelectionDialogProps" @transitSelected="onTransitSelected"></rt-transit-selection-dialog>
 
         <!-- SELECT TRAIN NUMBER DIALOG -->
         <rt-train-number-selection-dialog :properties="trainNumberSelectionDialogProps" @trainNumberSelected="onTrainNumberSelected"></rt-train-number-selection-dialog>
@@ -518,6 +518,18 @@
                     vm.$emit('updateFavorites');
                 }
 
+            },
+
+            /**
+             * Handle the return of a selected Transit Agency/Division/Line
+             * @param {String} type Transit Type
+             * @param {Object} selected Selected Agency/Division/Line info
+             */
+            onTransitSelected(type, selected) {
+                let vm = this;
+                console.log("===> ADD FAVORITE TRANSIT:");
+                console.log(type);
+                console.log(selected);
             },
 
             /**

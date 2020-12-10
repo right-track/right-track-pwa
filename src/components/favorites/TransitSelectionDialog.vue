@@ -30,24 +30,78 @@
 <script>
     const cache = require("@/utils/cache.js");
 
+
+    /**
+     * Update the initial properties and list items
+     * @param {Vue} vm The Vue Instance
+     * @param {Function} [callback] Callback function(err)
+     */
+    function _update(vm, callback) {
+        vm.selecting = !vm.selected.agency ? "agency" : !vm.selected.division ? "division" : "line";
+        _updateItems(vm, callback);
+    }
+
     /**
      * Update the list selection items
+     * @param {Vue} vm The Vue Instance
+     * @param {Function} [callback] Callback function(err)
      */
-    function _updateItems(vm) {
-        console.log("UPDATE TRANSIT SELECTION LIST ITEMS");
-
-        if ( !vm.agency ) {
+    function _updateItems(vm, callback) {
+        vm.items = [{name: "Loading..."}];
+        if ( vm.selecting === "agency" ) {
             cache.getTransitAgencies(function(err, transitAgencies) {
                 if ( err ) {
                     vm.$emit('showSnackbar', 'Could not load transit agencies. Please try again later.');
                 }
                 else {
-                    console.log(transitAgencies);
                     vm.items = transitAgencies;
                 }
+                if ( callback ) return callback(err);
             });
         }
-        
+        else if ( vm.selecting === "division" ) {
+            cache.getTransitFeed(vm.selected.agency.id, function(err, feed, agency) {
+                if ( err ) {
+                    vm.$emit('showSnackbar', 'Could not load transit agency divisions.  Please try again later.');
+                }
+                else {
+                    vm.items = feed.divisions;
+                }
+                if ( callback ) return callback(err);
+            });
+        }
+        else if ( vm.selecting === "line" ) {
+            cache.getTransitFeed(vm.selected.agency.id, function(err, feed, agency) {
+                if ( err ) {
+                    vm.$emit('showSnackbar', 'Could not load transit agency divisions.  Please try again later.');
+                }
+                else {
+                    for ( let i = 0; i < feed.divisions.length; i++ ) {
+                        if ( feed.divisions[i].code === vm.selected.division.code ) {
+                            vm.items = feed.divisions[i].lines;
+                        }
+                    }
+                }
+                if ( callback ) return callback(err);
+            });
+        }
+        else {
+            vm.items = [];
+        }
+    }
+
+    /**
+     * Reset the selections
+     */
+    function _reset(vm) {
+        vm.items = [];
+        vm.selecting = undefined;
+        vm.selected = {
+            agency: undefined,
+            division: undefined,
+            line: undefined
+        }
+        _update(vm);
     }
 
     module.exports = {
@@ -72,8 +126,12 @@
         data: function() {
             return {
                 items: [],
-                agency: undefined,
-                division: undefined
+                selecting: undefined,
+                selected: {
+                    agency: undefined,
+                    division: undefined,
+                    line: undefined
+                }
             }
         },
 
@@ -91,20 +149,38 @@
              * Determine header label
              */
             label() {
-                if ( !this.agency ) {
-                    return "Transit Agency"
-                }
-                else if ( !this.division ) {
-                    return "Transit Division"
-                }
-                else {
-                    return "Transit Line"
-                }
+                return this.selecting === "agency" ? "Transit Agency" 
+                    : this.selecting === "division" ? "Transit Division" 
+                    : this.selecting === "line" ? "Transit Line" 
+                    : "...";
             },
 
+            /**
+             * Handle a selected list item
+             */
             itemSelected(item) {
-                console.log("ITEM SELECTED");
-                console.log(item)
+                
+                // Set selected item
+                if ( this.selecting === "agency" ) {
+                    this.selected.agency = item;
+                }
+                else if ( this.selecting === "division" ) {
+                    this.selected.division = item;
+                }
+                else if ( this.selecting === "line" ) {
+                    this.selected.line = item;
+                }
+
+                // Return when we've selected the desire type...
+                if ( this.selecting === this.properties.type ) {
+                    this.$emit('transitSelected', this.properties.type, this.selected);
+                    this.close();
+                }
+                // Or keep selecting...
+                else {
+                    _update(this);
+                }
+
             },
 
             /**
@@ -118,14 +194,24 @@
 
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
-            _updateItems(this);
+            _update(this);
         },
 
         // ==== COMPONENT WATCHERS ==== //
         watch: {
 
-            agency: function(val) {
-                _updateItems(this);
+            /**
+             * Watch the dialog properties
+             * - when visible becomes true, reset the filter stops and value
+             * @type {Object}
+             */
+            properties: {
+                handler(value) {
+                    if ( !value.visible ) {
+                        _reset(this);
+                    }
+                },
+                deep: true
             }
 
         }

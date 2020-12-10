@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model.sync="properties.visible" max-width="400" v-on:keydown.enter="onKeyDownEnter" v-on:keydown="onKeyDown" scrollable>
+    <v-dialog v-model="properties.visible" max-width="400" v-on:keydown.enter="onKeyDownEnter" v-on:keydown="onKeyDown" scrollable>
         <v-card class="card">
             <v-card-title class="headline secondary-bg">                
                 <v-icon>place</v-icon>&nbsp;&nbsp;Select {{ label() }}

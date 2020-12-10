@@ -14,7 +14,9 @@
             <p class="subheading">
                 A <strong>Trip</strong> <v-icon>train</v-icon> displays departure and arrival times between 
                 two stops. A <strong>Station</strong> <v-icon>access_time</v-icon> displays real-time status 
-                information for upcoming departures from a single stop.
+                information for upcoming departures from a single stop. A <strong>Transit Line</strong> 
+                <v-icon>warning</v-icon> displays the current status information for the selected line, branch, 
+                or roadway.
             </p>
 
             <div class="favorites-login" v-show="showLogin">
@@ -87,6 +89,9 @@
             <v-btn @click="selectStation" class="primary-fg" small fab>
                 <v-icon>access_time</v-icon>
             </v-btn>
+            <v-btn @click="selectLine" class="primary-fg" small fab>
+                <v-icon>warning</v-icon>
+            </v-btn>
             <v-btn @click="reorderFavorites" class="primary-fg" small fab>
                 <v-icon>shuffle</v-icon>
             </v-btn>
@@ -98,7 +103,10 @@
         
 
         <!-- SELECT STATION DIALOG -->
-        <rt-stop-selection-dialog :properties="selectDialogProps" @stopSelected="onStopSelected"></rt-stop-selection-dialog>
+        <rt-stop-selection-dialog :properties="stopSelectionDialogProps" @stopSelected="onStopSelected"></rt-stop-selection-dialog>
+
+        <!-- SELECT TRANSIT LINE DIALOG -->
+        <rt-transit-selection-dialog :properties="transitSelectionDialogProps"></rt-transit-selection-dialog>
 
         <!-- SELECT TRAIN NUMBER DIALOG -->
         <rt-train-number-selection-dialog :properties="trainNumberSelectionDialogProps" @trainNumberSelected="onTrainNumberSelected"></rt-train-number-selection-dialog>
@@ -118,6 +126,7 @@
     const DB = require("@/utils/db.js");
     const FavoritesList = require("@/components/favorites/FavoritesList.vue").default;
     const StopSelectionDialog = require("@/components/StopSelectionDialog.vue").default;
+    const TransitSelectionDialog = require("@/components/favorites/TransitSelectionDialog.vue").default;
     const TrainNumberSelectionDialog = require("@/components/favorites/TrainNumberSelectionDialog.vue").default;
     const TrainNumberDetailsDialog = require("@/components/favorites/TrainNumberDetailsDialog.vue").default;
     const Messages = require("@/components/app/Messages.vue").default;
@@ -380,10 +389,14 @@
                 showLogin: false,
                 databaseInfo: undefined,
                 fab: false,
-                selectDialogProps: {
+                stopSelectionDialogProps: {
                     visible: false,
                     type: undefined,
                     stops: undefined
+                },
+                transitSelectionDialogProps: {
+                    visible: false,
+                    type: undefined
                 },
                 trainNumberSelectionDialogProps: {
                     visible: false
@@ -404,6 +417,7 @@
         components: {
             'rt-favorites-list': FavoritesList,
             'rt-stop-selection-dialog': StopSelectionDialog,
+            'rt-transit-selection-dialog': TransitSelectionDialog,
             'rt-train-number-selection-dialog': TrainNumberSelectionDialog,
             'rt-train-number-details-dialog': TrainNumberDetailsDialog,
             'rt-messages': Messages
@@ -449,18 +463,26 @@
              * Select Stop for Favorite Station
              */
             selectStation() {
-                this.selectDialogProps.type = "station";
-                this.selectDialogProps.visible = true;
+                this.stopSelectionDialogProps.type = "station";
+                this.stopSelectionDialogProps.visible = true;
             },
 
             /**
              * Select the Stops for Favorite Trip
-             * @return {[type]} [description]
              */
             selectTrip() {
-                this.selectDialogProps.type = "trip";
-                this.selectDialogProps.origin = undefined;
-                this.selectDialogProps.visible = true;
+                this.stopSelectionDialogProps.type = "trip";
+                this.stopSelectionDialogProps.origin = undefined;
+                this.stopSelectionDialogProps.visible = true;
+            },
+
+            /**
+             * Select the Agency, Division and Line for a 
+             * Favorite Transit Line
+             */
+            selectLine() {
+                this.transitSelectionDialogProps.type = "line";
+                this.transitSelectionDialogProps.visible = true;
             },
             
             /**
@@ -580,7 +602,7 @@
 
             // Get the Stops for the selection dialog
             _getStops(vm, function(stops) {
-                vm.selectDialogProps.stops = stops;
+                vm.stopSelectionDialogProps.stops = stops;
             });
 
         },

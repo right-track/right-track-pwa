@@ -527,9 +527,17 @@
              */
             onTransitSelected(type, selected) {
                 let vm = this;
-                console.log("===> ADD FAVORITE TRANSIT:");
-                console.log(type);
-                console.log(selected);
+                favorites.addTransit(vm.agencyId, selected.agency, selected.division, selected.line, function(err, favorites) {
+                    if ( err ) {
+                        console.error(err);
+                        vm.$emit('showSnackbar', 'Could not add favorite. Please try again.');
+                        return;
+                    }
+                    vm.favorites = favorites;
+                    vm.showEmptyState = false;
+                    vm.showFavorites = true;
+                    vm.$emit('updateFavorites');
+                });
             },
 
             /**

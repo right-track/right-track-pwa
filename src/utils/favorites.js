@@ -26,6 +26,10 @@ function _parseFavorites(favorites, fresh) {
                 favorites[i].icon = "train";
                 favorites[i].label = favorites[i].origin.name + " to " + favorites[i].destination.name;
             }
+            else if ( favorites[i].type === 3 ) {
+                favorites[i].icon = "warning";
+                favorites[i].label = favorites[i].line ? favorites[i].line.name : favorites[i].division ? favorites[i].division.name : favorites[i].agency.name;
+            }
         }
         return favorites;
     }
@@ -188,6 +192,7 @@ function addStation(agencyId, stop, callback) {
 
 }
 
+
 /**
  * Remove the specified Stop as a Favorite Station
  * @param  {String}   agencyId Agency ID code
@@ -220,6 +225,7 @@ function removeStation(agencyId, stop, callback) {
     });
 
 }
+
 
 /**
  * Add the specified Stops as a Favorite Trip
@@ -282,6 +288,110 @@ function removeTrip(agencyId, origin, destination, callback) {
                 (favorites[i].type === 2 && (favorites[i].origin.id !== origin.id || favorites[i].destination.id !== destination.id)) ) {
                 keep.push(favorites[i]);
             }
+        }
+
+        // Update the favorites
+        _update(agencyId, keep, function(err, updatedFavorites) {
+            if ( err ) {
+                return callback(err);
+            }
+            return callback(null, _parseFavorites(updatedFavorites));
+        });
+
+    });
+
+}
+
+
+
+/**
+ * Add the specified Transit properties as a Favorite Transit
+ * @param {string}   agencyId  Agency ID code
+ * @param {Object}   agency    Transit Agency
+ * @param {Object|undefined}   division   Transit Division
+ * @param {Object|undefined}   line       Transit Line
+ * @param {Function} callback  Callback function(err, favorites)
+ */
+function addTransit(agencyId, agency, division, line, callback) {
+
+    // Get Current favorites
+    _getLocalFavorites(agencyId, function(favorites) {
+
+        // Add Transit to favorites list
+        let fav = {
+            type: 3,
+            sequence: favorites.length > 0 ? favorites[favorites.length-1].sequence + 1 : 1,
+            agency: {
+                id: agency.id,
+                name: agency.name
+            },
+            options: {}
+        }
+        if ( division ) {
+            fav.division = {
+                code: division.code,
+                name: division.name
+            }
+        }
+        if ( line ) {
+            fav.line = {
+                code: line.code,
+                name: line.name
+            }
+        }
+        favorites.push(fav);
+
+        // Update the favorites
+        _update(agencyId, favorites, function(err, updatedFavorites) {
+            if ( err ) {
+                return callback(err);
+            }
+            return callback(null, _parseFavorites(updatedFavorites));
+        });
+
+    });
+
+}
+
+
+/**
+ * Remove the speicied Transit properties as a Favorite Transit
+ * @param {string}   agencyId  Agency ID code
+ * @param {Object}   agency    Transit Agency
+ * @param {Object|undefined}   division   Transit Division
+ * @param {Object|undefined}   line       Transit Line
+ * @param {Function} callback  Callback function(err, favorites)
+ */
+function removeTransit(agencyId, agency, division, line, callback) {
+    
+    // Get Current favorites
+    _getLocalFavorites(agencyId, function(favorites) {
+
+        // List of favorites to keep
+        let keep = [];
+
+        // Parse existing favorites
+        for ( let i = 0; i < favorites.length; i++ ) {
+            let k = false;
+            if ( favorites[i].type !== 3 ) {
+                k = true;
+            }
+            else if ( agency && division && line ) {
+                if ( favorites[i].agency.id !== agency.id || favorites[i].division.code !== division.code || favorites[i].line.code !== line.code ) {
+                    k = true;
+                }
+            }
+            else if ( agency && division ) {
+                if ( favorites[i].agency.id !== agency.id || favorites[i].division.code !== division.code ) {
+                    k = true;
+                }
+            }
+            else if ( agency ) {
+                if ( favorites[i].agency.id !== agency.id ) {
+                    k = true;
+                }
+            }
+            if ( k ) keep.push(favorites[i]);
         }
 
         // Update the favorites
@@ -481,6 +591,8 @@ module.exports = {
     addTrip: addTrip,
     removeStation: removeStation,
     removeTrip: removeTrip,
+    addTransit: addTransit,
+    removeTransit: removeTransit,
     clear: clear,
     update: update
 }

@@ -29,7 +29,7 @@
 
             </v-list-tile>
 
-            <v-divider v-if="index !== favorites.length - 1"></v-divider>
+            <v-divider :key="'div-' + index" v-if="index !== favorites.length - 1"></v-divider>
         </template>
     </v-list>
 </template>
@@ -109,6 +109,19 @@
                                 agency: vm.$route.params.agency,
                                 origin: favorite.origin.id,
                                 destination: favorite.destination.id
+                            }
+                        });
+                    }
+
+                    // Transit
+                    else if ( favorite.type === 3 ) {
+                        vm.$router.push({
+                            name: "alerts",
+                            params: {
+                                agency: vm.$route.params.agency,
+                                transitAgency: favorite.agency.id,
+                                transitDivision: favorite.division ? favorite.division.code : undefined,
+                                transitLine: favorite.line ? favorite.line.code : undefined
                             }
                         });
                     }

@@ -48,13 +48,13 @@
 
         <!-- Menu Items List -->
         <v-list class="pt-0" subheader>
-            <template v-for="item in menu">
+            <template v-for="(item, index) in menu">
 
                 <!-- Divider -->
-                <v-divider v-if="item.type === 'divider'" :key="item.key" />
+                <v-divider :key="'div-' + index" v-if="item.type === 'divider'" />
 
                 <!-- Menu Item -->
-                <v-list-tile v-if="item.type === 'item'" :class="{'active-menu-item': isActiveMenuItem(item, 'item')}" @click="drawerLink(item)" :key="item.key">
+                <v-list-tile :key="'item-' + index" v-if="item.type === 'item'" :class="{'active-menu-item': isActiveMenuItem(item, 'item')}" @click="drawerLink(item)">
                     <v-list-tile-action>
                         <v-icon>{{ item.icon }}</v-icon>                        
                     </v-list-tile-action>
@@ -64,7 +64,7 @@
                 </v-list-tile>
 
                 <!-- Alerts Item -->
-                <v-list-tile v-if="item.type === 'alerts'" :class="{'active-menu-item': isActiveMenuItem(item, 'item')}" @click="drawerLink(item)" :key="item.key">
+                <v-list-tile :key="'alert-' + index" v-if="item.type === 'alerts'" :class="{'active-menu-item': isActiveMenuItem(item, 'item')}" @click="drawerLink(item)">
                     <v-list-tile-action>
                         <v-icon v-if="transitAlertCount && transitAlertCount > 0">warning</v-icon>
                         <v-icon v-else>check_circle</v-icon>
@@ -79,7 +79,7 @@
                 </v-list-tile>
 
                 <!-- Favorites Expansion Panel -->
-                <div v-if="item.type === 'favorites' && favorites && favorites.length > 0">
+                <div :key="'fav-' + index" v-if="item.type === 'favorites' && favorites && favorites.length > 0">
                     <v-divider></v-divider>
                     <v-expansion-panel class="favorites-expansion-panel" v-model="favoritesExpansion">
                         <v-expansion-panel-content>
@@ -90,8 +90,8 @@
                             </template>
 
                             <!-- Favorites List -->
-                            <template v-for="favorite in favorites">
-                                <v-list-tile :class="{'active-menu-item': isActiveMenuItem(favorite, 'favorite')}" @click="favoriteLink(favorite)">
+                            <template v-for="(favorite, index) in favorites">
+                                <v-list-tile :key="'fav-item-' + index" :class="{'active-menu-item': isActiveMenuItem(favorite, 'favorite')}" @click="favoriteLink(favorite)">
                                     <v-list-tile-action>
                                         <v-icon>{{ favorite.icon }}</v-icon>
                                     </v-list-tile-action>
@@ -265,6 +265,11 @@
                         return this.$router.currentRoute.params.origin === item.origin.id && 
                                this.$router.currentRoute.params.destination === item.destination.id;
                     }
+                    else if ( current === "alerts" && item.type === 3 ) {
+                        return this.$router.currentRoute.params.transitAgency === item.agency.id &&
+                            this.$router.currentRoute.params.transitDivision === item.division.code &&
+                            this.$router.currentRoute.params.transitLine === item.line.code
+                    }
                     else {
                         return false;
                     }
@@ -383,6 +388,19 @@
                             destination: favorite.destination.id
                         }
                     });
+                }
+
+                // Transit
+                else if ( favorite.type === 3 ) {
+                    this.$router.push({
+                        name: "alerts",
+                        params: {
+                            agency: this.$route.params.agency,
+                            transitAgency: favorite.agency.id,
+                            transitDivision: favorite.division ? favorite.division.code : undefined,
+                            transitLine: favorite.line ? favorite.line.code : undefined
+                        }
+                    })
                 }
 
             }

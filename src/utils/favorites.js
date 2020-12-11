@@ -29,6 +29,7 @@ function _parseFavorites(favorites, fresh) {
             else if ( favorites[i].type === 3 ) {
                 favorites[i].icon = "warning";
                 favorites[i].label = favorites[i].line ? favorites[i].line.name : favorites[i].division ? favorites[i].division.name : favorites[i].agency.name;
+                favorites[i].eventCount = undefined;
             }
         }
         return favorites;

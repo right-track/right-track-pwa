@@ -16,7 +16,21 @@
                 
                 <v-list-tile-content>
                     <v-list-tile-title class="list-title">
-                        {{ fav.label }}
+                        <span class="list-title-label">
+                            {{ fav.label }}
+                        </span>
+                        <span v-if="fav.type === 3" class="list-title-badge">
+                            <template v-if="fav.eventCount === 0">
+                                <span class="list-title-badge-good">
+                                    <v-icon>check_circle</v-icon>
+                                </span>
+                            </template>
+                            <template v-else-if="fav.eventCount > 0">
+                                <span class="list-title-badge-bad">
+                                    {{ fav.eventCount }}
+                                </span>
+                            </template>
+                        </span>
                     </v-list-tile-title>
                 </v-list-tile-content>
 
@@ -159,5 +173,22 @@
         max-height: 48px; 
         line-height: 24px; 
         white-space: normal;
+    }
+    .list-title-badge {
+        float: right;
+    }
+    .list-title-badge-good * {
+        color: #57AF3F !important;
+        font-size: 28px;
+    }
+    .list-title-badge-bad {
+        display: inline-block;
+        background-color: #ff5252;
+        color: #fff;
+        border-radius: 15px;
+        min-width: 26px;
+        height: 26px;
+        text-align: center;
+        padding: 2px 4px;
     }
 </style>

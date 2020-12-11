@@ -209,6 +209,7 @@
                 vm.showFavorites = !vm.showEmptyState;
                 vm.$emit('updateFavorites');
             }
+            _updateFeeds(vm);
         });
     }
 
@@ -290,6 +291,8 @@
             }
             else {
                 vm.$emit('showSnackbar', 'Favorites removed');
+                vm.$emit('updateFavorites');
+                _displayFavorites(vm, true);
             }
         });
     }
@@ -317,13 +320,14 @@
      */
     function _reorderFavorites(vm) {
         vm.reorderMode = false;
-        console.log("THANK YOU, MARISSA");
         favorites.update(vm.agencyId, vm.favorites, function(err, favorites) {
             if ( err ) {
                 vm.$emit('showSnackbar', 'Could not update favorites.  Please try again later.');
             }
             else {
                 vm.$emit('showSnackbar', 'Favorites updated');
+                vm.$emit('updateFavorites');
+                _displayFavorites(vm, true);
             }
         });
     }
@@ -377,6 +381,48 @@
     }
 
 
+    /**
+     * Update the Transit Feeds to update event counts in the favorites
+     * @param {Vue} vm Vue Instance
+     */
+    function _updateFeeds(vm) {
+
+        // Get Transit Agencies to Update
+        let agencies = [];
+        for ( let i = 0; i < vm.favorites.length; i++ ) {
+            if ( vm.favorites[i].type === 3 ) {
+                if ( !agencies.includes(vm.favorites[i].agency.id ) ) {
+                    agencies.push(vm.favorites[i].agency.id);
+                }
+            }
+        }
+
+        // Get Each Transit Agency Feed
+        for ( let i = 0; i < agencies.length; i++ ) {
+            cache.getTransitFeed(agencies[i], function(err, feed) {
+                
+                // Parse the feed info into the favorites
+                if ( feed ) {
+                    for ( let j = 0; j < vm.favorites.length; j++ ) {
+                        if ( vm.favorites[j].type === 3 ) {
+                            for ( let k = 0; k < feed.divisions.length; k++ ) {
+                                if ( feed.divisions[k].code === vm.favorites[j].division.code ) {
+                                    for ( let l = 0; l < feed.divisions[k].lines.length; l++ ) {
+                                        if ( feed.divisions[k].lines[l].code === vm.favorites[j].line.code ) {
+                                            vm.favorites[j].eventCount = feed.divisions[k].lines[l].eventCount;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            });
+        }
+    }
+
+
     module.exports = {
 
         // ==== COMPONENT DATA ==== //
@@ -409,7 +455,8 @@
                 },
                 removeMode: false,
                 removeSelected: [],
-                reorderMode: false
+                reorderMode: false,
+                feedUpdateTimer: undefined
             }
         },
 
@@ -516,6 +563,7 @@
                     vm.showEmptyState = false;
                     vm.showFavorites = true;
                     vm.$emit('updateFavorites');
+                    _displayFavorites(vm, true);
                 }
 
             },
@@ -537,6 +585,7 @@
                     vm.showEmptyState = false;
                     vm.showFavorites = true;
                     vm.$emit('updateFavorites');
+                    _displayFavorites(vm, true);
                 });
             },
 
@@ -625,17 +674,19 @@
                 vm.stopSelectionDialogProps.stops = stops;
             });
 
+            // Periodically update the transit feeds of favorite transit lines
+            vm.feedUpdateTimer = setInterval(function(){ _updateFeeds(vm) }, 30000);
         },
 
         // ===== ROUTE LEAVE GUARD ==== //
-        beforeRouteLeave(to, from , next) {
+        beforeRouteLeave(to, from, next) {
             if ( this.removeMode ) {
                 this.$emit('showSnackbar', {duration: 1});
-                next();
             }
-            else {
-                next();
+            if ( this.feedUpdateTimer ) {
+                clearInterval(this.feedUpdateTimer);
             }
+            next();
         }
 
     }

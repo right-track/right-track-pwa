@@ -122,6 +122,7 @@
     const core = require("right-track-core");
     const user = require("@/utils/user.js");
     const favorites = require("@/utils/favorites.js");
+    const transit = require("@/utils/transit.js");
     const cache = require("@/utils/cache.js");
     const DB = require("@/utils/db.js");
     const FavoritesList = require("@/components/favorites/FavoritesList.vue").default;
@@ -387,39 +388,21 @@
      */
     function _updateFeeds(vm) {
 
-        // Get Transit Agencies to Update
-        let agencies = [];
+        // Loop through the favorites and parse transit favorites
         for ( let i = 0; i < vm.favorites.length; i++ ) {
-            if ( vm.favorites[i].type === 3 ) {
-                if ( !agencies.includes(vm.favorites[i].agency.id ) ) {
-                    agencies.push(vm.favorites[i].agency.id);
-                }
+            let fav = vm.favorites[i];
+            if ( fav.type === 3 ) {
+                
+                // Get Transit Line info
+                transit.getFeedLine(fav.agency.id, fav.division.code, fav.line.code, function(err, line) {
+                    if ( line ) {
+                        vm.favorites[i].eventCount = line.eventCount;
+                    }
+                });
+                
             }
         }
 
-        // Get Each Transit Agency Feed
-        for ( let i = 0; i < agencies.length; i++ ) {
-            cache.getTransitFeed(agencies[i], function(err, feed) {
-                
-                // Parse the feed info into the favorites
-                if ( feed ) {
-                    for ( let j = 0; j < vm.favorites.length; j++ ) {
-                        if ( vm.favorites[j].type === 3 ) {
-                            for ( let k = 0; k < feed.divisions.length; k++ ) {
-                                if ( feed.divisions[k].code === vm.favorites[j].division.code ) {
-                                    for ( let l = 0; l < feed.divisions[k].lines.length; l++ ) {
-                                        if ( feed.divisions[k].lines[l].code === vm.favorites[j].line.code ) {
-                                            vm.favorites[j].eventCount = feed.divisions[k].lines[l].eventCount;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-            });
-        }
     }
 
 

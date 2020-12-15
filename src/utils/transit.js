@@ -70,7 +70,7 @@ function getFeedLine(transitAgency, divisionCode, lineCode, callback) {
  * @param  {Function} callback      Callback function(err, info)
  */
 function getTransitAgencyInformation(transitAgency, callback) {
-    cache.getTransitFeed(transitAgency, function(err, feed, info) {
+    getFeed(transitAgency, function(err, feed, info) {
         if ( err ) {
             return callback(err);
         }

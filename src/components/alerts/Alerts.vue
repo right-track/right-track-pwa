@@ -68,6 +68,7 @@
 <script>
     const DateTime = require("right-track-core").utils.DateTime;
     const cache = require("@/utils/cache.js");
+    const transit = require("@/utils/transit.js");
 
     const TransitList = require("@/components/alerts/TransitList.vue").default;
     const TransitAgency = require("@/components/alerts/TransitAgency.vue").default;
@@ -243,7 +244,7 @@
     function _updateFeed(vm, force) {
         if ( vm.transitAgencyId ) {
             vm.transitFeedUpdating = true;
-            cache.getTransitFeed(vm.transitAgencyId, function(err, feed) {
+            transit.getFeed(vm.transitAgencyId, function(err, feed) {
                 vm.transitFeedUpdating = false;
                 if ( err ) {
                     if ( force ) vm.$emit('showSnackbar', 'Could not update transit feed. Please try again later.');

@@ -32,13 +32,13 @@
             <v-spacer></v-spacer>
 
             <!-- TOOLBAR MENU ITEMS -->
-            <template 
-                    v-if="toolbarMenu && toolbarMenu.length > 0" 
-                    v-for="item in toolbarMenu">
-                <v-btn :disabled="item.disabled" dark icon>
-                    <v-icon v-if="item.type==='icon'" @click="item.function">{{ item.icon }}</v-icon>
-                </v-btn>
-            </template>
+            <div v-if="toolbarMenu && toolbarMenu.length > 0">
+                <template v-for="(item, index) in toolbarMenu">
+                    <v-btn :key="index" :disabled="item.disabled" dark icon>
+                        <v-icon v-if="item.type==='icon'" @click="item.function">{{ item.icon }}</v-icon>
+                    </v-btn>
+                </template>
+            </div>
 
             <!-- MORE MENU ITEMS -->
             <v-menu v-if="moreMenu  && moreMenu.length > 0" allow-overflow absolute top right>
@@ -63,7 +63,7 @@
                         <!-- Sub Menu -->
                         <template v-if="item.type==='menu'">
                             <v-menu style="width: 100%" open-delay="500" open-on-hover offset-x left>
-                                <v-list-tile style="width: 100%" slot="activator" @click="">
+                                <v-list-tile style="width: 100%" slot="activator" @click="function(){}">
                                     <v-icon class="more-menu-list-icon">arrow_left</v-icon>
                                     <v-list-tile-title>{{ item.title }}</v-list-tile-title>
                                 </v-list-tile>

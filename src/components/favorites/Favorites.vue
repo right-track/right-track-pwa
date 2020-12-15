@@ -123,7 +123,6 @@
     const user = require("@/utils/user.js");
     const favorites = require("@/utils/favorites.js");
     const transit = require("@/utils/transit.js");
-    const cache = require("@/utils/cache.js");
     const DB = require("@/utils/db.js");
     const FavoritesList = require("@/components/favorites/FavoritesList.vue").default;
     const StopSelectionDialog = require("@/components/StopSelectionDialog.vue").default;
@@ -399,7 +398,7 @@
                         vm.favorites[i].eventCount = line.eventCount;
                     }
                 });
-                
+
             }
         }
 

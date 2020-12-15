@@ -60,7 +60,7 @@
             });
         }
         else if ( vm.selecting === "division" ) {
-            cache.getTransitFeed(vm.selected.agency.id, function(err, feed, agency) {
+            transit.getFeed(vm.selected.agency.id, function(err, feed, agency) {
                 if ( err ) {
                     vm.$emit('showSnackbar', 'Could not load transit agency divisions.  Please try again later.');
                 }
@@ -71,7 +71,7 @@
             });
         }
         else if ( vm.selecting === "line" ) {
-            cache.getTransitFeed(vm.selected.agency.id, function(err, feed, agency) {
+            transit.getFeed(vm.selected.agency.id, function(err, feed, agency) {
                 if ( err ) {
                     vm.$emit('showSnackbar', 'Could not load transit agency divisions.  Please try again later.');
                 }

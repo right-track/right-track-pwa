@@ -485,13 +485,16 @@ function _putCache(path, response, callback) {
 
 
 /**
- * Clear all cached data
+ * Clear all cached data (including service worker caches)
  * @param  {Function} [callback] Callback function(success)
  */
 function clear(callback) {
-    caches.delete(API_CACHE).then(function(success) {
-        console.log("CACHE DELETED: " + success);
-        if ( callback ) return callback(success);
+    caches.keys().then(cacheNames => {
+        cacheNames.forEach(cacheName => {
+            console.log("...deleting cache: " + cacheName);
+            caches.delete(cacheName);
+        });
+        if ( callback ) return callback(true);
     });
 }
 

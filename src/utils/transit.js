@@ -19,50 +19,31 @@ function getFeed(transitAgency, callback) {
  * Get the specified Transit Division from the Transit Feed of the 
  * specified Transit Agency
  * @param {string} transitAgency Transit Agency ID Code
- * @param {string} divisionCode Transit Division Code
+ * @param {string[]} divisionCodes Transit Division Codes
  * @param {Function} callback Callback function(err, division)
  */
-function getFeedDivision(transitAgency, divisionCode, callback) {
+function getFeedDivision(transitAgency, divisionCodes, callback) {
     getFeed(transitAgency, function(err, feed) {
         if ( err ) {
             return callback(err);
         }
-        if ( feed && feed.divisions && Array.isArray(feed.divisions) ) {
-            for ( let i = 0; i < feed.divisions.length; i++ ) {
-                if ( feed.divisions[i].code === divisionCode ) {
-                    return callback(null, feed.divisions[i]);
+        if ( feed && feed.divisions && divisionCodes ) {
+            let divs = feed.divisions;
+            for ( let i = 0; i < divisionCodes.length; i++ ) {
+                for ( let j = 0; j < divs.length; j++ ) {
+                    if ( divs[j].code === divisionCodes[i] ) {
+                        if ( i === divisionCodes.length-1 ) {
+                            return callback(err, divs[j])
+                        }
+                        divs = divs[j].divisions;
+                        break;
+                    }
                 }
             }
         }
-        return callback(null, undefined);
+        return callback();
     });
 }
-
-
-/**
- * Get the specified Transit Line from the Transit Feed of the 
- * specified Transit Agency and Division
- * @param {string} transitAgency Transit Agency ID Code
- * @param {string} divisionCode Transit Division Code
- * @param {string} lineCode Transit Line Code
- * @param {function} callback Callback function(err, line)
- */
-function getFeedLine(transitAgency, divisionCode, lineCode, callback) {
-    getFeedDivision(transitAgency, divisionCode, function(err, division) {
-        if ( err ) {
-            return callback(err);
-        }
-        if ( division && division.lines && Array.isArray(division.lines) ) {
-            for ( let i = 0; i < division.lines.length; i++ ) {
-                if ( division.lines[i].code === lineCode ) {
-                    return callback(null, division.lines[i]);
-                }
-            }
-        }
-        return callback(null, undefined);
-    });
-}
-
 
 /**
  * Get the information about the specified Transit Agency
@@ -82,6 +63,5 @@ function getTransitAgencyInformation(transitAgency, callback) {
 module.exports = {
     getFeed: getFeed,
     getFeedDivision: getFeedDivision,
-    getFeedLine: getFeedLine,
     getTransitAgencyInformation: getTransitAgencyInformation
 }

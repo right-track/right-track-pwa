@@ -1,5 +1,5 @@
 <template>
-    <v-card>
+    <div>
         <p class="subheading font-weight-light">Select a Transit Agency for real-time transit alerts:</p>
 
         <div class="agency-wrapper" v-for="agency in transitAgencies" :key="agency.id" @click="selectAgency(agency.id)">
@@ -16,7 +16,7 @@
                 <v-icon>chevron_right</v-icon>
             </div>
         </div>
-    </v-card>
+    </div>
 </template>
 
 
@@ -89,6 +89,7 @@
 
     .agency-name {
         grid-area: name;
+        padding-top: 5px;
         margin-top: auto;
         margin-bottom: auto;
         font-size: 20px;

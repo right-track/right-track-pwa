@@ -134,7 +134,7 @@ module.exports = (env, argv) => ({
     https: false,
     open: true,
     overlay: true,
-    port: 9090,
+    port: 9000,
     historyApiFallback: true
   }
 

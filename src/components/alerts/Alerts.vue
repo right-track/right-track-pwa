@@ -1,65 +1,58 @@
 <template>
     <v-container id="container" class="container">
 
-        <!-- Alerts Header -->
-        <v-card id="header-card">
-            <v-card-title class="secondary-bg">
-                <span class="headline card-title">
-                    <v-fade-transition hide-on-leave>
-                        <v-icon v-if="icon" :key="icon">{{ icon }}</v-icon>
-                    </v-fade-transition>
-                    &nbsp;&nbsp;
-                    <v-fade-transition hide-on-leave>        
-                        <span :key="title">{{ title }}</span>
-                    </v-fade-transition>
-                </span>
-                <v-spacer></v-spacer>
-                <span class="subheading v-small-hide" v-if="transitFeedUpdated">
-                    <v-icon style="font-size: 20px">update</v-icon>&nbsp;&nbsp;{{ transitFeedUpdated }}
-                </span>
-            </v-card-title>
-            <div class="nav">
-                <div v-for="(item, index) in nav" :key="'nav-item-' + index" class="nav-item">
-                    <a @click="item.click">
-                        <v-icon class="nav-icon">chevron_left</v-icon>
-                        <span class="nav-label">{{ item.label }}</span>
-                    </a>
+        <!-- Main Alerts Card - Agency / Division List -->
+        <v-card>
+
+            <!-- Alerts Header -->
+            <div id="header-card">
+                <v-card-title class="secondary-bg">
+                    <span class="headline card-title">
+                        <v-fade-transition hide-on-leave>
+                            <v-icon v-if="icon" :key="icon">{{ icon }}</v-icon>
+                        </v-fade-transition>
+                        &nbsp;&nbsp;
+                        <v-fade-transition hide-on-leave>        
+                            <span :key="title">{{ title }}</span>
+                        </v-fade-transition>
+                    </span>
+                    <v-spacer></v-spacer>
+                    <span class="subheading v-small-hide" v-if="transitFeedUpdated">
+                        <v-icon style="font-size: 20px">update</v-icon>&nbsp;&nbsp;{{ transitFeedUpdated }}
+                    </span>
+                </v-card-title>
+                <div class="nav" v-if="nav && nav.length > 0">
+                    <div v-for="(item, index) in nav" :key="'nav-item-' + index" class="nav-item">
+                        <a @click="navigate(item.path)">
+                            <v-icon class="nav-icon">chevron_left</v-icon>
+                            <span class="nav-label">{{ item.label }}</span>
+                        </a>
+                    </div>
                 </div>
             </div>
+
+            <!-- List of Agencies -->
+            <transition name="fade" mode="out-in" :duration="0">
+                <rt-transit-agency-list v-if="!transitAgencyId"
+                    id="rt-transit-agency-list"
+                    :transitAgencies="transitAgencies" />
+            </transition>
+
+            <!-- List of Divisions -->
+            <transition name="fade" mode="out-in" :duration="0">
+                <rt-transit-division-list v-if="transitFeed || transitDivision"
+                    id="rt-transit-division-list"
+                    :feed="transitFeed"
+                    :transitDivision="transitDivision" />
+            </transition>
+
         </v-card>
 
-
-        <!-- Current Component -->
-        <transition name="fade" mode="out-in">
-            <component 
-                id="current-component"
-                :is="currentComponent"
-                :transitAgencies="transitAgencies"
-                :transitAgency="transitAgency"
-                :transitDivision="transitDivision"
-                :transitLine="transitLine"
-                :feed="transitFeed"
-                :key="currentComponent"
-                @setCardTitle="onSetCardTitle" 
-                @setCardIcon="onSetCardIcon" 
-                @setNavItems="onSetNavItems">
-            </component>
-        </transition>
-
-
         <!-- Events List -->
-        <transition name="slide-fade">
-            <div id="rt-transit-events-wrapper"
-                 v-if="transitAgencyId && transitDivisionCode && transitLineCode">
-                <rt-transit-events
-                    id="rt-transit-events"
-                    :transitAgency="transitAgency"
-                    :transitDivision="transitDivision"
-                    :transitLine="transitLine"
-                    :transitEvents="transitEvents"
-                    :feed="transitFeed">
-                </rt-transit-events>
-            </div>
+        <transition name="slide-fade" :duration="0">
+            <rt-transit-event-list v-if="transitDivision"
+                id="rt-transit-events"
+                :transitDivision="transitDivision" />
         </transition>
 
     </v-container>
@@ -70,38 +63,46 @@
     const cache = require("@/utils/cache.js");
     const transit = require("@/utils/transit.js");
 
-    const TransitList = require("@/components/alerts/TransitList.vue").default;
-    const TransitAgency = require("@/components/alerts/TransitAgency.vue").default;
-    const TransitDivision = require("@/components/alerts/TransitDivision.vue").default;
-    const TransitLine = require("@/components/alerts/TransitLine.vue").default;
-    const TransitEvents = require("@/components/alerts/TransitEvents.vue").default;
+    const TransitAgencyList = require("@/components/alerts/TransitAgencyList.vue").default;
+    const TransitDivisionList = require("@/components/alerts/TransitDivisionList.vue").default;
+    const TransitEventList = require("@/components/alerts/TransitEventList.vue").default;
 
 
     /**
-     * Set the agency and transit params from the path
+     * Update the Alerts display
+     * - Update the route params
+     * - Update the Feed
      * @param {Vue} vm Vue Instance
      */
-    function _setParams(vm) {
+    function _update(vm, redirect) {
+
+        // Set the route params
         vm.agencyId = vm.$router.currentRoute.params.agency;
         vm.transitAgencyId = vm.$router.currentRoute.params.transitAgency;
-        vm.transitDivisionCode = vm.$router.currentRoute.params.transitDivision;
-        vm.transitLineCode = vm.$router.currentRoute.params.transitLine;
+        vm.transitDivisionCodes = vm.$router.currentRoute.params.transitDivision 
+            ? vm.$router.currentRoute.params.transitDivision.split('/')
+            : undefined;
 
-        if ( !vm.transitAgencyId ) {
-            vm.currentComponent = "rt-transit-list";
+        // Redirect to default Agency / Division
+        if ( redirect && vm.agencyId && !vm.transitAgencyId ) {
+            _displayAgencyDefault(vm);
         }
-        else if ( vm.transitAgencyId && !vm.transitDivisionCode && !vm.transitLineCode ) {
-            vm.currentComponent = "rt-transit-agency";
+
+        // Update the Feed
+        else if ( vm.transitAgencyId ) {
+            _updateFeed(vm);
         }
-        else if ( vm.transitAgencyId && vm.transitDivisionCode && !vm.transitLineCode ) {
-            vm.currentComponent = "rt-transit-division";
-        }
-        else if ( vm.transitAgencyId && vm.transitDivisionCode && vm.transitLineCode ) {
-            vm.currentComponent = "rt-transit-line";
-        }
+
+        // Clear the Feed
         else {
-            vm.currentComponent = undefined;
+            vm.transitFeed = undefined;
+            vm.transitFeedUpdated = undefined;
+            vm.transitDivision = undefined;
+            vm.title = "Alerts";
+            vm.icon = "warning";
+            vm.nav = [];
         }
+
     }
 
 
@@ -143,58 +144,70 @@
      * @param {Vue} vm Vue Instance
      */
     function _setTransitDivision(vm) {
-        vm.transitDivision = undefined;
-        if ( vm.transitDivisionCode && vm.transitFeed ) {
-            for ( let i = 0; i < vm.transitFeed.divisions.length; i++ ) {
-                if ( vm.transitFeed.divisions[i].code === vm.transitDivisionCode ) {
-                    vm.transitDivision = vm.transitFeed.divisions[i];
-                }
-            }
-        }
-    }
-
-
-    /**
-     * Set the current Transit Line
-     * @param {Vue} vm Vue Instance
-     */
-    function _setTransitLine(vm) {
-        vm.transitLine = undefined;
-        vm.transitEvents = undefined;
-        _setHeight(vm);
-        if ( vm.transitDivisionCode && vm.transitLineCode && vm.transitFeed ) {
-            for ( let i = 0; i < vm.transitFeed.divisions.length; i++ ) {
-                if ( vm.transitFeed.divisions[i].code === vm.transitDivisionCode ) {
-                    for ( let j = 0; j < vm.transitFeed.divisions[i].lines.length; j++ ) {
-                        if ( vm.transitFeed.divisions[i].lines[j].code === vm.transitLineCode ) {
-                            vm.transitLine = vm.transitFeed.divisions[i].lines[j];
-                            vm.transitEvents = vm.transitLine.events;
-                            _setHeight(vm);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-    /**
-     * Set the height of the page container
-     * - based on height of events list, if present
-     * @param {Vue} vm Vue Instance
-     */
-    function _setHeight(vm) {
-        vm.$nextTick(function() {
-            let cont = document.getElementById("container");
-            let height = "auto";
-            if ( vm.transitLineCode ) {
-                let events = document.getElementById("rt-transit-events");
-                if ( events ) {
-                    height = events.offsetHeight + 300 + "px";
-                }
-            }
-            cont.style.height = height;
+        transit.getFeedDivision(vm.transitAgencyId, vm.transitDivisionCodes, function(err, division) {
+            vm.transitDivision = division;
+            _setTitle(vm);
+            _setIcon(vm);
+            _setNav(vm);
         });
+    }
+
+
+    /**
+     * Set the Alerts header title
+     * - use Transit Division name, if set, otherwise
+     * - use Transit Agency name, if set
+     * @param {Vue} vm Vue Instance
+     */
+    function _setTitle(vm) {
+        vm.title = vm.transitDivision ? vm.transitDivision.name 
+            : vm.transitAgency ? vm.transitAgency.name 
+            : 'Alerts';
+    }
+
+
+    /**
+     * Set the Alerts header icon
+     * - use the Transit Division event count, if set, otherwise
+     * - use the Transit Feed event count, if set
+     */
+    function _setIcon(vm) {
+        if ( vm.transitDivision ) {
+            vm.icon = vm.transitDivision.eventCount === 0 ? 'check_circle' : 'warning';
+        }
+        else if ( vm.transitFeed ) {
+            vm.icon = vm.transitFeed.eventCount === 0 ? 'check_circle' : 'warning';
+        }
+        else {
+            vm.icon = 'warning';
+        }
+    }
+
+
+    function _setNav(vm) {
+        let items = [];
+        let base = vm.agencyId ? '/' + vm.agencyId + '/alerts' : '/alerts';
+        if ( vm.transitAgency ) {
+            items.push({
+                path: base + '/',
+                label: 'Agencies'
+            });
+        }
+        if ( vm.transitAgency && vm.transitDivisionCodes ) {
+            let path = base + '/' + vm.transitAgencyId;
+            items.push({
+                path: path,
+                label: vm.transitAgencyId
+            });
+            for ( let i = 0; i < vm.transitDivisionCodes.length-1; i++ ) {
+                path += '/' + vm.transitDivisionCodes[i];
+                items.push({
+                    path: path,
+                    label: vm.transitDivisionCodes[i]
+                });
+            }
+        }
+        vm.nav = items;
     }
 
 
@@ -253,7 +266,6 @@
                     vm.transitFeed = feed;
                     vm.transitFeedUpdated = DateTime.createFromJSDate(new Date(feed.updated)).getTimeReadable();
                     _setTransitDivision(vm);
-                    _setTransitLine(vm);
                 }
             });
         }
@@ -267,96 +279,61 @@
             return {
                 agencyId: undefined,
                 transitAgencyId: undefined,
-                transitDivisionCode: undefined,
-                transitLineCode: undefined,
+                transitDivisionCodes: undefined,
                 transitAgencies: [],
-                title: undefined,
-                icon: undefined,
-                img: undefined,
+                title: 'Alerts',
+                icon: 'warning',
                 nav: [],
-                currentComponent: undefined,
                 transitAgency: undefined,
                 transitDivision: undefined,
-                transitLine: undefined,
                 transitFeed: undefined,
                 transitFeedUpdating: false,
                 transitFeedUpdated: undefined
             }
         },
 
-        // ==== ADDITIONAL COMPONENTS ==== //
-        components: {
-            'rt-transit-list': TransitList,
-            'rt-transit-agency': TransitAgency,
-            'rt-transit-division': TransitDivision,
-            'rt-transit-line': TransitLine,
-            'rt-transit-events': TransitEvents
+        // ==== COMPUTED DATA ==== //
+        computed: {
+            transitEvents: function() {
+                return this.transitDivision && this.transitDivision.events 
+                    ? this.transitDivision.events
+                    : []
+            }
         },
 
-        // ==== COMPONENT METHODS ==== //
         methods: {
-            onSetCardTitle(title) {
-                this.title = title;
-            },
-            onSetCardIcon(icon, type) {
-                this.icon = icon;
-            },
-            onSetNavItems(items) {
-                this.nav = items;
+            navigate: function(path) {
+                console.log(path);
+                this.$router.push({ path: path });
             }
+        },
+
+        // ==== ADDITIONAL COMPONENTS ==== //
+        components: {
+            'rt-transit-agency-list': TransitAgencyList,
+            'rt-transit-division-list': TransitDivisionList,
+            'rt-transit-event-list': TransitEventList
         },
 
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
-
-            // Set Path Params
-            _setParams(this);
-
-            // Get Transit Agencies
+            _update(this, true);
             _getTransitAgencies(this);
-
-            // Redirect to Default Agency Feed
-            if ( this.agencyId && !this.transitAgencyId ) {
-                _displayAgencyDefault(this);
-            }
-
-            // Update Transit Feed
-            else {
-                if ( this.transitAgencyId ) {
-                    _updateFeed(this);
-                    _setTransitDivision(this);
-                    _setTransitLine(this);
-                }
-                else {
-                    this.transitFeed = undefined;
-                    this.transitFeedUpdated = undefined;
-                }
-            }
-            
         },
 
         // ==== COMPONENT WATCHERS ==== //
         watch: {
             $route: function(to, from) {
-                _setParams(this);
-                _setHeight(this);
-                if ( !this.transitAgencyId ) {
-                    this.transitFeed = undefined;
-                    this.transitFeedUpdated = undefined;
-                }
+                _update(this);
             },
 
             transitAgencyId: function() {
-                _updateFeed(this);
                 _setTransitAgency(this);
+                _updateFeed(this);
             },
 
-            transitDivisionCode: function() {
+            transitDivisionCodes: function() {
                 _setTransitDivision(this);
-            },
-
-            transitLineCode: function() {
-                _setTransitLine(this);
             },
 
             transitFeedUpdating: function() {
@@ -385,29 +362,15 @@
         display: inherit;
     }
 
-    #current-component {
-        z-index: 3;
-    }
-    
-    #rt-transit-events-wrapper {
-        position: absolute;
-        top: 200px;
-        left: 0;
-        width: 100%;
-        padding: 0 40px;
-        z-index: 1;
-    }
     #rt-transit-events {
         max-width: 600px;
         margin: 0 auto;
-        height: auto;
     }
 
     .nav {
         width: 100%;
         background-color: #eee;
         padding-left: 5px;
-        border-bottom: 1px solid #ccc;
     }
     .nav-item {
         display: inline;

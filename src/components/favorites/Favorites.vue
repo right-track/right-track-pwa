@@ -393,11 +393,12 @@
             if ( fav.type === 3 ) {
                 
                 // Get Transit Line info
-                transit.getFeedLine(fav.agency.id, fav.division.code, fav.line.code, function(err, line) {
-                    if ( line ) {
-                        vm.favorites[i].eventCount = line.eventCount;
-                    }
-                });
+                // TODO: Update
+                // transit.getFeedLine(fav.agency.id, fav.division.code, fav.line.code, function(err, line) {
+                //     if ( line ) {
+                //         vm.favorites[i].eventCount = line.eventCount;
+                //     }
+                // });
 
             }
         }

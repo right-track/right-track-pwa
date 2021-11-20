@@ -62,7 +62,7 @@ var routes = [
         component: Verify
     },
     {
-        path: "/:agency?/alerts/:transitAgency?/:transitDivision?/:transitLine?",
+        path: "/:agency?/alerts/:transitAgency?/:transitDivision*",
         name: "alerts",
         component: Alerts
     },

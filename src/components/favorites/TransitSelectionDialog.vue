@@ -29,6 +29,7 @@
 
 <script>
     const cache = require("@/utils/cache.js");
+    const transit = require("@/utils/transit.js");
 
 
     /**
@@ -37,7 +38,7 @@
      * @param {Function} [callback] Callback function(err)
      */
     function _update(vm, callback) {
-        vm.selecting = !vm.selected.agency ? "agency" : !vm.selected.division ? "division" : "line";
+        vm.selecting = !vm.selected.agency ? "agency" : "division";
         _updateItems(vm, callback);
     }
 
@@ -48,6 +49,8 @@
      */
     function _updateItems(vm, callback) {
         vm.items = [{name: "Loading..."}];
+        
+        // Get Transit Agencies...
         if ( vm.selecting === "agency" ) {
             cache.getTransitAgencies(function(err, transitAgencies) {
                 if ( err ) {
@@ -59,31 +62,37 @@
                 if ( callback ) return callback(err);
             });
         }
+
+        // Get Transit Agency Divisions...
         else if ( vm.selecting === "division" ) {
-            transit.getFeed(vm.selected.agency.id, function(err, feed, agency) {
-                if ( err ) {
-                    vm.$emit('showSnackbar', 'Could not load transit agency divisions.  Please try again later.');
-                }
-                else {
-                    vm.items = feed.divisions;
-                }
-                if ( callback ) return callback(err);
-            });
-        }
-        else if ( vm.selecting === "line" ) {
-            transit.getFeed(vm.selected.agency.id, function(err, feed, agency) {
-                if ( err ) {
-                    vm.$emit('showSnackbar', 'Could not load transit agency divisions.  Please try again later.');
-                }
-                else {
-                    for ( let i = 0; i < feed.divisions.length; i++ ) {
-                        if ( feed.divisions[i].code === vm.selected.division.code ) {
-                            vm.items = feed.divisions[i].lines;
-                        }
+
+            // No currently selected division(s)
+            // Get all of the top-level divisions from the feed...
+            if ( !vm.selected.division ) {
+                transit.getFeed(vm.selected.agency.id, function(err, feed) {
+                    if ( err || !feed ) {
+                        vm.$emit('showSnackbar', 'Could not load transit agency divisions.  Please try again later.');
                     }
-                }
-                if ( callback ) return callback(err);
-            });
+                    else {
+                        vm.items = feed.divisions;
+                    }
+                    if ( callback ) return callback(err);
+                });
+            }
+
+            // Use currently selected division(s) to get child divisions...
+            else {
+                transit.getFeedDivision(vm.selected.agency.id, vm.selected.divisionCodes, function(err, division) {
+                    if ( err || !division ) {
+                        vm.$emit('showSnackbar', 'Could not get selected transit division info.  Please try again later.');
+                    }
+                    else {
+                        vm.items = division.divisions;
+                    }
+                    if ( callback ) return callback(err);
+                });
+            }
+
         }
         else {
             vm.items = [];
@@ -99,7 +108,7 @@
         vm.selected = {
             agency: undefined,
             division: undefined,
-            line: undefined
+            divisionCodes: []
         }
         _update(vm);
     }
@@ -112,7 +121,7 @@
             /**
              * Dialog Properties
              * - visible: boolean
-             * - type: String ("agency", "division", "line")
+             * - type: String ("agency", "division")
              * @type {Object}
              */
             properties: {
@@ -130,7 +139,7 @@
                 selected: {
                     agency: undefined,
                     division: undefined,
-                    line: undefined
+                    divisionCodes: []
                 }
             }
         },
@@ -151,7 +160,6 @@
             label() {
                 return this.selecting === "agency" ? "Transit Agency" 
                     : this.selecting === "division" ? "Transit Division" 
-                    : this.selecting === "line" ? "Transit Line" 
                     : "...";
             },
 
@@ -166,13 +174,12 @@
                 }
                 else if ( this.selecting === "division" ) {
                     this.selected.division = item;
-                }
-                else if ( this.selecting === "line" ) {
-                    this.selected.line = item;
+                    this.selected.divisionCodes.push(item.code);
                 }
 
-                // Return when we've selected the desire type...
-                if ( this.selecting === this.properties.type ) {
+                // Return when we've selected the last level of division
+                let cd = this.selected.division && this.selected.division.divisions ? this.selected.division.divisions : [];
+                if ( this.selected.division && cd.length === 0 ) {
                     this.$emit('transitSelected', this.properties.type, this.selected);
                     this.close();
                 }

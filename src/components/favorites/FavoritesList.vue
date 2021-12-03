@@ -19,7 +19,7 @@
                         <span class="list-title-label">
                             {{ fav.label }}
                         </span>
-                        <span v-if="fav.type === 3" class="list-title-badge">
+                        <span v-if="fav.type === FAVORITE_TYPE_TRANSIT" class="list-title-badge">
                             <template v-if="fav.eventCount === 0">
                                 <span class="list-title-badge-good">
                                     <v-icon>check_circle</v-icon>
@@ -50,6 +50,7 @@
 
 
 <script>
+    const Favorite = require('right-track-core').rt.Favorite;
 
     function _move(arr, old_index, new_index) {
         arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
@@ -75,6 +76,12 @@
             reorderMode: {
                 type: Boolean,
                 required: false
+            }
+        },
+
+        computed: {
+            FAVORITE_TYPE_TRANSIT: function() {
+                return Favorite.FAVORITE_TYPE_TRANSIT
             }
         },
 
@@ -105,7 +112,7 @@
                 else if ( !vm.reorderMode ) {
 
                     // Station
-                    if ( favorite.type === 1 ) {
+                    if ( favorite.type === Favorite.FAVORITE_TYPE_STATION ) {
                         vm.$router.push({
                             name: "station",
                             params: {
@@ -116,7 +123,7 @@
                     }
 
                     // Trip
-                    else if ( favorite.type === 2 ) {
+                    else if ( favorite.type === Favorite.FAVORITE_TYPE_TRIP ) {
                         vm.$router.push({
                             name: "trip",
                             params: {
@@ -128,15 +135,9 @@
                     }
 
                     // Transit
-                    else if ( favorite.type === 3 ) {
+                    else if ( favorite.type === Favorite.FAVORITE_TYPE_TRANSIT ) {
                         vm.$router.push({
-                            name: "alerts",
-                            params: {
-                                agency: vm.$route.params.agency,
-                                transitAgency: favorite.agency.id,
-                                transitDivision: favorite.division ? favorite.division.code : undefined,
-                                transitLine: favorite.line ? favorite.line.code : undefined
-                            }
+                            path: [vm.$route.params.agency, 'alerts', favorite.agency.id, favorite.divisionCodes.join('/')].join('/')
                         });
                     }
 

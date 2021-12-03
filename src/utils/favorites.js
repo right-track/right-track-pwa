@@ -1,5 +1,5 @@
+const Favorite = require('right-track-core').rt.Favorite;
 const user = require("@/utils/user.js");
-const cache = require("@/utils/cache.js");
 const store = require("@/utils/store.js");
 const api = require("@/utils/api.js");
 
@@ -15,28 +15,32 @@ const CHECK_INTERVAL = 60 * 1000;
  * @param  {Array} favorites List of favorites to return
  * @return {Array} List of parsed favorites
  */
-function _parseFavorites(favorites, fresh) {
+function _parseFavorites(favorites) {
+    let rtn = [];
     if ( favorites ) {
         for ( let i = 0; i < favorites.length; i++ ) {
-            if ( favorites[i].type === 1 ) {
+            if ( favorites[i].type === Favorite.FAVORITE_TYPE_STATION ) {
                 favorites[i].icon = "access_time";
                 favorites[i].label = favorites[i].stop.name;
+                rtn.push(favorites[i]);
             }
-            else if ( favorites[i].type === 2 ) {
+            else if ( favorites[i].type === Favorite.FAVORITE_TYPE_TRIP ) {
                 favorites[i].icon = "train";
                 favorites[i].label = favorites[i].origin.name + " to " + favorites[i].destination.name;
+                rtn.push(favorites[i]);
             }
-            else if ( favorites[i].type === 3 ) {
+            else if ( favorites[i].type === Favorite.FAVORITE_TYPE_TRANSIT_OLD ) {
+                // OLD TRANSIT: no longer displayed
+            }
+            else if ( favorites[i].type === Favorite.FAVORITE_TYPE_TRANSIT ) {
                 favorites[i].icon = "warning";
-                favorites[i].label = favorites[i].line ? favorites[i].line.name : favorites[i].division ? favorites[i].division.name : favorites[i].agency.name;
+                favorites[i].label = favorites[i].division.name;
                 favorites[i].eventCount = undefined;
+                rtn.push(favorites[i]);
             }
         }
-        return favorites;
     }
-    else {
-        return [];
-    }
+    return rtn;
 }
 
 
@@ -172,7 +176,7 @@ function addStation(agencyId, stop, callback) {
 
         // Add Stop to favorites list
         favorites.push({
-            type: 1,
+            type: Favorite.FAVORITE_TYPE_STATION,
             sequence: favorites.length > 0 ? favorites[favorites.length-1].sequence + 1 : 1,
             stop: {
                 id: stop.id,
@@ -210,7 +214,8 @@ function removeStation(agencyId, stop, callback) {
 
         // Parse existing favorites
         for ( let i = 0; i < favorites.length; i++ ) {
-            if ( favorites[i].type !== 1 || (favorites[i].type === 1 && favorites[i].stop.id !== stop.id) ) {
+            if ( favorites[i].type !== Favorite.FAVORITE_TYPE_STATION || 
+                    (favorites[i].type === Favorite.FAVORITE_TYPE_STATION && favorites[i].stop.id !== stop.id) ) {
                 keep.push(favorites[i]);
             }
         }
@@ -242,7 +247,7 @@ function addTrip(agencyId, origin, destination, callback) {
 
         // Add Trip to favorites list
         favorites.push({
-            type: 2,
+            type: Favorite.FAVORITE_TYPE_TRIP,
             sequence: favorites.length > 0 ? favorites[favorites.length-1].sequence + 1 : 1,
             origin: {
                 id: origin.id,
@@ -285,8 +290,8 @@ function removeTrip(agencyId, origin, destination, callback) {
 
         // Parse existing favorites
         for ( let i = 0; i < favorites.length; i++ ) {
-            if ( favorites[i].type !== 2 || 
-                (favorites[i].type === 2 && (favorites[i].origin.id !== origin.id || favorites[i].destination.id !== destination.id)) ) {
+            if ( favorites[i].type !== Favorite.FAVORITE_TYPE_TRIP || 
+                    (favorites[i].type === Favorite.FAVORITE_TYPE_TRIP && (favorites[i].origin.id !== origin.id || favorites[i].destination.id !== destination.id)) ) {
                 keep.push(favorites[i]);
             }
         }
@@ -307,38 +312,31 @@ function removeTrip(agencyId, origin, destination, callback) {
 
 /**
  * Add the specified Transit properties as a Favorite Transit
- * @param {string}   agencyId  Agency ID code
- * @param {Object}   agency    Transit Agency
- * @param {Object|undefined}   division   Transit Division
- * @param {Object|undefined}   line       Transit Line
- * @param {Function} callback  Callback function(err, favorites)
+ * @param {string}   agencyId      Agency ID code
+ * @param {Object}   agency        Transit Agency
+ * @param {Object}   division      Transit Division
+ * @param {String[]} divisionCodes Array of Transit Division codes (parent codes then selected code)
+ * @param {Function} callback      Callback function(err, favorites)
  */
-function addTransit(agencyId, agency, division, line, callback) {
+function addTransit(agencyId, agency, division, divisionCodes, callback) {
 
     // Get Current favorites
     _getLocalFavorites(agencyId, function(favorites) {
 
         // Add Transit to favorites list
         let fav = {
-            type: 3,
+            type: Favorite.FAVORITE_TYPE_TRANSIT,
             sequence: favorites.length > 0 ? favorites[favorites.length-1].sequence + 1 : 1,
             agency: {
                 id: agency.id,
                 name: agency.name
             },
-            options: {}
-        }
-        if ( division ) {
-            fav.division = {
+            division: {
                 code: division.code,
                 name: division.name
-            }
-        }
-        if ( line ) {
-            fav.line = {
-                code: line.code,
-                name: line.name
-            }
+            },
+            divisionCodes: divisionCodes,
+            options: {}
         }
         favorites.push(fav);
 
@@ -357,13 +355,13 @@ function addTransit(agencyId, agency, division, line, callback) {
 
 /**
  * Remove the speicied Transit properties as a Favorite Transit
- * @param {string}   agencyId  Agency ID code
- * @param {Object}   agency    Transit Agency
- * @param {Object|undefined}   division   Transit Division
- * @param {Object|undefined}   line       Transit Line
+ * @param {string}   agencyId       Agency ID code
+ * @param {Object}   agency         Transit Agency
+ * @param {Object}   division       Transit Division
+ * @param {string[]} divisionCodes  Transit Division Codes
  * @param {Function} callback  Callback function(err, favorites)
  */
-function removeTransit(agencyId, agency, division, line, callback) {
+function removeTransit(agencyId, agency, division, divisionCodes, callback) {
     
     // Get Current favorites
     _getLocalFavorites(agencyId, function(favorites) {
@@ -373,24 +371,12 @@ function removeTransit(agencyId, agency, division, line, callback) {
 
         // Parse existing favorites
         for ( let i = 0; i < favorites.length; i++ ) {
-            let k = false;
-            if ( favorites[i].type !== 3 ) {
-                k = true;
-            }
-            else if ( agency && division && line ) {
-                if ( favorites[i].agency.id !== agency.id || favorites[i].division.code !== division.code || favorites[i].line.code !== line.code ) {
-                    k = true;
-                }
-            }
-            else if ( agency && division ) {
-                if ( favorites[i].agency.id !== agency.id || favorites[i].division.code !== division.code ) {
-                    k = true;
-                }
-            }
-            else if ( agency ) {
-                if ( favorites[i].agency.id !== agency.id ) {
-                    k = true;
-                }
+            let f = favorites[i];
+            let k = true;
+            if ( f.type === Favorite.FAVORITE_TYPE_TRANSIT ) {
+                if ( f.agency.id === agency.id && f.division.code === division.code && f.divisionCodes.join('') === divisionCodes.join('') ) {
+                    k = false;
+                } 
             }
             if ( k ) keep.push(favorites[i]);
         }

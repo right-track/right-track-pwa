@@ -116,6 +116,7 @@
 
 
 <script>
+    const Favorite = require('right-track-core').rt.Favorite;
     const menu = require("@/utils/menu.js");
     const user = require("@/utils/user.js");
     const store = require("@/utils/store.js");
@@ -258,17 +259,16 @@
 
                 // Favorite
                 else if ( type === "favorite" ) {
-                    if ( current === "station" && item.type === 1 ) {
+                    if ( current === "station" && item.type === Favorite.FAVORITE_TYPE_STATION ) {
                         return this.$router.currentRoute.params.stop === item.stop.id;
                     }
-                    else if ( current === "trip" && item.type === 2 ) {
+                    else if ( current === "trip" && item.type === Favorite.FAVORITE_TYPE_TRIP ) {
                         return this.$router.currentRoute.params.origin === item.origin.id && 
                                this.$router.currentRoute.params.destination === item.destination.id;
                     }
-                    else if ( current === "alerts" && item.type === 3 ) {
+                    else if ( current === "alerts" && item.type === Favorite.FAVORITE_TYPE_TRANSIT ) {
                         return this.$router.currentRoute.params.transitAgency === item.agency.id &&
-                            this.$router.currentRoute.params.transitDivision === item.division.code &&
-                            this.$router.currentRoute.params.transitLine === item.line.code
+                               this.$router.currentRoute.params.transitDivision === item.divisionCodes.join('/')
                     }
                     else {
                         return false;
@@ -368,7 +368,7 @@
             favoriteLink(favorite) {
 
                 // Station
-                if ( favorite.type === 1 ) {
+                if ( favorite.type === Favorite.FAVORITE_TYPE_STATION ) {
                     this.$router.push({
                         name: "station",
                         params: {
@@ -379,7 +379,7 @@
                 }
 
                 // Trip
-                else if ( favorite.type === 2 ) {
+                else if ( favorite.type === Favorite.FAVORITE_TYPE_TRIP ) {
                     this.$router.push({
                         name: "trip",
                         params: {
@@ -391,16 +391,15 @@
                 }
 
                 // Transit
-                else if ( favorite.type === 3 ) {
+                else if ( favorite.type === Favorite.FAVORITE_TYPE_TRANSIT ) {
                     this.$router.push({
                         name: "alerts",
                         params: {
                             agency: this.$route.params.agency,
                             transitAgency: favorite.agency.id,
-                            transitDivision: favorite.division ? favorite.division.code : undefined,
-                            transitLine: favorite.line ? favorite.line.code : undefined
+                            transitDivision: favorite.divisionCodes.join('/')
                         }
-                    })
+                    });
                 }
 
             }

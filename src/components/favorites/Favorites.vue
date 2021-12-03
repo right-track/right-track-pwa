@@ -89,7 +89,7 @@
             <v-btn @click="selectStation" class="primary-fg" small fab>
                 <v-icon>access_time</v-icon>
             </v-btn>
-            <v-btn @click="selectLine" class="primary-fg" small fab>
+            <v-btn @click="selectTransit" class="primary-fg" small fab>
                 <v-icon>warning</v-icon>
             </v-btn>
             <v-btn @click="reorderFavorites" class="primary-fg" small fab>
@@ -105,7 +105,7 @@
         <!-- SELECT STATION DIALOG -->
         <rt-stop-selection-dialog :properties="stopSelectionDialogProps" @stopSelected="onStopSelected"></rt-stop-selection-dialog>
 
-        <!-- SELECT TRANSIT LINE DIALOG -->
+        <!-- SELECT TRANSIT DIALOG -->
         <rt-transit-selection-dialog :properties="transitSelectionDialogProps" @transitSelected="onTransitSelected"></rt-transit-selection-dialog>
 
         <!-- SELECT TRAIN NUMBER DIALOG -->
@@ -120,6 +120,7 @@
 
 <script>
     const core = require("right-track-core");
+    const Favorite = core.rt.Favorite;
     const user = require("@/utils/user.js");
     const favorites = require("@/utils/favorites.js");
     const transit = require("@/utils/transit.js");
@@ -390,16 +391,12 @@
         // Loop through the favorites and parse transit favorites
         for ( let i = 0; i < vm.favorites.length; i++ ) {
             let fav = vm.favorites[i];
-            if ( fav.type === 3 ) {
-                
-                // Get Transit Line info
-                // TODO: Update
-                // transit.getFeedLine(fav.agency.id, fav.division.code, fav.line.code, function(err, line) {
-                //     if ( line ) {
-                //         vm.favorites[i].eventCount = line.eventCount;
-                //     }
-                // });
-
+            if ( fav.type === Favorite.FAVORITE_TYPE_TRANSIT ) {
+                transit.getFeedDivision(fav.agency.id, fav.divisionCodes, function(err, div) {
+                    if ( div ) {
+                        vm.favorites[i].eventCount = div.eventCount;
+                    }
+                });
             }
         }
 
@@ -507,11 +504,10 @@
             },
 
             /**
-             * Select the Agency, Division and Line for a 
-             * Favorite Transit Line
+             * Select the Transit Agency and Divisions
              */
-            selectLine() {
-                this.transitSelectionDialogProps.type = "line";
+            selectTransit() {
+                this.transitSelectionDialogProps.type = "division";
                 this.transitSelectionDialogProps.visible = true;
             },
             
@@ -552,13 +548,13 @@
             },
 
             /**
-             * Handle the return of a selected Transit Agency/Division/Line
+             * Handle the return of a selected Transit Agency/Division
              * @param {String} type Transit Type
-             * @param {Object} selected Selected Agency/Division/Line info
+             * @param {Object} selected Selected Agency/Division info
              */
             onTransitSelected(type, selected) {
                 let vm = this;
-                favorites.addTransit(vm.agencyId, selected.agency, selected.division, selected.line, function(err, favorites) {
+                favorites.addTransit(vm.agencyId, selected.agency, selected.division, selected.divisionCodes, function(err, favorites) {
                     if ( err ) {
                         console.error(err);
                         vm.$emit('showSnackbar', 'Could not add favorite. Please try again.');
@@ -657,7 +653,7 @@
                 vm.stopSelectionDialogProps.stops = stops;
             });
 
-            // Periodically update the transit feeds of favorite transit lines
+            // Periodically update the transit feeds of favorite transit divisions
             vm.feedUpdateTimer = setInterval(function(){ _updateFeeds(vm) }, 30000);
         },
 

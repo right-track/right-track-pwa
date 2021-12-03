@@ -1,6 +1,6 @@
 {
   "name": "right-track-pwa",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Right Track Progessive Web App",
   "main": "index.js",
   "scripts": {

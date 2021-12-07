@@ -150,7 +150,7 @@
             }];
 
             // Update Status Bar
-            vm.$emit('setStatusBar', {visible: true, transitLines: routes, messages: messages});
+            vm.$emit('setStatusBar', {visible: true, transitDivisions: routes, messages: messages});
 
         });
     }

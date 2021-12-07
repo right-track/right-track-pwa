@@ -51,7 +51,7 @@
         // Set message counts
         let index = 0;
         let max = 0;
-        if ( vm.properties.transitLines ) max = max + vm.properties.transitLines.length;
+        if ( vm.properties.transitDivisions ) max = max + vm.properties.transitDivisions.length;
         if ( vm.properties.messages ) max = max + vm.properties.messages.length;
 
         // Start the timer
@@ -87,10 +87,10 @@
             vm.link = undefined;
         }
 
-        // Display Transit Line
-        else if ( vm.properties.transitLines ) {
+        // Display Transit Division
+        else if ( vm.properties.transitDivisions ) {
             if ( vm.properties.messages ) index = index - vm.properties.messages.length;
-            let line = vm.properties.transitLines[index];
+            let line = vm.properties.transitDivisions[index];
             
             // Get matching line code
             let divisionCode = vm.transitInfo.division;
@@ -105,9 +105,9 @@
             let lineStatus = undefined;
             for ( let i = 0; i < vm.transitFeed.divisions.length; i++ ) {
                 if ( vm.transitFeed.divisions[i].code.toLowerCase() === divisionCode.toLowerCase() ) {
-                    for ( let j = 0; j < vm.transitFeed.divisions[i].lines.length; j++ ) {
-                        if ( vm.transitFeed.divisions[i].lines[j].code.toLowerCase() === lineCode.toLowerCase() ) {
-                            lineStatus = vm.transitFeed.divisions[i].lines[j];
+                    for ( let j = 0; j < vm.transitFeed.divisions[i].divisions.length; j++ ) {
+                        if ( vm.transitFeed.divisions[i].divisions[j].code.toLowerCase() === lineCode.toLowerCase() ) {
+                            lineStatus = vm.transitFeed.divisions[i].divisions[j];
                         }
                     }
                 }
@@ -127,13 +127,7 @@
             vm.badge = lineStatus.events.length > 0 ? lineStatus.events.length : undefined;
             vm.link = lineCode ? 
                 {
-                    name: "alerts",
-                    params: {
-                        agency: vm.$router.currentRoute.params.agency,
-                        transitAgency: vm.transitInfo.agency,
-                        transitDivision: vm.transitInfo.division,
-                        transitLine: lineCode
-                    } 
+                    path: '/' + vm.$router.currentRoute.params.agency + '/alerts/' + vm.transitInfo.agency + '/' + vm.transitInfo.division + '/' + lineCode
                 } :
                 undefined;
         }

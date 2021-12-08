@@ -1,4 +1,4 @@
-const RightTrackAgency = require("right-track-agency");
+const RightTrackAgency = require("right-track-core/modules/classes/RightTrackAgency");
 const config = require("@/utils/config.js");
 const api = require("@/utils/api.js");
 

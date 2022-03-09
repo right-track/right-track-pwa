@@ -1,5 +1,5 @@
 <template>
-    <v-container class="container">
+    <v-container class="page">
 
         <!-- List of Trip Results -->
         <template v-for="(trip, index) in results">

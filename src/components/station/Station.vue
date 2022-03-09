@@ -1,5 +1,5 @@
 <template>
-    <v-container class="container" style="margin-bottom: 40px;">
+    <v-container class="page">
 
         <!-- Station Table -->
         <v-card>
@@ -375,6 +375,10 @@
 
 
 <style scoped>
+    .page {
+        margin-bottom: 40px;
+    }
+
     .departures-header {
         padding: 5px 0;
         min-height: 50px;

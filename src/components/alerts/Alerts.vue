@@ -1,5 +1,5 @@
 <template>
-    <v-container id="container" class="container">
+    <v-container class="page">
 
         <!-- Main Alerts Card - Agency / Division List -->
         <v-card>
@@ -347,7 +347,7 @@
 
 
 <style scoped>
-    .container {
+    .page {
         padding-bottom: 80px;
     }
 

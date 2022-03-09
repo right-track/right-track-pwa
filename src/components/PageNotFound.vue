@@ -1,5 +1,5 @@
 <template>
-    <v-container class="container">
+    <v-container class="page">
         <div class="empty-state">
             <v-icon class="empty-state-icon">contact_support</v-icon>
 

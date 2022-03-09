@@ -9,7 +9,7 @@ body {
 }
 
 /* Default Content Container Width */
-.container {
+.page {
     max-width: 750px !important;
 }
 

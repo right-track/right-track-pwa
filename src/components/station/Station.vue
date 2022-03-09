@@ -227,7 +227,7 @@
                 icon: "place",
                 title: "Station Map",
                 function: function() {
-                    window.location = "https://www.google.com/maps/search/?api=1&query=" + vm.stop.lat + "," + vm.stop.lon;
+                    window.location = "/" + vm.agencyId + "/map?stop=" + vm.stop.id;
                 }
             },
             {

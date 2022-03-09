@@ -158,21 +158,28 @@ const MENU = function(vm) {
         },
         {
             key: 25,
-            type: "favorites"
+            type: "item",
+            title: "Map",
+            icon: "map",
+            page: "map"
         },
         {
             key: 26,
-            type: "divider"
+            type: "favorites"
         },
         {
             key: 27,
+            type: "divider"
+        },
+        {
+            key: 28,
             type: "item",
             title: "About",
             icon: "info",
             page: "agencyAbout"
         },
         {
-            key: 28,
+            key: 29,
             type: "item",
             title: "Help & Feedback",
             icon: "help",
@@ -182,7 +189,7 @@ const MENU = function(vm) {
             }
         },
         {
-            key: 29,
+            key: 30,
             type: "item",
             title: "Settings",
             icon: "settings",
@@ -192,11 +199,11 @@ const MENU = function(vm) {
             }
         },
         {
-            key: 30,
+            key: 31,
             type: "divider"
         },
         {
-            key: 31,
+            key: 32,
             type: "item",
             title: "Switch Agency",
             icon: "swap_horiz",

@@ -76,11 +76,15 @@ module.exports = (env, argv) => ({
       template: path.resolve(__dirname, 'static', 'index.html'),
       inject: true
     }),
-    new CopyWebpackPlugin([{
-      from: path.resolve(__dirname, 'static'),
-      to: path.resolve(__dirname, 'dist'),
-      toType: 'dir'
-    }]),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'static'),
+          to: path.resolve(__dirname, 'dist'),
+          toType: 'dir'
+        }
+      ]
+    }),
     new WorkboxPlugin.InjectManifest({
       swSrc: './src/sw.js',
       swDest: 'sw.js'
@@ -89,17 +93,21 @@ module.exports = (env, argv) => ({
       __VERSION__: JSON.stringify(gitVersion),
       __VERSION_HASH__: JSON.stringify(gitCommitHash)
     }),
-    new CopyWebpackPlugin([{
-      from: path.resolve(__dirname, 'version.json'),
-      to: path.resolve(__dirname, 'dist', 'version.json'),
-      noErrorOnMissing: true,
-      transform (content, path) {
-        return JSON.stringify({
-            version: gitVersion,
-            hash: gitCommitHash
-          }, null, 4);
-      }
-    }])
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'version.json'),
+          to: path.resolve(__dirname, 'dist', 'version.json'),
+          noErrorOnMissing: true,
+          transform (content, path) {
+            return JSON.stringify({
+                version: gitVersion,
+                hash: gitCommitHash
+              }, null, 4);
+          }
+        }
+      ]
+    })
   ],
 
   optimization: {
@@ -133,7 +141,6 @@ module.exports = (env, argv) => ({
     host: 'localhost',
     https: false,
     open: true,
-    overlay: true,
     port: 9000,
     historyApiFallback: true
   }

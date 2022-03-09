@@ -320,5 +320,6 @@
         margin: 0;
         padding: 0;
         height: 100%;
+        z-index: 150 !important;
     }
 </style>

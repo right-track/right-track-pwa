@@ -156,13 +156,13 @@ const MENU = function(vm) {
                 agency: vm.$route.params.agency
             }
         },
-        {
-            key: 25,
-            type: "item",
-            title: "Map",
-            icon: "map",
-            page: "map"
-        },
+        // {
+        //     key: 25,
+        //     type: "item",
+        //     title: "Map",
+        //     icon: "map",
+        //     page: "map"
+        // },
         {
             key: 26,
             type: "favorites"

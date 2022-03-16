@@ -207,6 +207,9 @@
      */
     function _getStops(vm, callback) {
         let agencyID = vm.$route.params.agency;
+        if ( !agencyID ) {
+            return callback([]);
+        }
         let db = DB.getDB(agencyID, function(err, db) {
             if ( err ) {
                 console.error(err);

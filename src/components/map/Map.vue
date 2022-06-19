@@ -13,6 +13,16 @@
     const ZOOM_MAP_LABELS = 17;
     const ZOOM_STOP_LABELS = 13;
 
+    // STATUS LABELS //
+    const STATUS_LABELS = {
+        IN_TRANSIT_TO: "In Transit To",
+        INCOMING_AT: "Arriving At",
+        STOPPED_AT: "Stopped At"
+    };
+
+    // Vehicle Update Timer
+    let VEHICLE_TIMER;
+
 
     /**
      * Start the setup of the map
@@ -31,6 +41,10 @@
             _displayBasemaps(vm);
             _displayShapes(vm);
             _displayStops(vm);
+            _updateVehicles(vm);
+            // VEHICLE_TIMER = setInterval(function() {
+            //     _updateVehicles(vm);
+            // }, 15000);
         });
     }
 
@@ -65,6 +79,19 @@
 
 
     /**
+     * Update the vehicle data
+     * -  Then call _displayVehicles() to update the map
+     * @param {Vue} vm Vue Instance
+     */
+    function _updateVehicles(vm) {
+        cache.getAgencyMapsVehicles(vm.agencyId, function(err, vehicles) {
+            vm.vehicles = vehicles;
+            _displayVehicles(vm);
+        });
+    }
+
+
+    /**
      * Setup and display the base map control
      * @param {Vue} vm Vue Instance
      */
@@ -85,10 +112,15 @@
         }
 
         // Create Map
+        if ( vm.map ) {
+            vm.map.off();
+            vm.map.remove();
+        }
         vm.map = L.map('map', {
             minZoom: ZOOM_MIN, 
             maxZoom: ZOOM_MAX
-        }).setView([center.lat, center.lon], zoom);
+        });
+        vm.map.setView([center.lat, center.lon], zoom);
         vm.map.on('zoomend', function(e) {
             _onZoomEnd(vm, e);
         });
@@ -112,6 +144,9 @@
                 layer.setStyle(_setStopStyle(vm, zoom));
                 let tt = layer.getTooltip();
                 layer.unbindTooltip().bindTooltip(tt, _setStopTooltipStyle(vm, zoom));
+            }
+            else if ( layer.type === "vehicle" ) {
+                layer.setStyle(_setVehicleStyle(vm, layer.feature, zoom));
             }
         });
     }
@@ -166,7 +201,31 @@
                     maxWidth: 300
                 });
                 layer.on('click', function(e) {
-                    _updateDepartureFeed(vm, feature.properties.id);
+                    _updateStationFeed(vm, feature.properties.id);
+                });
+                return layer;
+            }
+        }).addTo(vm.map);
+    }
+
+
+    /**
+     * Display the Vehicle markers
+     * @param {Vue} vm Vue Instance
+     */
+    function _displayVehicles(vm) {
+        vm.map.eachLayer(function(layer) {
+            if ( layer.type === 'vehicle' ) {
+                layer.remove();
+            }
+        });
+        L.geoJSON(vm.vehicles, {
+            pointToLayer: function(feature, latlng) {
+                let layer = L.circleMarker(latlng, _setVehicleStyle(vm, feature, vm.map.getZoom()));
+                layer.type = "vehicle";
+                layer.bindPopup(_setVehiclePopupContents(vm, feature), {
+                    minWidth: 300,
+                    maxWidth: 300
                 });
                 return layer;
             }
@@ -259,14 +318,66 @@
     function _setStopTooltipStyle(vm, zoom) {
         return {
             permanent: zoom >= ZOOM_STOP_LABELS,
+            interactive: true,
             offset: L.point(0, zoom >= ZOOM_MAP_LABELS ? 20 : zoom >= ZOOM_STOP_LABELS ? 10 : 0),
             direction: 'bottom'
         }
     }
 
 
+    function _setVehiclePopupContents(vm, feature) {
 
-    function _updateDepartureFeed(vm, id) {
+        // Header
+        let rtn = `<p style='font-size: 120%; margin-bottom: 5px; border-bottom: 1px solid #666;'><strong>Train ${feature.properties.id}`;
+        let destination = feature.properties.stops[feature.properties.stops.length-1];
+        if ( destination && destination.stop ) {
+            rtn += ` to ${destination.stop.name}`;
+        }
+        rtn += "</strong></p>";
+        
+        // Status
+        let status = STATUS_LABELS[feature.properties.status.status];
+        if ( status && feature.properties.status.stop ) {
+            rtn += `<strong><i class='v-icon material-icons' style='font-size: 120%'>my_location</i>&nbsp;${status} ${feature.properties.status.stop.name}</strong><br />`;
+        }
+
+        // Stops
+        rtn += "<br />";
+        rtn += "<strong><i class='v-icon material-icons' style='font-size: 120%'>place</i>&nbsp;Stops:</strong><br />";
+        rtn += "<table>";
+        for ( let i = 0; i < feature.properties.stops.length; i++ ) {
+            let s = feature.properties.stops[i];
+            rtn += "<tr>";
+            rtn += "<td><i class='v-icon material-icons' style='font-size: 120%'>online_prediction</i></td>";
+            rtn += "<td>" + s.stop.name + "&nbsp;&nbsp;</td>";
+            rtn += "<td>" + s.arrival.time + "</td>";
+            rtn += "</tr>";
+        }
+        rtn += "</table>";
+
+        return rtn;
+    }
+
+
+    function _setVehicleStyle(vm, feature, zoom) {
+        let direction = feature.properties.trip.direction.id;
+        return {
+            radius: zoom >= ZOOM_MAP_LABELS ? 16 : 8,
+            fillColor: direction === 0 ? '#0D47A1' : '#FF6F00',
+            color: direction === 0 ? '#0D47A1' : '#FF6F00',
+            opacity: zoom < ZOOM_DEFAULT-1 ? 0 : 0.8,
+            fillOpacity: zoom < ZOOM_DEFAULT-1 ? 0 : 0.5
+        }
+    }
+
+
+    /**
+     * Update the Station Feed for the specified Stop and display the 
+     * next 3 departures in the popup table
+     * @param {Vue} vm Vue Instance
+     * @param {string} id Stop ID
+     */
+    function _updateStationFeed(vm, id) {
         cache.getStationFeed(vm.agencyId, id, function(err, feed) {
             let html = "<table style='width: 300px'>";
             html += "<thead><tr><th>Depature</th><th>Destination</th><th>Status</th><th>Track</th></tr><thead>";
@@ -295,13 +406,20 @@
                 center: {},
                 shapes: undefined,
                 stops: undefined,
-                departures: []
+                vehicles: []
             }
         },
 
         // ==== COMPONENT MOUNTED ==== //
         mounted() {
             _init(this);
+        },
+
+        // ==== COMPONENT UNMOUNTED ==== //
+        unmounted() {
+            if ( VEHICLE_TIMER ) {
+                clearInterval(VEHICLE_TIMER);
+            }
         },
 
         // ==== COMPONENT WATCHERS ==== //
@@ -315,11 +433,28 @@
 </script>
 
 
-<style scoped>
+<style>
     #map {
         margin: 0;
         padding: 0;
         height: 100%;
         z-index: 150 !important;
+    }
+    .vehicle-icon {
+        border: 3px solid #263238;
+        background-color: #546E7A;
+        color: #fff;
+        border-radius: 14px;
+        width: 28px !important;
+        height: 28px !important;
+        margin-left: -14px;
+    }
+    .vehicle-icon i {
+        font-size: 150%;
+        width: 28px;
+        height: 28px;
+        border-radius: 14px;
+        margin-left: -3px;
+        margin-top: -2px;
     }
 </style>

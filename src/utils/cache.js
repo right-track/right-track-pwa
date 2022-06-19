@@ -127,9 +127,23 @@ getAgencyMapShapes = function(agency, callback) {
  * @param {string} agency Agency ID Code
  * @param {Function} callback Callback function(err, stops)
  */
- getAgencyMapStops = function(agency, callback) {
+getAgencyMapStops = function(agency, callback) {
     _getCacheElseFresh("/maps/stops/" + agency, 7*24*60*60, function(err, response) {
         return callback(err, response);
+    });
+}
+
+
+/**
+ * Get the GeoJSON vehicles of the specified agency
+ * - Cache Length: 30 seconds
+ * - Max Use: 2 mins
+ * @param {string} agency Agency ID Code
+ * @param {Function} callback Callback function(err, vehicles)
+ */
+getAgencyMapsVehicles = function(agency, callback) {
+    _getCacheElseFresh("/maps/vehicles/" + agency, 30, 120, function(err, response) {
+        return callback(err, response)
     });
 }
 
@@ -547,6 +561,7 @@ module.exports = {
     getAgencyMapCenter: getAgencyMapCenter,
     getAgencyMapShapes: getAgencyMapShapes,
     getAgencyMapStops: getAgencyMapStops,
+    getAgencyMapsVehicles: getAgencyMapsVehicles,
     getStationFeed: getStationFeed,
     getTransitAgencies: getTransitAgencies,
     getTransitAgencyIcon: getTransitAgencyIcon,

@@ -21,7 +21,7 @@
                 <!-- Destination / Remarks (medium+) -->
                 <div class="departure-item departure-destination">
                     {{ departure.destination.name }}
-                    <span v-if="departure.status.remarks" class="v-small-hide">
+                    <span v-if="departure.status.remarks" class="departure-remarks-text v-small-hide">
                         {{ departure.status.remarks }}
                     </span>
                 </div>
@@ -55,7 +55,7 @@
                 </div>
 
                 <!-- Remarks (xs, sm) -->
-                <div class="departure-item departure-remarks">
+                <div class="departure-item departure-remarks departure-remarks-text">
                     {{ departure.status.remarks }}
                 </div>
 
@@ -169,6 +169,11 @@
         .departure-remarks {
             display: none;
         }
+    }
+    .departure-remarks-text {
+        opacity: 0.8;
+        font-style: italic;
+        font-weight: normal;
     }
 
     .departure-peak-icon {

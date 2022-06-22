@@ -6,8 +6,8 @@ workbox.routing.registerRoute(
     new workbox.strategies.CacheFirst()
 );
 workbox.routing.registerRoute(
-    new RegExp('\\.(?:woff2)$'),
-    new workbox.strategies.CacheFirst()
+    new RegExp('\\.(?:woff2|ttf|codepoints)$'),
+    new workbox.strategies.StaleWhileRevalidate()
 );
 workbox.routing.registerRoute(
     new RegExp('\\.(?:js|css|png|ico|json)$'),

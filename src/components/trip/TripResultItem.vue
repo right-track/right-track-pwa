@@ -52,7 +52,7 @@
             <!-- Trip Details Section -->
             <v-expand-transition>
                 <rt-trip-details v-if="tripDetailsVisible" class="trip-segment-details" 
-                    :trip="segment.trip" :enter="segment.enter" :exit="segment.exit">
+                    :trip="segment.trip" :enter="segment.enter" :exit="segment.exit" :position="getPosition(segment)">
                 </rt-trip-details>
             </v-expand-transition>
 
@@ -100,6 +100,26 @@
                 for ( let j = 0; j < vm.statusFeeds[i].departures.length; j++ ) {
                     if ( vm.statusFeeds[i].departures[j].trip.shortName === segment.trip.shortName ) {
                         return vm.statusFeeds[i].departures[j].status;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Find the matching vehicle position information for the specified trip segment
+     * from the available list of status feeds
+     * @param  {Vue}    vm      Vue Instance
+     * @param  {Object} segment Trip Segment
+     * @return {Object}         Status Information
+     */
+    function _findPositionInfo(vm, segment) {
+        if ( !vm.statusFeeds ) return undefined;
+        for ( let i = 0; i < vm.statusFeeds.length; i++ ) {
+            if ( vm.statusFeeds[i].origin.id === segment.enter.stop.id ) {
+                for ( let j = 0; j < vm.statusFeeds[i].departures.length; j++ ) {
+                    if ( vm.statusFeeds[i].departures[j].trip.shortName === segment.trip.shortName ) {
+                        return vm.statusFeeds[i].departures[j].position;
                     }
                 }
             }
@@ -177,16 +197,35 @@
              */
             getStatus(segment) {
                 let statusInfo = _findStatusInfo(this, segment);
+                let positionInfo = _findPositionInfo(this, segment);
                 let status = statusInfo ? statusInfo.status : "";
+
+                // Build Status HTML
+                let html = "";
                 if ( !status || status === "" ) {
-                    return "";
+                    html = "";
                 }
-                else if ( status.toLowerCase() === "on time" || status.toLowerCase() === 'scheduled' ) {
-                    return "<span style='background-color: #4caf50; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
+                else if ( ['on time', 'scheduled'].includes(status.toLowerCase()) ) {
+                    html = "<span style='background-color: #4caf50; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
+                }
+                else if ( ['arriving', 'arrived'].includes(status.toLowerCase()) ) {
+                    html = "<span style='background-color: #facc15; color: #292524; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
+                }
+                else if ( ['departed'].includes(status.toLowerCase()) ) {
+                    html = "<span style='background-color: #a8a29e; color: #44403c; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
                 }
                 else {
-                    return "<span style='background-color: #ff5252; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
+                    html = "<span style='background-color: #ff5252; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
                 }
+
+                // Add real-time location icon
+                if ( positionInfo ) {
+                    html += "<div style='display: inline; position: absolute; right: 15px; color: #666'>";
+                    html += "<i style='font-size: 16px' class='v-icon departure-status-position-icon material-icons'>emergency_share</i>";
+                    html += "</div>";
+                }
+
+                return html;
             },
 
             /**
@@ -197,7 +236,7 @@
             getTrack(segment) {
                 let statusInfo = _findStatusInfo(this, segment);
                 let rtn = "";
-                if ( statusInfo && statusInfo.track ) {
+                if ( statusInfo && statusInfo.track && statusInfo.track.track && statusInfo.track.track !== "" ) {
                     if ( statusInfo.track.changed ) {
                         rtn = "<span style='font-weight: 500; text-decoration: underline'>Track " + statusInfo.track.track + "</span>";
                     }
@@ -209,6 +248,14 @@
                     }
                 }
                 return rtn;
+            },
+
+            /**
+             * Get the Segment's raw JSON Position Info
+             * @param {Object} segment Trip Segment
+             */
+            getPosition(segment) {
+                return _findPositionInfo(this, segment);
             },
 
             /**

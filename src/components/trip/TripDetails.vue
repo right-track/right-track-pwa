@@ -12,6 +12,11 @@
                 <p><v-icon color="#111">pin_drop</v-icon> From {{ getOriginStopTime().stop.name }}</p>
                 <p><v-icon color="#111">pin_drop</v-icon> To {{ getDestinationStopTime().stop.name }}</p>
                 <p><v-icon color="#111">monetization_on</v-icon> <span v-if="!trip.peak">Off </span>Peak</p>
+                <br />
+                <p v-if="position">
+                    <v-icon color="#111">emergency_share</v-icon> <strong>Current Location:</strong><br />
+                    <span class="position-description">{{ position.description }}</span>
+                </p>
             </div>
 
             <!-- TRIP STOP TIMES -->
@@ -122,6 +127,14 @@
              * @type {Object}
              */
             station: {
+                type: Object
+            },
+
+            /**
+             * Real-time position information
+             * @type {Object}
+             */
+            position: {
                 type: Object
             },
 

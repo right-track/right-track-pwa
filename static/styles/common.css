@@ -11,6 +11,12 @@ body {
 /* Default Content Container Width */
 .page {
     max-width: 750px !important;
+    padding: 2px !important;
+}
+@media screen and (min-width: 600px) {
+    .page {
+        padding: 16px !important;
+    }
 }
 
 /* Remove underline from menu links */

@@ -44,8 +44,8 @@
   },
   "dependencies": {
     "jszip": "^3.2.2",
-    "right-track-core": "github:right-track/right-track-core",
-    "right-track-db-sqljs": "github:right-track/right-track-db-sqljs",
+    "right-track-core": "right-track/right-track-core",
+    "right-track-db-sqljs": "right-track/right-track-db-sqljs",
     "vue": "^2.6.7",
     "vue-router": "^3.0.2",
     "vuetify": "^1.5.9"

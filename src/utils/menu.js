@@ -102,6 +102,16 @@ const HOME = function(vm) {
         {
             key: 15,
             type: "item",
+            title: "Help & Feedback",
+            icon: "help",
+            page: "help",
+            params: {
+                agency: vm.$route.params.agency
+            }
+        },
+        {
+            key: 16,
+            type: "item",
             title: "Settings",
             icon: "settings",
             page: "settings",
@@ -110,11 +120,11 @@ const HOME = function(vm) {
             }
         },
         {
-            key: 16,
+            key: 17,
             type: "divider"
         },
         {
-            key: 17,
+            key: 18,
             type: "item",
             title: config.maintainer.name,
             icon: "person_pin",
@@ -221,7 +231,7 @@ const MENU = function(vm) {
 function getMenuItems(vm) {
     let page = vm.$route.name;
     let agency = vm.$router.currentRoute.params.agency || vm.$router.currentRoute.query.agency;
-    if ( ["agencies", "about", "pageNotFound"].includes(page) || ( !agency && ["alerts", "settings"].includes(page) ) ) {
+    if ( ["agencies", "about", "pageNotFound"].includes(page) || ( !agency && ["alerts", "help", "settings"].includes(page) ) ) {
         return HOME(vm);
     }
     else if ( ["login", "register", "reset", "verify"].includes(page) ) {

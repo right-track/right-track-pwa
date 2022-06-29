@@ -52,14 +52,14 @@
             <!-- Trip Details Section -->
             <v-expand-transition>
                 <rt-trip-details v-if="tripDetailsVisible" class="trip-segment-details" 
-                    :trip="segment.trip" :enter="segment.enter" :exit="segment.exit">
+                    :trip="segment.trip" :enter="segment.enter" :exit="segment.exit" :position="getPosition(segment)">
                 </rt-trip-details>
             </v-expand-transition>
 
             <!-- TRANSFER INFO -->
             <div v-if="trip.transfers[index]" class="trip-segment-transfer">
                 <div class="trip-segment-transfer-icon">
-                    <v-icon color="#111">call_split</v-icon>
+                    <v-icon color="#111">airline_stops</v-icon>
                 </div>
                 <div class="trip-segment-transfer-info">
                     <strong>&nbsp;Transfer @ {{ trip.transfers[index].stop.name }}</strong>
@@ -75,7 +75,7 @@
         <div v-if="showTravelTimes && trip.segments.length > 1" class="trip-total-traveltime">
             <div class="spacing" v-if="!condensed"></div>
             <span v-if="!condensed"><strong>Total Travel Time</strong><br /></span>
-            <v-icon color="#111">access_time</v-icon> {{ formatTravelTime(trip.travelTime) }}
+            <v-icon color="#111">update</v-icon> {{ formatTravelTime(trip.travelTime) }}
         </div>
 
     </div>
@@ -100,6 +100,26 @@
                 for ( let j = 0; j < vm.statusFeeds[i].departures.length; j++ ) {
                     if ( vm.statusFeeds[i].departures[j].trip.shortName === segment.trip.shortName ) {
                         return vm.statusFeeds[i].departures[j].status;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Find the matching vehicle position information for the specified trip segment
+     * from the available list of status feeds
+     * @param  {Vue}    vm      Vue Instance
+     * @param  {Object} segment Trip Segment
+     * @return {Object}         Status Information
+     */
+    function _findPositionInfo(vm, segment) {
+        if ( !vm.statusFeeds ) return undefined;
+        for ( let i = 0; i < vm.statusFeeds.length; i++ ) {
+            if ( vm.statusFeeds[i].origin.id === segment.enter.stop.id ) {
+                for ( let j = 0; j < vm.statusFeeds[i].departures.length; j++ ) {
+                    if ( vm.statusFeeds[i].departures[j].trip.shortName === segment.trip.shortName ) {
+                        return vm.statusFeeds[i].departures[j].position;
                     }
                 }
             }
@@ -177,16 +197,35 @@
              */
             getStatus(segment) {
                 let statusInfo = _findStatusInfo(this, segment);
+                let positionInfo = _findPositionInfo(this, segment);
                 let status = statusInfo ? statusInfo.status : "";
+
+                // Build Status HTML
+                let html = "";
                 if ( !status || status === "" ) {
-                    return "";
+                    html = "";
                 }
-                else if ( status.toLowerCase() === "on time" || status.toLowerCase() === 'scheduled' ) {
-                    return "<span style='background-color: #4caf50; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
+                else if ( ['on time', 'scheduled'].includes(status.toLowerCase()) ) {
+                    html = "<span style='background-color: #4caf50; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
+                }
+                else if ( ['arriving', 'arrived'].includes(status.toLowerCase()) ) {
+                    html = "<span style='background-color: #facc15; color: #292524; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
+                }
+                else if ( ['departed'].includes(status.toLowerCase()) ) {
+                    html = "<span style='background-color: #a8a29e; color: #44403c; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
                 }
                 else {
-                    return "<span style='background-color: #ff5252; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
+                    html = "<span style='background-color: #ff5252; color: #fff; padding: 3px 5px; border-radius: 5px'>" + status + "</span>";
                 }
+
+                // Add real-time location icon
+                if ( positionInfo ) {
+                    html += "<div style='display: inline; position: absolute; right: 15px; color: #666'>";
+                    html += "<i style='font-size: 16px' class='v-icon departure-status-position-icon material-icons'>emergency_share</i>";
+                    html += "</div>";
+                }
+
+                return html;
             },
 
             /**
@@ -197,7 +236,7 @@
             getTrack(segment) {
                 let statusInfo = _findStatusInfo(this, segment);
                 let rtn = "";
-                if ( statusInfo && statusInfo.track ) {
+                if ( statusInfo && statusInfo.track && statusInfo.track.track && statusInfo.track.track !== "" ) {
                     if ( statusInfo.track.changed ) {
                         rtn = "<span style='font-weight: 500; text-decoration: underline'>Track " + statusInfo.track.track + "</span>";
                     }
@@ -209,6 +248,14 @@
                     }
                 }
                 return rtn;
+            },
+
+            /**
+             * Get the Segment's raw JSON Position Info
+             * @param {Object} segment Trip Segment
+             */
+            getPosition(segment) {
+                return _findPositionInfo(this, segment);
             },
 
             /**
@@ -230,8 +277,11 @@
                 return datetime.minutesToString(mins, short);
             },
 
+            /**
+             * Format the display of the Track info
+             * @param {Object} track Track Info
+             */
             formatTrack(track) {
-                console.log(track);
                 return "Track " + track.track;
             },
 
@@ -401,11 +451,6 @@
     }
     .trip-segment-transfer-icon .v-icon {
         font-size: 24px !important;
-        -webkit-transform: rotate(90deg);
-        -moz-transform: rotate(90deg);
-        -o-transform: rotate(90deg);
-        -ms-transform: rotate(90deg);
-        transform: rotate(90deg);
     }
     .trip-segment-transfer-info {
         grid-area: transfer-info;

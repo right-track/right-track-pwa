@@ -1,9 +1,9 @@
 <template>
     <div>
-        <div style="background-color: rgba(0, 0, 0, 0.5);">
+        <div v-bind:style="{'background-color': departure.status.status.toLowerCase() === 'departed' ? 'rgba(1, 1, 1, 0.5)' : 'rgba(0, 0, 0, 0.5)'}">
             <div class="departure-wrapper" 
                  @click="selectDeparture"
-                 v-bind:style="{'background-color': '#' + departure.trip.route.color, background: 'linear-gradient(to bottom, #' + departure.trip.route.color + 'dd, #' + departure.trip.route.color + 'bb)', color: '#' + departure.trip.route.textColor}">
+                 v-bind:style="{'background-color': '#' + departure.trip.route.color, background: 'linear-gradient(to bottom, #' + departure.trip.route.color + 'dd, #' + departure.trip.route.color + 'bb)', color: '#' + departure.trip.route.textColor, opacity: departure.status.status.toLowerCase() === 'departed' ? '0.5' : '1'}">
                 
                 <!-- Departure Time / Estimated Departure Time -->
                 <div class="departure-item departure-time">
@@ -21,7 +21,7 @@
                 <!-- Destination / Remarks (medium+) -->
                 <div class="departure-item departure-destination">
                     {{ departure.destination.name }}
-                    <span v-if="departure.status.remarks" class="v-small-hide">
+                    <span v-if="departure.status.remarks" class="departure-remarks-text v-small-hide">
                         {{ departure.status.remarks }}
                     </span>
                 </div>
@@ -29,6 +29,12 @@
                 <!-- Status -->
                 <div class="departure-item departure-status">
                     {{ departure.status.status }}
+                    <v-tooltip v-if="departure.position" bottom>
+                        <template #activator="{ on }">
+                            <v-icon class="departure-status-position-icon" v-on="on" v-bind:style="{color: '#' + departure.trip.route.textColor}">emergency_share</v-icon>
+                        </template>
+                        <span>Real-time location information is available - click row for details.</span>
+                    </v-tooltip>
                 </div>
 
                 <!-- Track -->
@@ -55,7 +61,7 @@
                 </div>
 
                 <!-- Remarks (xs, sm) -->
-                <div class="departure-item departure-remarks">
+                <div class="departure-item departure-remarks departure-remarks-text">
                     {{ departure.status.remarks }}
                 </div>
 
@@ -64,7 +70,7 @@
 
         <!-- Trip Details -->
         <v-expand-transition>
-            <rt-trip-details v-if="tripDetailsVisible" :trip="departure.trip" :station="station"></rt-trip-details>
+            <rt-trip-details v-if="tripDetailsVisible" :trip="departure.trip" :station="station" :position="departure.position"></rt-trip-details>
         </v-expand-transition>
 
     </div>
@@ -170,8 +176,13 @@
             display: none;
         }
     }
+    .departure-remarks-text {
+        opacity: 0.8;
+        font-style: italic;
+        font-weight: normal;
+    }
 
-    .departure-peak-icon {
+    .departure-peak-icon, .departure-status-position-icon {
         font-size: 18px;
     }
 </style>

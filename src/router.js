@@ -73,7 +73,7 @@ var routes = [
         component: About
     },
     {
-        path: "/:agency/help",
+        path: "/:agency?/help",
         name: "help",
         component: Help
     },

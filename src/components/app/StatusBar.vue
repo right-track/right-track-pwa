@@ -103,33 +103,37 @@
             
             // Get the line status
             let lineStatus = undefined;
-            for ( let i = 0; i < vm.transitFeed.divisions.length; i++ ) {
-                if ( vm.transitFeed.divisions[i].code.toLowerCase() === divisionCode.toLowerCase() ) {
-                    for ( let j = 0; j < vm.transitFeed.divisions[i].divisions.length; j++ ) {
-                        if ( vm.transitFeed.divisions[i].divisions[j].code.toLowerCase() === lineCode.toLowerCase() ) {
-                            lineStatus = vm.transitFeed.divisions[i].divisions[j];
+            if ( lineCode ) {
+                for ( let i = 0; i < vm.transitFeed.divisions.length; i++ ) {
+                    if ( vm.transitFeed.divisions[i].code.toLowerCase() === divisionCode.toLowerCase() ) {
+                        for ( let j = 0; j < vm.transitFeed.divisions[i].divisions.length; j++ ) {
+                            if ( vm.transitFeed.divisions[i].divisions[j].code.toLowerCase() === lineCode.toLowerCase() ) {
+                                lineStatus = vm.transitFeed.divisions[i].divisions[j];
+                            }
                         }
                     }
                 }
             }
             
             // Set title, subtitle, badge and link
-            vm.title = {
-                text: line,
-                backgroundColor: lineStatus.backgroundColor,
-                textColor: lineStatus.textColor
+            if ( lineStatus ) {
+                vm.title = {
+                    text: line,
+                    backgroundColor: lineStatus.backgroundColor,
+                    textColor: lineStatus.textColor
+                }
+                vm.subtitle = {
+                    text: lineStatus.status ? lineStatus.status : "...",
+                    backgroundColor: lineStatus.events.length > 0 ? "#ff5252" : "#4caf50",
+                    textColor: "#fff"
+                }
+                vm.badge = lineStatus.events.length > 0 ? lineStatus.events.length : undefined;
+                vm.link = lineCode ? 
+                    {
+                        path: '/' + vm.$router.currentRoute.params.agency + '/alerts/' + vm.transitInfo.agency + '/' + vm.transitInfo.division + '/' + lineCode
+                    } :
+                    undefined;
             }
-            vm.subtitle = {
-                text: lineStatus.status ? lineStatus.status : "...",
-                backgroundColor: lineStatus.events.length > 0 ? "#ff5252" : "#4caf50",
-                textColor: "#fff"
-            }
-            vm.badge = lineStatus.events.length > 0 ? lineStatus.events.length : undefined;
-            vm.link = lineCode ? 
-                {
-                    path: '/' + vm.$router.currentRoute.params.agency + '/alerts/' + vm.transitInfo.agency + '/' + vm.transitInfo.division + '/' + lineCode
-                } :
-                undefined;
         }
     }
 

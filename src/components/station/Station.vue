@@ -1,5 +1,5 @@
 <template>
-    <v-container class="container" style="margin-bottom: 40px;">
+    <v-container class="page">
 
         <!-- Station Table -->
         <v-card>
@@ -249,7 +249,7 @@
                 icon: "place",
                 title: "Station Map",
                 function: function() {
-                    window.location = "https://www.google.com/maps/search/?api=1&query=" + vm.stop.lat + "," + vm.stop.lon;
+                    window.location = "/" + vm.agencyId + "/map?stop=" + vm.stop.id;
                 }
             },
             {
@@ -479,6 +479,10 @@
 
 
 <style scoped>
+    .page {
+        margin-bottom: 40px;
+    }
+
     .departures-header {
         padding: 5px 0;
         min-height: 50px;

@@ -1,5 +1,5 @@
 <template>
-    <v-container class="container">
+    <v-container class="page">
         <p>Logging out...</p>
     </v-container>
 </template>

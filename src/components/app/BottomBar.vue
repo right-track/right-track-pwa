@@ -17,6 +17,10 @@
             <v-icon v-if="transitAlertCount && transitAlertCount > 0">warning</v-icon>
             <v-icon v-else>check_circle</v-icon>
         </v-btn>
+        <v-btn class="hidden-xs-only" value="map" @click="onBottomBarItemSelected('map')" flat>
+            <span>Map</span>
+            <v-icon>map</v-icon>
+        </v-btn>
     </v-bottom-nav>
 </template>
 

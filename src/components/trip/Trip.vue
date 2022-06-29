@@ -1,5 +1,5 @@
 <template>
-    <v-container class="container">
+    <v-container class="page">
 
         <!-- List of Trip Results -->
         <template v-for="(trip, index) in results">
@@ -335,7 +335,7 @@
                 icon: "place",
                 title: "Station Map",
                 function: function() {
-                    window.location = "https://www.google.com/maps/search/?api=1&query=" + stop.lat + "," + stop.lon;
+                    window.location = "/" + vm.agencyId + "/map?stop=" + stop.id;
                 }
             });
             return {

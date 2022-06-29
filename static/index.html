@@ -12,6 +12,7 @@
     <link rel="preload" href="/styles/fonts.css" as="style" />
     <link rel="stylesheet" href="/styles/common.css" />
     <link rel="stylesheet" href="/styles/fonts.css" />
+    <link rel="stylesheet" href="/styles/leaflet.css" />
 </head>
 <body>
     <noscript>Javascript must be enabled to use this site.</noscript>
@@ -20,7 +21,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js', {
-                    scope: '.'
+                    scope: '/'
                 }).then(registration => {
                     console.log('SW registered: ', registration);
                 }).catch(registrationError => {
@@ -30,5 +31,6 @@
         }
     </script>
     <script src="/js/share.js" async></script>
+    <script src="/js/leaflet.js" async></script>
 </body>
 </html>

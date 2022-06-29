@@ -1,5 +1,5 @@
 <template>
-    <v-container class="container">
+    <v-container class="page">
         
         <!-- STATION SELECTION CARD -->
         <v-card>

@@ -17,6 +17,7 @@ import Trips from "@/components/trips/Trips.vue"
 import Trip from "@/components/trip/Trip.vue"
 import Stations from "@/components/stations/Stations.vue"
 import Station from "@/components/station/Station.vue"
+import Map from "@/components/map/Map.vue"
 import PageNotFound from "@/components/PageNotFound.vue"
 
 
@@ -110,6 +111,11 @@ var routes = [
         path: "/:agency/stations/:stop",
         name: "station",
         component: Station
+    },
+    {
+        path: "/:agency/map",
+        name: "map",
+        component: Map
     },
     {
         path: "**",

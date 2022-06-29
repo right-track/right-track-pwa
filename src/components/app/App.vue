@@ -99,43 +99,40 @@
 
             <!-- OFFLINE ALERT -->
             <rt-offline-alert :visible="!networkOnline" :drawerVisible="drawerVisible"></rt-offline-alert>
-
-            <v-container fluid>
                 
-                <!-- ROUTER VIEW CONTENT -->
-                <transition name="fade">
-                    <router-view 
-                        :updateInfo="update"
-                        :transitInfo="transitInfo"
-                        :transitFeed="transitFeed"
-                        @setToolbarMenuItems="onSetToolbarMenuItems"
-                        @setMoreMenuItems="onSetMoreMenuItems" 
-                        @setTitle="onSetTitle" 
-                        @setProgress="onSetProgress"
-                        @setStatusBar="onSetStatusBar"
-                        @updateFavorites="onUpdateFavorites"
-                        @showDialog="onShowDialog" 
-                        @showSnackbar="onShowSnackbar"
-                        @checkUpdate="onCheckUpdate"
-                        @startUpdate="onStartUpdate"
-                        @checkAppUpdate="onCheckAppUpdate"
-                        @startAppUpdate="onStartAppUpdate">
-                    </router-view>
-                </transition>
+            <!-- ROUTER VIEW CONTENT -->
+            <transition name="fade">
+                <router-view 
+                    :updateInfo="update"
+                    :transitInfo="transitInfo"
+                    :transitFeed="transitFeed"
+                    @setToolbarMenuItems="onSetToolbarMenuItems"
+                    @setMoreMenuItems="onSetMoreMenuItems" 
+                    @setTitle="onSetTitle" 
+                    @setProgress="onSetProgress"
+                    @setStatusBar="onSetStatusBar"
+                    @updateFavorites="onUpdateFavorites"
+                    @showDialog="onShowDialog" 
+                    @showSnackbar="onShowSnackbar"
+                    @checkUpdate="onCheckUpdate"
+                    @startUpdate="onStartUpdate"
+                    @checkAppUpdate="onCheckAppUpdate"
+                    @startAppUpdate="onStartAppUpdate">
+                </router-view>
+            </transition>
 
-                <!-- BOTTOM BAR -->
-                <rt-bottom-bar v-if="bottomBarEnabled" :transitAlertCount="transitAlertCount"></rt-bottom-bar>
+            <!-- BOTTOM BAR -->
+            <rt-bottom-bar v-if="bottomBarEnabled" :transitAlertCount="transitAlertCount"></rt-bottom-bar>
 
-                <!-- APP CONFIRMATION DIALOG -->
-                <rt-confirmation-dialog :properties="dialog"></rt-confirmation-dialog>
+            <!-- APP CONFIRMATION DIALOG -->
+            <rt-confirmation-dialog :properties="dialog"></rt-confirmation-dialog>
 
-                <!-- APP PROGRESS DIALOG -->
-                <rt-progress-dialog :properties="progress"></rt-progress-dialog>
+            <!-- APP PROGRESS DIALOG -->
+            <rt-progress-dialog :properties="progress"></rt-progress-dialog>
 
-                <!-- APP SNACKBAR -->
-                <rt-snackbar :properties="snackbar"></rt-snackbar>
+            <!-- APP SNACKBAR -->
+            <rt-snackbar :properties="snackbar"></rt-snackbar>
 
-            </v-container>
         </v-content>
 
         <!-- STATUS BAR -->

@@ -8,13 +8,13 @@ body {
     background-color: #F4F4F4;
 }
 
-/* Default Content Container */
-.container {
+/* Default Content Container Width */
+.page {
     max-width: 750px !important;
     padding: 2px !important;
 }
 @media screen and (min-width: 600px) {
-    .container {
+    .page {
         padding: 16px !important;
     }
 }

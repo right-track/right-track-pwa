@@ -3,6 +3,15 @@
 
         <!-- Station Table -->
         <v-card>
+
+            <!-- Direction Header -->
+            <v-card-title class="headline secondary-bg" style="padding: 8px 16px">
+                <v-icon>swap_horiz</v-icon>&nbsp;&nbsp;<span v-if="selectedDirection" v-html="selectedDirection.label"></span>
+                <v-spacer></v-spacer>
+                <v-btn flat icon @click="directionSelectionDialogProps.visible = !directionSelectionDialogProps.visible">
+                    <v-icon>filter_list</v-icon>
+                </v-btn>
+            </v-card-title>
             
             <!-- Station Departures Header -->
             <div class="departures-header">
@@ -14,11 +23,13 @@
             </div>
 
             <!-- Station Departures -->
-            <template v-for="(departure, index) in departures">
-                <rt-departure-item :departure="departure" :station="stop" :key="stop.name + '-departure-' + departure.trip.id + '-' + index"></rt-departure-item>
-            </template>
+            <rt-departure-item v-for="departure in displayedDepartures" :key="stop.name + '-departure-' + departure.trip.id"
+                :departure="departure" :station="stop"></rt-departure-item>
 
         </v-card>
+
+        <!-- Direction Selection Dialog -->
+        <rt-direction-selection-dialog :properties="directionSelectionDialogProps" :directions="directions" :selectedDirection="selectedDirection" :includeTerminal="includeTerminal" @directionSelected="onDirectionSelected" @includeTerminalToggled="onIncludeTerminalToggled"></rt-direction-selection-dialog>
 
     </v-container>
 </template>
@@ -27,11 +38,19 @@
 <script>
     const core = require("right-track-core");
     const cache = require("@/utils/cache.js");
+    const store = require('@/utils/store.js');
     const DB = require("@/utils/db.js");
     const favorites = require("@/utils/favorites.js");
     const StationDepartureItem = require("@/components/station/StationDepartureItem.vue").default;
+    const DirectionSelectionDialog = require("@/components/station/DirectionSelectionDialog.vue").default;
 
     let TIMER_ID = undefined;
+    const ALL_TRAINS_DIRECTION = {
+        "id": "all",
+        "description": "Any Direction",
+        "label": "All Trains"
+    };
+    const DEFAULT_INCLUDE_TERMINAL = true;
 
 
     /**
@@ -99,6 +118,9 @@
                 // Update the Menu Items
                 _updateMoreMenu(vm);
                 _updateToolbarMenu(vm);
+
+                // Update the Direction
+                _updateDirection(vm);
 
                 // Set auto-update timer
                 if ( TIMER_ID ) {
@@ -252,6 +274,43 @@
     }
 
 
+    /**
+     * Update the saved direction and direction labels
+     * @param {Vue} vm      Vue Instance
+     */
+    function _updateDirection(vm) {
+
+        // Get the saved direction for this station
+        store.get("setting-station-direction-" + vm.stop.id, function(err, selected) {
+            vm.selectedDirection = selected ? selected : ALL_TRAINS_DIRECTION;
+
+            // Get the saved include terminal flag for this station
+            store.get("setting-station-terminal-" + vm.stop.id, function(err, terminal) {
+                vm.includeTerminal = terminal === undefined ? DEFAULT_INCLUDE_TERMINAL : terminal;
+
+                // Get the direction labels from the DB
+                DB.getDB(vm.agencyId, function(err, db) {
+                    if ( db ) {
+                        core.query.directions.getDirections(db, function(err, directions) {
+                            if ( directions ) {
+                                vm.directions = [ ALL_TRAINS_DIRECTION ];
+                                for ( let i = 0; i < directions.length; i++ ) {
+                                    vm.directions.push({
+                                        id: directions[i].id,
+                                        description: directions[i].description,
+                                        label: directions[i].description + " Trains"
+                                    });
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+    }
+
+
     module.exports = {
 
         // ==== COMPONENT PROPS ==== //
@@ -271,13 +330,43 @@
                 departures: [],
                 updating: false,
                 updatingFavorite: true,
-                isFavorite: false
+                isFavorite: false,
+                directionSelectionDialogProps: {
+                    visible: false
+                },
+                selectedDirection: ALL_TRAINS_DIRECTION,
+                directions: [ ALL_TRAINS_DIRECTION ],
+                includeTerminal: DEFAULT_INCLUDE_TERMINAL
             }
+        },
+
+        computed: {
+
+            /**
+             * Get departures that are filtered to be displayed
+             */
+            displayedDepartures: function() {
+                let rtn = [];
+                let dir = this.selectedDirection;
+                let term = this.includeTerminal;
+                let stop = this.stop;
+                this.departures.forEach(function(departure) {
+                    if ( dir === undefined || dir.id === 'all' || 
+                            (dir && departure.trip && departure.trip.direction && departure.trip.direction.id === dir.id) ) {
+                        if ( term === undefined || term || departure.destination.id !== stop.id ) {
+                            rtn.push(departure);
+                        }
+                    }
+                });
+                return rtn;
+            }
+
         },
 
         // ==== ADDITIONAL COMPONENTS ==== //
         components: {
-            'rt-departure-item': StationDepartureItem
+            'rt-departure-item': StationDepartureItem,
+            'rt-direction-selection-dialog': DirectionSelectionDialog
         },
 
         // ==== COMPONENT METHODS ==== //
@@ -325,6 +414,22 @@
                         }
                     });
                 }
+            },
+
+            /**
+             * Handle a change in the selected direction
+             */
+            onDirectionSelected(selected) {
+                this.selectedDirection = selected;
+                store.put("setting-station-direction-" + this.stop.id, selected);
+            },
+
+            /**
+             * Handle the toggle of the include terminal flag
+             */
+            onIncludeTerminalToggled(updated) {
+                this.includeTerminal = updated;
+                store.put("setting-station-terminal-" + this.stop.id, this.includeTerminal);
             }
 
         },
@@ -366,7 +471,6 @@
             isFavorite() {
                 _updateToolbarMenu(this);
             }
-
         }
         
     }

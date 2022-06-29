@@ -982,10 +982,16 @@
     }
 
     .trip-result-card {
-        margin: 5px -16px 25px -16px;
+        margin: 4px 0;
     }
+    @media screen and (min-width: 600px) {
+        .trip-result-card {
+            margin: 5px 0 25px 0;
+        }
+    }
+
     .trip-result-card-condensed {
-        margin: 0 -32px;
+        margin: 0;
         border: 1px solid #ccc !important;
     }
     .trip-result-card:active, .trip-result-card-condensed:active {

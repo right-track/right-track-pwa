@@ -59,7 +59,7 @@
             <!-- TRANSFER INFO -->
             <div v-if="trip.transfers[index]" class="trip-segment-transfer">
                 <div class="trip-segment-transfer-icon">
-                    <v-icon color="#111">call_split</v-icon>
+                    <v-icon color="#111">airline_stops</v-icon>
                 </div>
                 <div class="trip-segment-transfer-info">
                     <strong>&nbsp;Transfer @ {{ trip.transfers[index].stop.name }}</strong>
@@ -75,7 +75,7 @@
         <div v-if="showTravelTimes && trip.segments.length > 1" class="trip-total-traveltime">
             <div class="spacing" v-if="!condensed"></div>
             <span v-if="!condensed"><strong>Total Travel Time</strong><br /></span>
-            <v-icon color="#111">access_time</v-icon> {{ formatTravelTime(trip.travelTime) }}
+            <v-icon color="#111">update</v-icon> {{ formatTravelTime(trip.travelTime) }}
         </div>
 
     </div>
@@ -277,8 +277,11 @@
                 return datetime.minutesToString(mins, short);
             },
 
+            /**
+             * Format the display of the Track info
+             * @param {Object} track Track Info
+             */
             formatTrack(track) {
-                console.log(track);
                 return "Track " + track.track;
             },
 
@@ -448,11 +451,6 @@
     }
     .trip-segment-transfer-icon .v-icon {
         font-size: 24px !important;
-        -webkit-transform: rotate(90deg);
-        -moz-transform: rotate(90deg);
-        -o-transform: rotate(90deg);
-        -ms-transform: rotate(90deg);
-        transform: rotate(90deg);
     }
     .trip-segment-transfer-info {
         grid-area: transfer-info;

@@ -47,6 +47,7 @@
     "right-track-core": "right-track/right-track-core",
     "right-track-db-sqljs": "right-track/right-track-db-sqljs",
     "vue": "^2.6.7",
+    "vue-plausible": "^1.3.2",
     "vue-router": "^3.0.2",
     "vuetify": "^1.5.9"
   }

@@ -2,8 +2,8 @@
     <v-container class="container">
 
         <!-- List of Trip Results -->
-        <template v-for="(trip, index) in results">
-            <v-card :id="'trip-result-card-' + index" :class="display_condensed ? 'trip-result-card-condensed' : 'trip-result-card'" :key="'trip-' + index">
+        <div v-for="(trip, index) in results" :key="'trip-' + index">
+            <v-card :id="'trip-result-card-' + index" :class="display_condensed ? 'trip-result-card-condensed' : 'trip-result-card'">
                 <rt-trip-result-item 
                     :trip="trip" 
                     :index="index"
@@ -19,7 +19,7 @@
                     @removeShareSelectedResult="onRemoveShareSelectedResult">
                 </rt-trip-result-item>
             </v-card>
-        </template>
+        </div>
         
 
         <!-- No Results Found -->
@@ -460,6 +460,14 @@
 
                 // Update the Results
                 _updateResults(vm);
+
+                // Log the trip
+                vm.$plausible.trackEvent('trip', { props: { 
+                    agency: vm.agencyId, 
+                    trip: vm.origin.name + ' to ' + vm.destination.name, 
+                    origin: vm.origin.name, 
+                    destination: vm.destination.name 
+                }});
             });
         });
     }

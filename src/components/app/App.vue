@@ -33,11 +33,9 @@
 
             <!-- TOOLBAR MENU ITEMS -->
             <div v-if="toolbarMenu && toolbarMenu.length > 0">
-                <template v-for="(item, index) in toolbarMenu">
-                    <v-btn :key="index" :disabled="item.disabled" dark icon>
-                        <v-icon v-if="item.type==='icon'" @click="item.function">{{ item.icon }}</v-icon>
-                    </v-btn>
-                </template>
+                <v-btn v-for="(item, index) in toolbarMenu" :key="index" :disabled="item.disabled" dark icon>
+                    <v-icon v-if="item.type==='icon'" @click="item.function">{{ item.icon }}</v-icon>
+                </v-btn>
             </div>
 
             <!-- MORE MENU ITEMS -->
@@ -974,6 +972,12 @@
                 client = "android";
             }
             store.put("client", client);
+
+            // Log the launch
+            vm.$plausible.trackEvent('launch', { props: {
+                client: client,
+                agency: vm.$route.query.agency ? vm.$route.query.agency : vm.$route.params.agency
+            }});
         },
 
         // ==== COMPONENT WATCHERS ==== //

@@ -103,6 +103,15 @@
             vm.nav = [];
         }
 
+        // Log the alert
+        vm.$plausible.trackEvent('alert', { props: {
+            agency: vm.agencyId,
+            alert: vm.transitAgencyId + (vm.transitDivisionCodes ? '/' + vm.transitDivisionCodes.join('/') : ''),
+            transitAgency: vm.transitAgencyId,
+            transitDivision: vm.transitDivisionCodes ? vm.transitDivisionCodes[0] : undefined,
+            transitLine: vm.transitDivisionCodes ? vm.transitDivisionCodes[1] : undefined
+        }});
+
     }
 
 

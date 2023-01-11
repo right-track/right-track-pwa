@@ -122,6 +122,9 @@
                 // Update the Direction
                 _updateDirection(vm);
 
+                // Log the station
+                vm.$plausible.trackEvent('station', { props: { agency: vm.agencyId, name: vm.stop.name }});
+
                 // Set auto-update timer
                 if ( TIMER_ID ) {
                     clearInterval(TIMER_ID);

@@ -1,5 +1,5 @@
 <template>
-    <v-container class="container">
+    <v-container class="container container-padded">
 
         <!-- Messages -->
         <rt-messages></rt-messages>

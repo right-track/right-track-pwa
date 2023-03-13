@@ -12,11 +12,15 @@ body {
 .container {
     max-width: 750px !important;
     padding: 2px !important;
+    margin-bottom: 40px !important;
 }
 @media screen and (min-width: 600px) {
     .container {
         padding: 16px !important;
     }
+}
+.container-padded {
+    padding: 16px !important;
 }
 
 /* Remove underline from menu links */

@@ -1,5 +1,5 @@
 <template>
-    <v-container class="container" style="margin-bottom: 40px;">
+    <v-container class="container">
 
         <!-- Station Table -->
         <v-card>

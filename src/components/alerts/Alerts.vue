@@ -1,5 +1,5 @@
 <template>
-    <v-container id="container" class="container">
+    <v-container id="container" class="container container-padded">
 
         <!-- Main Alerts Card - Agency / Division List -->
         <v-card>

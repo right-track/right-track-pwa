@@ -1,5 +1,5 @@
 <template>
-    <v-container class="container">
+    <v-container class="container container-padded">
 
         <!-- SERVER MESSAGES -->
         <rt-messages></rt-messages>
@@ -7,7 +7,7 @@
         <!-- AGENCY SELECTION CARD -->
         <v-card>
             <v-card-title>
-                <h2 class="display-2">{{ title }}</h2>
+                <h2 class="display-2 agency-title">{{ title }}</h2>
                 <span class="subheading font-weight-light v-xsmall-hide">Select an Agency for schedules and status information:</span>
             </v-card-title>
             <rt-agency-list :agencies="agencies"></rt-agency-list>
@@ -109,5 +109,13 @@
     .server-info {
         margin-top: 15px;
         text-align: center;
+    }
+    .agency-title {
+        text-align: center;
+    }
+    @media screen and (min-width: 600px) {
+        .agency-title {
+            text-align: left !important;
+        }
     }
 </style>
